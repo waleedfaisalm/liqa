@@ -1,6 +1,6 @@
 @extends(auth()->check() ? 'layouts.app' : 'layouts.site')
 
-@section('title', 'لقاء — منصة لقاءات الفريلانسرز')
+@section('title', 'لقاء — منصة لقاءات المستقلين المهنية')
 @section('main_class', 'landing-main')
 
 @section('content')
@@ -82,6 +82,27 @@
         </div>
     </section>
 
+    {{-- ============ المنصة بالأرقام ============ --}}
+    @if ($showStats)
+        <section class="container landing-section">
+            <div class="text-center mb-4">
+                <span class="eyebrow eyebrow--green mb-3"><span class="dot"></span>{{ $L['stats']['eyebrow'] }}</span>
+                <h2 class="display-6 liqa-title mb-0">{{ $L['stats']['title'] }} <span class="text-gradient">{{ $L['stats']['title_accent'] }}</span></h2>
+            </div>
+            <div class="row g-3">
+                @foreach ([['members', 'عضو مستقل', 'users'], ['events', 'لقاء منشور', 'calendar'], ['cities', 'مدينة', 'pin'], ['joined', 'مشاركة مؤكدة', 'check']] as [$k, $label, $icon])
+                    <div class="col-6 col-lg-3">
+                        <div class="liqa-card stat-card h-100 text-center p-3 p-md-4">
+                            <span class="feature-icon mb-2"><x-icon :name="$icon" :size="22" /></span>
+                            <div class="stat-card__num text-gradient">{{ number_format($stats[$k]) }}</div>
+                            <div class="small text-secondary">{{ $label }}</div>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        </section>
+    @endif
+
     {{-- ============ المشكلة ============ --}}
     <section class="container landing-section">
         <div class="text-center mb-4">
@@ -127,6 +148,29 @@
         </div>
     </section>
 
+    {{-- ============ لمن المنصة ============ --}}
+    <section class="container landing-section">
+        <div class="text-center mb-4">
+            <span class="eyebrow eyebrow--pink mb-3"><span class="dot"></span>{{ $L['audience']['eyebrow'] }}</span>
+            <h2 class="display-6 liqa-title mb-2">{{ $L['audience']['title'] }} <span class="text-gradient">{{ $L['audience']['title_accent'] }}</span></h2>
+            <p class="hint mb-0">{{ $L['audience']['subtitle'] }}</p>
+        </div>
+        <div class="row g-3">
+            @foreach ([['bolt', ''], ['star', 'feature-icon--pink'], ['edit', 'feature-icon--sky'], ['trend', 'feature-icon--orange'], ['coffee', 'feature-icon--green'], ['users', '']] as $i => [$icon, $tone])
+                @php $card = $L['audience']['cards'][$i]; @endphp
+                <div class="col-md-6 col-lg-4">
+                    <div class="liqa-card d-flex gap-3 align-items-start p-3 p-md-4 h-100">
+                        <span class="feature-icon {{ $tone }}"><x-icon :name="$icon" :size="22" /></span>
+                        <span>
+                            <h3 class="h6 liqa-title mb-1">{{ $card['title'] }}</h3>
+                            <span class="d-block text-secondary small">{{ $card['text'] }}</span>
+                        </span>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    </section>
+
     {{-- ============ لماذا لقاء ============ --}}
     <section class="container landing-section">
         <div class="text-center mb-4">
@@ -146,6 +190,41 @@
                         </span>
                     </div>
                 </div>
+            @endforeach
+        </div>
+    </section>
+
+    {{-- ============ اللقاءات القادمة ============ --}}
+    @if ($upcoming->isNotEmpty())
+        <section class="container landing-section">
+            <div class="text-center mb-4">
+                <span class="eyebrow mb-3"><span class="dot"></span>{{ $L['upcoming']['eyebrow'] }}</span>
+                <h2 class="display-6 liqa-title mb-2">{{ $L['upcoming']['title'] }} <span class="text-gradient">{{ $L['upcoming']['title_accent'] }}</span></h2>
+                <p class="hint mb-0">{{ $L['upcoming']['subtitle'] }}</p>
+            </div>
+            <div class="row g-3">
+                @foreach ($upcoming as $event)
+                    <div class="col-md-6 col-lg-4"><x-event-card :event="$event" :user="auth()->user()" /></div>
+                @endforeach
+            </div>
+            <div class="text-center mt-4">
+                <a href="{{ route('events.index') }}" class="btn btn-liqa-outline px-4">عرض جميع اللقاءات</a>
+            </div>
+        </section>
+    @endif
+
+    {{-- ============ الأسئلة الشائعة ============ --}}
+    <section class="container landing-section" id="faq">
+        <div class="text-center mb-4">
+            <span class="eyebrow eyebrow--sky mb-3"><span class="dot"></span>{{ $L['faq']['eyebrow'] }}</span>
+            <h2 class="display-6 liqa-title mb-0">{{ $L['faq']['title'] }} <span class="text-gradient">{{ $L['faq']['title_accent'] }}</span></h2>
+        </div>
+        <div class="faq-list mx-auto">
+            @foreach ($L['faq']['items'] as $item)
+                <details class="liqa-card faq-item">
+                    <summary>{{ $item['title'] }}</summary>
+                    <p class="text-secondary small mb-0">{{ $item['text'] }}</p>
+                </details>
             @endforeach
         </div>
     </section>

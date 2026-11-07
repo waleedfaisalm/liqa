@@ -5,13 +5,17 @@
 @php
     $sections = [
         'hero' => ['الواجهة الرئيسية', ['eyebrow' => 'الشارة العلوية', 'title' => 'العنوان (السطر الأول)', 'title_accent' => 'العنوان (السطر الملوّن)', 'lead' => 'الوصف', 'hint_1' => 'ميزة 1 (تحت الأزرار)', 'hint_2' => 'ميزة 2 (تحت الأزرار)']],
+        'stats' => ['قسم الأرقام (يظهر تلقائيًا عند توفر بيانات كافية)', ['eyebrow' => 'الشارة', 'title' => 'العنوان', 'title_accent' => 'العنوان الملوّن']],
         'problem' => ['قسم المشكلة', ['eyebrow' => 'الشارة', 'title' => 'العنوان', 'title_accent' => 'العنوان الملوّن', 'subtitle' => 'الوصف الفرعي']],
         'how' => ['قسم الحل (الخطوات)', ['eyebrow' => 'الشارة', 'title' => 'العنوان', 'title_accent' => 'العنوان الملوّن', 'subtitle' => 'الوصف الفرعي']],
+        'audience' => ['قسم «لمن المنصة؟»', ['eyebrow' => 'الشارة', 'title' => 'العنوان', 'title_accent' => 'العنوان الملوّن', 'subtitle' => 'الوصف الفرعي']],
         'why' => ['قسم «لماذا لقاء؟»', ['eyebrow' => 'الشارة', 'title' => 'العنوان', 'title_accent' => 'العنوان الملوّن']],
+        'upcoming' => ['قسم اللقاءات القادمة (يعرض لقاءات حقيقية، ويختفي إن لم توجد)', ['eyebrow' => 'الشارة', 'title' => 'العنوان', 'title_accent' => 'العنوان الملوّن', 'subtitle' => 'الوصف الفرعي']],
+        'faq' => ['قسم الأسئلة الشائعة', ['eyebrow' => 'الشارة', 'title' => 'العنوان', 'title_accent' => 'العنوان الملوّن']],
         'cta_guest' => ['الدعوة الأخيرة — للزائر', ['title' => 'العنوان', 'title_accent' => 'العنوان الملوّن', 'text' => 'النص']],
         'cta_member' => ['الدعوة الأخيرة — للعضو', ['title' => 'العنوان', 'title_accent' => 'العنوان الملوّن', 'text' => 'النص']],
     ];
-    $cardSets = ['problem' => 'بطاقات المشكلة', 'how' => 'بطاقات الخطوات', 'why' => 'بطاقات المزايا'];
+    $cardSets = ['problem' => ['cards', 'بطاقات التحدي'], 'how' => ['cards', 'بطاقات الخطوات'], 'audience' => ['cards', 'فئات المنصة'], 'why' => ['cards', 'بطاقات المزايا'], 'faq' => ['items', 'الأسئلة والأجوبة']];
 @endphp
 
 @section('content')
@@ -43,11 +47,12 @@
                 </div>
 
                 @if (isset($cardSets[$sec]))
-                    <h3 class="h6 text-white mt-4 mb-2">{{ $cardSets[$sec] }}</h3>
-                    @foreach ($L[$sec]['cards'] as $i => $card)
+                    @php [$setKey, $setTitle] = $cardSets[$sec]; @endphp
+                    <h3 class="h6 text-white mt-4 mb-2">{{ $setTitle }}</h3>
+                    @foreach ($L[$sec][$setKey] as $i => $card)
                         <div class="row g-2 mb-2 align-items-start">
-                            <div class="col-md-4"><input name="landing[{{ $sec }}][cards][{{ $i }}][title]" value="{{ $card['title'] }}" maxlength="300" class="form-control" aria-label="عنوان البطاقة {{ $i + 1 }}"></div>
-                            <div class="col-md-8"><textarea name="landing[{{ $sec }}][cards][{{ $i }}][text]" rows="2" maxlength="300" class="form-control" aria-label="نص البطاقة {{ $i + 1 }}">{{ $card['text'] }}</textarea></div>
+                            <div class="col-md-4"><input name="landing[{{ $sec }}][{{ $setKey }}][{{ $i }}][title]" value="{{ $card['title'] }}" maxlength="300" class="form-control" aria-label="عنوان البطاقة {{ $i + 1 }}"></div>
+                            <div class="col-md-8"><textarea name="landing[{{ $sec }}][{{ $setKey }}][{{ $i }}][text]" rows="2" maxlength="300" class="form-control" aria-label="نص البطاقة {{ $i + 1 }}">{{ $card['text'] }}</textarea></div>
                         </div>
                     @endforeach
                 @endif

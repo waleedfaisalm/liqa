@@ -42,7 +42,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 // ---------- الصفحة الرئيسية (للزائر والعضو) ----------
-Route::view('/', 'landing')->name('landing');
+Route::get('/', [\App\Http\Controllers\LandingController::class, 'index'])->name('landing');
 Route::get('/privacy', [LegalPageController::class, 'show'])->defaults('type', 'privacy')->name('privacy');
 Route::get('/contact', [ContactController::class, 'create'])->name('contact');
 Route::post('/contact', [ContactController::class, 'store'])->middleware('throttle:4,10')->name('contact.store');
