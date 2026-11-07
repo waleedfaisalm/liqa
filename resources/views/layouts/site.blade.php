@@ -17,19 +17,32 @@
 <body>
     @include('partials.announcement')
     <header class="site-header">
-        <div class="container d-flex align-items-center justify-content-between py-3">
-            <a href="{{ route('landing') }}" class="d-flex align-items-center gap-2 text-decoration-none">
-                <x-logo :size="40" />
-                <span class="fs-4 fw-bold text-white">{{ \App\Models\Setting::site('name') }}</span>
-            </a>
-            <nav class="d-flex align-items-center gap-2" aria-label="القائمة الرئيسية">
-                <a href="{{ route('landing') }}" class="app-link {{ request()->routeIs('landing') ? 'is-active' : '' }} d-none d-sm-inline-block text-decoration-none">الرئيسية</a>
-                <a href="{{ route('events.index') }}" class="app-link {{ request()->routeIs('events.*') ? 'is-active' : '' }} d-none d-sm-inline-block text-decoration-none">الأحداث</a>
-                <a href="{{ route('contact') }}" class="app-link {{ request()->routeIs('contact') ? 'is-active' : '' }} d-none d-sm-inline-block text-decoration-none">تواصل معنا</a>
-                <a href="{{ route('login') }}" class="btn btn-liqa-outline px-3 d-flex align-items-center">تسجيل الدخول</a>
-                <a href="{{ route('register') }}" class="btn btn-liqa px-3 d-flex align-items-center" style="min-height:2.75rem">إنشاء حساب</a>
-            </nav>
-        </div>
+        <nav class="navbar navbar-expand-md py-2" aria-label="القائمة الرئيسية">
+            <div class="container">
+                <a href="{{ route('landing') }}" class="navbar-brand d-flex align-items-center gap-2 text-decoration-none m-0">
+                    <x-logo :size="40" />
+                    <span class="fs-4 fw-bold text-white">{{ \App\Models\Setting::site('name') }}</span>
+                </a>
+
+                <div class="d-flex align-items-center gap-2 d-md-none ms-auto me-2">
+                    <a href="{{ route('register') }}" class="btn btn-liqa btn-sm px-3 d-flex align-items-center text-nowrap">إنشاء حساب</a>
+                </div>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#guestNav"
+                        aria-controls="guestNav" aria-expanded="false" aria-label="فتح القائمة">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="collapse navbar-collapse" id="guestNav">
+                    <ul class="navbar-nav gap-md-1 mt-3 mt-md-0 ms-md-auto align-items-md-center">
+                        <li class="nav-item"><a href="{{ route('landing') }}" class="nav-link app-link {{ request()->routeIs('landing') ? 'is-active' : '' }}">الرئيسية</a></li>
+                        <li class="nav-item"><a href="{{ route('events.index') }}" class="nav-link app-link {{ request()->routeIs('events.*') ? 'is-active' : '' }}">الأحداث</a></li>
+                        <li class="nav-item"><a href="{{ route('contact') }}" class="nav-link app-link {{ request()->routeIs('contact') ? 'is-active' : '' }}">تواصل معنا</a></li>
+                        <li class="nav-item mt-2 mt-md-0 ms-md-2"><a href="{{ route('login') }}" class="btn btn-liqa-outline px-3 d-flex align-items-center justify-content-center">تسجيل الدخول</a></li>
+                        <li class="nav-item d-none d-md-block"><a href="{{ route('register') }}" class="btn btn-liqa px-3 d-flex align-items-center" style="min-height:2.75rem">إنشاء حساب</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
     </header>
 
     <main>

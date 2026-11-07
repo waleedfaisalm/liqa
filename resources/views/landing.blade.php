@@ -19,7 +19,7 @@
                     <p class="lead text-secondary mb-4">
                         {{ $L['hero']['lead'] }}
                     </p>
-                    <div class="d-flex flex-wrap gap-2 mb-3">
+                    <div class="hero-actions d-flex flex-wrap gap-2 mb-3">
                         @if ($member)
                             <a href="{{ route('events.index') }}" class="btn btn-liqa px-4 d-flex align-items-center gap-2">تصفّح الأحداث <x-icon name="calendar" :size="18" /></a>
                             <a href="{{ route('events.create') }}" class="btn btn-liqa-outline px-4 d-flex align-items-center gap-2"><x-icon name="plus" :size="18" /> انشر حدثًا</a>
