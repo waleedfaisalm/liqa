@@ -39,7 +39,7 @@
     <div>
         <h3 class="h5 liqa-title text-white mb-2">{{ $event->title }}</h3>
         <div class="small text-secondary">{{ $event->whenLabel() }}</div>
-        <div class="small text-secondary text-truncate">{{ $event->placeLabel() }}</div>
+        <div class="small text-secondary text-truncate">{{ $event->cardPlaceLabel() }}</div>
     </div>
 
     <div class="mt-auto">

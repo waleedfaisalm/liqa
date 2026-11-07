@@ -217,6 +217,18 @@ class Event extends Model
         return $area !== '' ? $area.' · '.$this->location : $this->location;
     }
 
+    /** المكان للعرض في البطاقات: لا نُظهر رابط الاجتماع عن بُعد خارج صفحة اللقاء */
+    public function cardPlaceLabel(): string
+    {
+        if ($this->mode === 'online') {
+            $area = implode('، ', array_filter([$this->city, $this->country]));
+
+            return $area !== '' ? 'عن بُعد · '.$area : 'لقاء عن بُعد';
+        }
+
+        return $this->placeLabel();
+    }
+
     public function typeLabel(): string
     {
         return \App\Support\Catalog::eventTypeLabel($this->type);

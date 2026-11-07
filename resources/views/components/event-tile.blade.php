@@ -23,7 +23,7 @@
 
     <ul class="meta-list mb-3">
         <li><x-icon name="calendar" :size="16" /> {{ $event->whenLabel() }}</li>
-        <li><x-icon name="pin" :size="16" /> <span class="text-truncate">{{ $event->placeLabel() }}</span></li>
+        <li><x-icon name="pin" :size="16" /> <span class="text-truncate">{{ $event->cardPlaceLabel() }}</span></li>
         <li class="text-success-emphasis"><x-icon name="check" :size="16" /> <bdi dir="ltr">{{ $event->seatsTaken() }} / {{ $event->capacity }}</bdi> مشاركين مقبولين</li>
     </ul>
 

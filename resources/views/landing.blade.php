@@ -36,47 +36,42 @@
 
                 <div class="col-lg-6">
                     <div class="float-stack">
-                        <div class="float-card float-card--1">
-                            <div class="float-card__head">
-                                <span class="float-card__dot" style="background: linear-gradient(135deg,#a855f7,#6366f1)"></span>
-                                <span class="min-w-0">
-                                    <span class="float-card__title">لقاء مطوّري الواجهات</span>
-                                    <span class="float-card__sub">السبت · الرياض</span>
-                                </span>
+                        @php
+                            $grads = ['linear-gradient(135deg,#a855f7,#6366f1)', 'linear-gradient(135deg,#fb923c,#db2777)', 'linear-gradient(135deg,#38bdf8,#6366f1)'];
+                            if ($upcoming->isNotEmpty()) {
+                                $floats = $upcoming->map(fn ($e) => [
+                                    'title' => $e->title,
+                                    'sub' => $e->starts_at->translatedFormat('l j F').' · '.($e->mode === 'online' ? 'عن بُعد' : $e->city),
+                                    'count' => $e->seatsTaken().' / '.$e->capacity.' مشارك',
+                                    'badge' => $e->isFull() ? ['مكتمل العدد', ''] : [$e->seatsLeft().' مقاعد متاحة', 'liqa-badge--green'],
+                                ])->values()->all();
+                            } else {
+                                $floats = [
+                                    ['title' => 'لقاء مطوّري الواجهات', 'sub' => 'السبت · الرياض', 'count' => '8 / 15 مشاركًا', 'badge' => ['7 مقاعد متاحة', 'liqa-badge--green']],
+                                    ['title' => 'جلسة المصممين', 'sub' => 'الجمعة · جدة', 'count' => '11 / 12 مشاركًا', 'badge' => ['مقعد واحد متاح', '']],
+                                    ['title' => 'لقاء كتّاب المحتوى', 'sub' => 'الأحد · عن بُعد', 'count' => '0 / 20 مشارك', 'badge' => ['لقاء جديد', 'liqa-badge--sky']],
+                                ];
+                            }
+                        @endphp
+                        @foreach ($floats as $i => $f)
+                            <div class="float-card float-card--{{ $i + 1 }}">
+                                <div class="float-card__head">
+                                    <span class="float-card__dot" style="background: {{ $grads[$i] }}"></span>
+                                    <span class="min-w-0">
+                                        <span class="float-card__title">{{ $f['title'] }}</span>
+                                        <span class="float-card__sub">{{ $f['sub'] }}</span>
+                                    </span>
+                                </div>
+                                <div class="float-card__foot">
+                                    <span class="small hint d-flex align-items-center gap-1"><x-icon name="users" :size="14" /> {{ $f['count'] }}</span>
+                                    <span class="liqa-badge {{ $f['badge'][1] }}">{{ $f['badge'][0] }}</span>
+                                </div>
                             </div>
-                            <div class="float-card__foot">
-                                <span class="small hint d-flex align-items-center gap-1"><x-icon name="users" :size="14" /> 8 مشاركين</span>
-                                <span class="liqa-badge liqa-badge--green">متاح</span>
-                            </div>
-                        </div>
-                        <div class="float-card float-card--2">
-                            <div class="float-card__head">
-                                <span class="float-card__dot" style="background: linear-gradient(135deg,#fb923c,#db2777)"></span>
-                                <span class="min-w-0">
-                                    <span class="float-card__title">جلسة المصممين</span>
-                                    <span class="float-card__sub">الجمعة · جدة</span>
-                                </span>
-                            </div>
-                            <div class="float-card__foot">
-                                <span class="small hint d-flex align-items-center gap-1"><x-icon name="users" :size="14" /> 12 مشاركًا</span>
-                                <span class="liqa-badge ">مقعد واحد متاح</span>
-                            </div>
-                        </div>
-                        <div class="float-card float-card--3">
-                            <div class="float-card__head">
-                                <span class="float-card__dot" style="background: linear-gradient(135deg,#38bdf8,#6366f1)"></span>
-                                <span class="min-w-0">
-                                    <span class="float-card__title">لقاء كتّاب المحتوى</span>
-                                    <span class="float-card__sub">الأحد · عن بُعد</span>
-                                </span>
-                            </div>
-                            <div class="float-card__foot">
-                                <span class="small hint d-flex align-items-center gap-1"><x-icon name="users" :size="14" /> 0 مشاركين</span>
-                                <span class="liqa-badge liqa-badge--sky">جديد</span>
-                            </div>
-                        </div>
+                        @endforeach
                     </div>
-                    <p class="small text-center hint mt-3 mb-0">أمثلة توضيحية لشكل الأحداث على المنصة</p>
+                    @if ($upcoming->isEmpty())
+                        <p class="small text-center hint mt-3 mb-0">أمثلة توضيحية لشكل اللقاءات على المنصة</p>
+                    @endif
                 </div>
             </div>
         </div>
@@ -104,7 +99,7 @@
     @endif
 
     {{-- ============ المشكلة ============ --}}
-    <section class="container landing-section">
+    <section class="landing-band"><div class="container landing-section">
         <div class="text-center mb-4">
             <span class="eyebrow eyebrow--pink mb-3"><span class="dot"></span>{{ $L['problem']['eyebrow'] }}</span>
             <h2 class="display-6 liqa-title mb-2">{{ $L['problem']['title'] }} <span class="text-gradient">{{ $L['problem']['title_accent'] }}</span></h2>
@@ -123,7 +118,7 @@
                 </div>
             @endforeach
         </div>
-    </section>
+    </div></section>
 
     {{-- ============ الحل ============ --}}
     <section class="container landing-section" id="how">
@@ -149,7 +144,7 @@
     </section>
 
     {{-- ============ لمن المنصة ============ --}}
-    <section class="container landing-section">
+    <section class="landing-band"><div class="container landing-section">
         <div class="text-center mb-4">
             <span class="eyebrow eyebrow--pink mb-3"><span class="dot"></span>{{ $L['audience']['eyebrow'] }}</span>
             <h2 class="display-6 liqa-title mb-2">{{ $L['audience']['title'] }} <span class="text-gradient">{{ $L['audience']['title_accent'] }}</span></h2>
@@ -169,7 +164,7 @@
                 </div>
             @endforeach
         </div>
-    </section>
+    </div></section>
 
     {{-- ============ لماذا لقاء ============ --}}
     <section class="container landing-section">
@@ -219,12 +214,16 @@
             <span class="eyebrow eyebrow--sky mb-3"><span class="dot"></span>{{ $L['faq']['eyebrow'] }}</span>
             <h2 class="display-6 liqa-title mb-0">{{ $L['faq']['title'] }} <span class="text-gradient">{{ $L['faq']['title_accent'] }}</span></h2>
         </div>
-        <div class="faq-list mx-auto">
-            @foreach ($L['faq']['items'] as $item)
-                <details class="liqa-card faq-item">
-                    <summary>{{ $item['title'] }}</summary>
-                    <p class="text-secondary small mb-0">{{ $item['text'] }}</p>
-                </details>
+        <div class="accordion faq-list mx-auto" id="faqAccordion">
+            @foreach ($L['faq']['items'] as $i => $item)
+                <div class="accordion-item liqa-card faq-item">
+                    <h3 class="accordion-header">
+                        <button class="accordion-button {{ $i === 0 ? '' : 'collapsed' }}" type="button" data-bs-toggle="collapse" data-bs-target="#faq-{{ $i }}" aria-expanded="{{ $i === 0 ? 'true' : 'false' }}" aria-controls="faq-{{ $i }}">{{ $item['title'] }}</button>
+                    </h3>
+                    <div id="faq-{{ $i }}" class="accordion-collapse collapse {{ $i === 0 ? 'show' : '' }}" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body text-secondary small">{{ $item['text'] }}</div>
+                    </div>
+                </div>
             @endforeach
         </div>
     </section>
