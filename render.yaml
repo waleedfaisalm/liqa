@@ -1,0 +1,48 @@
+services:
+  - type: web
+    name: liqa
+    runtime: docker
+    plan: free
+    healthCheckPath: /up
+    autoDeploy: true
+    envVars:
+      - key: APP_NAME
+        value: لقاء
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+      - key: APP_LOCALE
+        value: ar
+      - key: APP_FALLBACK_LOCALE
+        value: ar
+      - key: APP_KEY
+        sync: false        # أدخله يدويًا (انظر دليل النشر)
+      - key: APP_URL
+        sync: false        # رابط الموقع بعد أول نشر، مثل https://liqa.onrender.com
+      - key: PORT
+        value: "8080"
+      - key: DB_CONNECTION
+        value: sqlite
+      - key: DB_DATABASE
+        value: /app/database/database.sqlite
+      - key: SESSION_DRIVER
+        value: database
+      - key: CACHE_STORE
+        value: database
+      - key: QUEUE_CONNECTION
+        value: sync
+      - key: LOG_CHANNEL
+        value: stderr
+      - key: MAIL_MAILER
+        value: log
+      - key: LIQA_AUTO_VERIFY
+        value: "true"
+      - key: LIQA_DEMO
+        value: "1"
+      - key: OWNER_EMAIL
+        sync: false
+      - key: OWNER_PASSWORD
+        sync: false
+      - key: OWNER_NAME
+        value: مالك المنصة

@@ -1,0 +1,174 @@
+@extends(auth()->check() ? 'layouts.app' : 'layouts.site')
+
+@section('title', 'لقاء — منصة لقاءات الفريلانسرز')
+@section('main_class', 'landing-main')
+
+@section('content')
+    @php $member = auth()->check(); $L = \App\Support\Catalog::landing(); @endphp
+
+    {{-- ============ الواجهة الرئيسية ============ --}}
+    <section class="container pt-4 pt-lg-5">
+        <div class="form-card hero-card">
+            <div class="row align-items-center g-4">
+                <div class="col-lg-6">
+                    <span class="eyebrow mb-3"><span class="dot"></span>{{ $L['hero']['eyebrow'] }}</span>
+                    <h1 class="display-5 liqa-title mb-3">
+                        {{ $L['hero']['title'] }}<br>
+                        <span class="text-gradient">{{ $L['hero']['title_accent'] }}</span>
+                    </h1>
+                    <p class="lead text-secondary mb-4">
+                        {{ $L['hero']['lead'] }}
+                    </p>
+                    <div class="d-flex flex-wrap gap-2 mb-3">
+                        @if ($member)
+                            <a href="{{ route('events.index') }}" class="btn btn-liqa px-4 d-flex align-items-center gap-2">تصفّح الأحداث <x-icon name="calendar" :size="18" /></a>
+                            <a href="{{ route('events.create') }}" class="btn btn-liqa-outline px-4 d-flex align-items-center gap-2"><x-icon name="plus" :size="18" /> انشر حدثًا</a>
+                        @else
+                            <a href="{{ route('register') }}" class="btn btn-liqa px-4 d-flex align-items-center gap-2">ابدأ مجانًا <x-icon name="rocket" :size="18" /></a>
+                            <a href="#how" class="btn btn-liqa-outline px-4 d-flex align-items-center gap-2"><x-icon name="play" :size="18" /> كيف تعمل المنصة؟</a>
+                        @endif
+                    </div>
+                    <div class="d-flex flex-wrap gap-3 small hint">
+                        <span class="d-flex align-items-center gap-1 text-success"><x-icon name="check" :size="16" /> {{ $L['hero']['hint_1'] }}</span>
+                        <span class="d-flex align-items-center gap-1 text-success"><x-icon name="check" :size="16" /> {{ $L['hero']['hint_2'] }}</span>
+                    </div>
+                </div>
+
+                <div class="col-lg-6">
+                    <div class="float-stack">
+                        <div class="float-card float-card--1">
+                            <div class="float-card__head">
+                                <span class="float-card__dot" style="background: linear-gradient(135deg,#a855f7,#6366f1)"></span>
+                                <span class="min-w-0">
+                                    <span class="float-card__title">لقاء مطوّري الواجهات</span>
+                                    <span class="float-card__sub">السبت · الرياض</span>
+                                </span>
+                            </div>
+                            <div class="float-card__foot">
+                                <span class="small hint d-flex align-items-center gap-1"><x-icon name="users" :size="14" /> 8 مشاركين</span>
+                                <span class="liqa-badge liqa-badge--green">متاح</span>
+                            </div>
+                        </div>
+                        <div class="float-card float-card--2">
+                            <div class="float-card__head">
+                                <span class="float-card__dot" style="background: linear-gradient(135deg,#fb923c,#db2777)"></span>
+                                <span class="min-w-0">
+                                    <span class="float-card__title">جلسة المصممين</span>
+                                    <span class="float-card__sub">الجمعة · جدة</span>
+                                </span>
+                            </div>
+                            <div class="float-card__foot">
+                                <span class="small hint d-flex align-items-center gap-1"><x-icon name="users" :size="14" /> 12 مشاركًا</span>
+                                <span class="liqa-badge ">مقعد واحد متاح</span>
+                            </div>
+                        </div>
+                        <div class="float-card float-card--3">
+                            <div class="float-card__head">
+                                <span class="float-card__dot" style="background: linear-gradient(135deg,#38bdf8,#6366f1)"></span>
+                                <span class="min-w-0">
+                                    <span class="float-card__title">لقاء كتّاب المحتوى</span>
+                                    <span class="float-card__sub">الأحد · عن بُعد</span>
+                                </span>
+                            </div>
+                            <div class="float-card__foot">
+                                <span class="small hint d-flex align-items-center gap-1"><x-icon name="users" :size="14" /> 0 مشاركين</span>
+                                <span class="liqa-badge liqa-badge--sky">جديد</span>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="small text-center hint mt-3 mb-0">أمثلة توضيحية لشكل الأحداث على المنصة</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {{-- ============ المشكلة ============ --}}
+    <section class="container landing-section">
+        <div class="text-center mb-4">
+            <span class="eyebrow eyebrow--pink mb-3"><span class="dot"></span>{{ $L['problem']['eyebrow'] }}</span>
+            <h2 class="display-6 liqa-title mb-2">{{ $L['problem']['title'] }} <span class="text-gradient">{{ $L['problem']['title_accent'] }}</span></h2>
+            <p class="hint mb-0">{{ $L['problem']['subtitle'] }}</p>
+        </div>
+
+        <div class="row g-3">
+            @foreach ([['question', ''], ['trend', 'feature-icon--orange'], ['chat', 'feature-icon--pink']] as $i => [$icon, $tone])
+                @php $title = $L['problem']['cards'][$i]['title']; $text = $L['problem']['cards'][$i]['text']; @endphp
+                <div class="col-md-4">
+                    <div class="liqa-card h-100 p-3 p-md-4">
+                        <span class="feature-icon {{ $tone }} mb-3"><x-icon :name="$icon" :size="22" /></span>
+                        <h3 class="h5 liqa-title">{{ $title }}</h3>
+                        <p class="text-secondary small mb-0">{{ $text }}</p>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    </section>
+
+    {{-- ============ الحل ============ --}}
+    <section class="container landing-section" id="how">
+        <div class="text-center mb-4">
+            <span class="eyebrow mb-3"><span class="dot"></span>{{ $L['how']['eyebrow'] }}</span>
+            <h2 class="display-6 liqa-title mb-2">{{ $L['how']['title'] }} <span class="text-gradient">{{ $L['how']['title_accent'] }}</span></h2>
+            <p class="hint mb-0">{{ $L['how']['subtitle'] }}</p>
+        </div>
+
+        <div class="row g-3">
+            @foreach ([['١', 'user-plus', 'feature-icon--sky'], ['٢', 'search', ''], ['٣', 'thumb', ''], ['٤', 'coffee', 'feature-icon--pink']] as $i => [$num, $icon, $tone])
+                @php $title = $L['how']['cards'][$i]['title']; $text = $L['how']['cards'][$i]['text']; @endphp
+                <div class="col-sm-6 col-lg-3">
+                    <div class="liqa-card step-card h-100 p-3 p-md-4">
+                        <span class="step-card__num" aria-hidden="true">{{ $num }}</span>
+                        <span class="feature-icon {{ $tone }} mb-3"><x-icon :name="$icon" :size="22" /></span>
+                        <h3 class="h5 liqa-title">{{ $title }}</h3>
+                        <p class="text-secondary small mb-0">{{ $text }}</p>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    </section>
+
+    {{-- ============ لماذا لقاء ============ --}}
+    <section class="container landing-section">
+        <div class="text-center mb-4">
+            <span class="eyebrow eyebrow--sky mb-3"><span class="dot"></span>{{ $L['why']['eyebrow'] }}</span>
+            <h2 class="display-6 liqa-title mb-2">{{ $L['why']['title'] }} <span class="text-gradient">{{ $L['why']['title_accent'] }}</span></h2>
+        </div>
+
+        <div class="row g-3">
+            @foreach ([['shield', ''], ['pin', 'feature-icon--green'], ['tag', 'feature-icon--sky'], ['bolt', 'feature-icon--orange']] as $i => [$icon, $tone])
+                @php $title = $L['why']['cards'][$i]['title']; $text = $L['why']['cards'][$i]['text']; @endphp
+                <div class="col-md-6">
+                    <div class="liqa-card d-flex gap-3 align-items-start p-3 p-md-4 h-100">
+                        <span class="feature-icon {{ $tone }}"><x-icon :name="$icon" :size="22" /></span>
+                        <span>
+                            <h3 class="h6 liqa-title mb-1">{{ $title }}</h3>
+                            <span class="d-block text-secondary small">{{ $text }}</span>
+                        </span>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    </section>
+
+    {{-- ============ دعوة أخيرة ============ --}}
+    <section class="container landing-section pb-5">
+        <div class="cta-box text-center">
+            <h2 class="display-6 liqa-title mb-2">
+                @php $C = $member ? $L['cta_member'] : $L['cta_guest']; @endphp
+                {{ $C['title'] }} <span class="text-gradient">{{ $C['title_accent'] }}</span>
+            </h2>
+            <p class="hint mb-4">
+                {{ $C['text'] }}
+            </p>
+            <div class="d-flex flex-wrap justify-content-center gap-2">
+                @if ($member)
+                    <a href="{{ route('events.index') }}" class="btn btn-liqa px-4">تصفّح الأحداث</a>
+                    <a href="{{ route('events.create') }}" class="btn btn-liqa-outline px-4 d-flex align-items-center">انشر حدثًا</a>
+                @else
+                    <a href="{{ route('register') }}" class="btn btn-liqa px-4 d-flex align-items-center gap-2">أنشئ حسابك مجانًا <x-icon name="user-plus" :size="18" /></a>
+                    <a href="{{ route('login') }}" class="btn btn-liqa-outline px-4 d-flex align-items-center">لديك حساب؟ سجّل دخولك</a>
+                @endif
+            </div>
+        </div>
+    </section>
+@endsection

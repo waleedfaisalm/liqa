@@ -1,0 +1,5 @@
+@extends('errors.layout')
+@section('title', 'حدث خطأ غير متوقع')
+@section('code', '500')
+@section('heading', 'حدث خطأ غير متوقع')
+@section('message', 'نعتذر عن ذلك، وقع خلل من جانبنا. حاول مرة أخرى بعد قليل.')
