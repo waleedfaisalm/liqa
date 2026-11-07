@@ -25,7 +25,7 @@ class Setting extends Model
         'privacy_content' => '',
         'terms_content' => '',
         'site_name' => 'لقاء',
-        'site_tagline' => 'منصة لقاءات المستقلين المهنية · تعارف، لقاء، ونموّ مشترك',
+        'site_tagline' => 'منصة لقاءات الفريلانسر المهنية · تعارف، لقاء، ونموّ مشترك',
         'support_email' => '',
         'social_x' => '',
         'social_instagram' => '',

@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('title', 'لقاء')</title>
-    <meta name="description" content="@yield('description', 'لقاء: منصة لقاءات المستقلين المهنية. اكتشف اللقاءات، قدّم طلب انضمام، وتعرّف على متخصصين من مجالك ومدينتك.')">
+    <meta name="description" content="@yield('description', 'لقاء: منصة لقاءات للفريلانسر والعاملين لحسابهم الخاص في السعودية والوطن العربي.')">
     <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
     <link rel="icon" href="{{ asset('favicon.ico') }}" sizes="any">
     <link rel="apple-touch-icon" href="{{ asset('brand/liqa-apple-touch-icon.png') }}">

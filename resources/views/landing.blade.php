@@ -1,6 +1,6 @@
 @extends(auth()->check() ? 'layouts.app' : 'layouts.site')
 
-@section('title', 'لقاء — منصة لقاءات المستقلين المهنية')
+@section('title', 'لقاء — منصة لقاءات الفريلانسر المهنية')
 @section('main_class', 'landing-main')
 
 @section('content')
