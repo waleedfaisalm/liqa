@@ -7,6 +7,7 @@
         $me = auth()->user();
         $canSuspend = ! $u->is($me) && ! $u->isOwner() && ($me->isOwner() || ! $u->is_admin);
         $canChangeRole = $me->isOwner() && ! $u->is($me) && ! $u->isOwner();
+        $canResetPassword = ! $u->is($me) && ! $u->isOwner() && ($me->isOwner() || ! $u->is_admin);
     @endphp
 
     <a href="{{ route('admin.users') }}" class="small text-decoration-none d-inline-block mb-3">← قائمة المستخدمين</a>
@@ -56,6 +57,23 @@
 
     <div class="row g-3">
         <div class="col-lg-5 order-lg-2">
+            @if ($canResetPassword)
+            <div class="liqa-card p-3 p-md-4 mb-3" id="password">
+                <h2 class="h5 liqa-title mb-2">كلمة المرور</h2>
+                @if (session('temp_password'))
+                    <div class="alert alert-warning mb-3">
+                        <div class="small mb-1">الكلمة المؤقتة (تُعرض مرة واحدة فقط):</div>
+                        <div class="fw-bold fs-5 user-select-all" dir="ltr">{{ session('temp_password') }}</div>
+                    </div>
+                @endif
+                <p class="small text-secondary">إن نسي العضو كلمة مروره ولم يصله البريد، ولّد له كلمة مؤقتة وسلّمها له بوسيلة آمنة. سيُسجَّل خروجه من كل الأجهزة.</p>
+                <form method="POST" action="{{ route('admin.users.password', $u) }}" onsubmit="return confirm('توليد كلمة مرور مؤقتة جديدة لهذا العضو؟ ستتوقف كلمة مروره الحالية عن العمل.')">
+                    @csrf @method('PATCH')
+                    <button class="btn btn-liqa-outline w-100">إعادة تعيين كلمة المرور</button>
+                </form>
+            </div>
+            @endif
+
             @if ($canSuspend || $canChangeRole || $u->isSuspended())
             <div class="liqa-card p-3 p-md-4 mb-3" id="suspend">
                 <h2 class="h5 liqa-title mb-3">إدارة الحساب</h2>

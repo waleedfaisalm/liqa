@@ -177,7 +177,15 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function avatarUrl(): ?string
     {
-        return $this->avatar_path ? asset('storage/'.$this->avatar_path) : null;
+        if (! $this->avatar_path) {
+            return null;
+        }
+
+        if (str_starts_with($this->avatar_path, 'db:')) {
+            return route('avatar', ['user' => $this->id, 'v' => substr($this->avatar_path, 3)]);
+        }
+
+        return asset('storage/'.$this->avatar_path);
     }
 
     /** متوسط التقييم (رقم عشري) أو null لو مفيش تقييمات */

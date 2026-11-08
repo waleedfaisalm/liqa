@@ -32,7 +32,7 @@ class OnboardingController extends Controller
         $user->bio = $data['bio'] ?? null;
 
         if ($request->hasFile('avatar')) {
-            $user->avatar_path = $request->file('avatar')->store('avatars', 'public');
+            \App\Support\AvatarStore::save($user, $request->file('avatar'));
         }
 
         $user->onboarded_at = now();

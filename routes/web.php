@@ -43,6 +43,7 @@ use Illuminate\Support\Facades\Route;
 
 // ---------- الصفحة الرئيسية (للزائر والعضو) ----------
 Route::get('/', [\App\Http\Controllers\LandingController::class, 'index'])->name('landing');
+Route::get('/avatar/{user}', [\App\Http\Controllers\AvatarController::class, 'show'])->whereNumber('user')->name('avatar');
 Route::get('/privacy', [LegalPageController::class, 'show'])->defaults('type', 'privacy')->name('privacy');
 Route::get('/contact', [ContactController::class, 'create'])->name('contact');
 Route::post('/contact', [ContactController::class, 'store'])->middleware('throttle:4,10')->name('contact.store');
@@ -167,6 +168,7 @@ Route::prefix('admin')->group(function () {
             Route::post('/users', [AdminUserController::class, 'store'])->middleware('throttle:20,1')->name('admin.users.store');
             Route::get('/users/{user}', [AdminUserController::class, 'show'])->whereNumber('user')->name('admin.users.show');
             Route::patch('/users/{user}/suspend', [AdminUserController::class, 'suspend'])->whereNumber('user')->name('admin.users.suspend');
+            Route::patch('/users/{user}/password', [AdminUserController::class, 'resetPassword'])->middleware('throttle:10,1')->whereNumber('user')->name('admin.users.password');
             Route::patch('/users/{user}/role', [AdminUserController::class, 'role'])->whereNumber('user')->name('admin.users.role');
             Route::patch('/users/{user}/permissions', [AdminUserController::class, 'permissions'])->whereNumber('user')->name('admin.users.permissions');
         });

@@ -38,11 +38,9 @@ class SettingsController extends Controller
         $user->notifications_enabled = $request->boolean('notifications_enabled');
 
         if ($request->hasFile('avatar')) {
-            $this->deleteAvatar($user);
-            $user->avatar_path = $request->file('avatar')->store('avatars', 'public');
+            \App\Support\AvatarStore::save($user, $request->file('avatar'));
         } elseif ($request->boolean('remove_avatar')) {
-            $this->deleteAvatar($user);
-            $user->avatar_path = null;
+            \App\Support\AvatarStore::remove($user);
         }
 
         $user->save();
@@ -101,7 +99,7 @@ class SettingsController extends Controller
 
     private function deleteAvatar(User $user): void
     {
-        if ($user->avatar_path) {
+        if ($user->avatar_path && ! str_starts_with($user->avatar_path, 'db:')) {
             Storage::disk('public')->delete($user->avatar_path);
         }
     }

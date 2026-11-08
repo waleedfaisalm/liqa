@@ -19,6 +19,7 @@ class AdminLog extends Model
         'user.unsuspended' => ['إعادة تفعيل مستخدم', 'liqa-badge--green'],
         'user.role_granted' => ['منح صلاحية مدير', 'liqa-badge--pink'],
         'user.role_revoked' => ['سحب صلاحية مدير', 'liqa-badge--pink'],
+        'user.password_reset' => ['إعادة تعيين كلمة مرور', 'liqa-badge--pink'],
         'event.cancelled' => ['إلغاء حدث', 'liqa-badge--red'],
         'report.reviewed' => ['مراجعة بلاغ', 'liqa-badge--sky'],
         'user.permissions' => ['تعديل صلاحيات مدير', 'liqa-badge--pink'],

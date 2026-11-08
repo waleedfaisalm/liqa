@@ -146,6 +146,37 @@ class AdminUserController extends Controller
         return back()->with('success', 'تم إيقاف حساب '.$user->name.($days ? " لمدة {$days} يوم." : ' إيقافًا دائمًا.'));
     }
 
+    /** إعادة تعيين كلمة مرور عضو: تُولَّد كلمة مؤقتة تُعرض مرة واحدة للمدير ليسلّمها للعضو */
+    public function resetPassword(Request $request, User $user): RedirectResponse
+    {
+        $me = $request->user();
+
+        if ($user->is($me)) {
+            return back()->with('error', 'غيّر كلمة مرورك من صفحة الإعدادات.');
+        }
+
+        if ($user->isOwner()) {
+            return back()->with('error', 'حساب المالك محمي.');
+        }
+
+        if ($user->is_admin && ! $me->isOwner()) {
+            return back()->with('error', 'إعادة تعيين كلمة مرور المديرين من صلاحية المالك فقط.');
+        }
+
+        $alphabet = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+        $temp = '';
+        for ($i = 0; $i < 12; $i++) {
+            $temp .= $alphabet[random_int(0, strlen($alphabet) - 1)];
+        }
+
+        $user->forceFill(['password' => $temp, 'remember_token' => Str::random(60)])->save();
+        DB::table('sessions')->where('user_id', $user->id)->delete();
+
+        AdminLog::record($me, 'user.password_reset', 'user', $user->id, $user->name);
+
+        return back()->with('temp_password', $temp)->with('success', 'تمت إعادة تعيين كلمة مرور '.$user->name.'. سلّمه الكلمة المؤقتة ونبّهه إلى تغييرها من الإعدادات.');
+    }
+
     /** منح صلاحية الإدارة أو سحبها */
     public function role(Request $request, User $user): RedirectResponse
     {
