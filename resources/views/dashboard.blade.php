@@ -40,6 +40,54 @@
         </div>
     </section>
 
+    {{-- ============ ابدأ هنا ============ --}}
+    @php
+        $doneCount = collect($steps)->where('done', true)->count();
+        $total = count($steps);
+        $pct = (int) round($doneCount / $total * 100);
+    @endphp
+    @if ($doneCount < $total)
+        <section class="start-panel mb-4" id="startPanel" data-key="liqa-start-{{ $user->id }}">
+            <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+                <div>
+                    <h2 class="h4 liqa-title mb-1">ابدأ هنا</h2>
+                    <p class="text-secondary small mb-0">خطوات قصيرة تساعدك على الاستفادة من المنصة منذ يومك الأول.</p>
+                </div>
+                <button type="button" class="btn btn-sm btn-liqa-outline flex-shrink-0" id="startDismiss">إخفاء</button>
+            </div>
+            <div class="d-flex align-items-center gap-3 mb-3">
+                <div class="progress flex-grow-1 start-progress" role="progressbar" aria-valuenow="{{ $pct }}" aria-valuemin="0" aria-valuemax="100">
+                    <div class="progress-bar" style="width: {{ $pct }}%"></div>
+                </div>
+                <span class="small fw-bold text-nowrap">{{ $doneCount }} من {{ $total }}</span>
+            </div>
+            <ul class="start-steps list-unstyled mb-0">
+                @foreach ($steps as $i => $st)
+                    <li class="start-step {{ $st['done'] ? 'is-done' : '' }}">
+                        <span class="start-step__mark">@if ($st['done']) ✓ @else {{ $i + 1 }} @endif</span>
+                        <span class="start-step__body">
+                            <span class="start-step__title">{{ $st['title'] }}</span>
+                            <span class="start-step__text">{{ $st['text'] }}</span>
+                        </span>
+                        @unless ($st['done'])
+                            <a href="{{ $st['url'] }}" class="btn btn-sm btn-liqa flex-shrink-0">{{ $st['cta'] }}</a>
+                        @endunless
+                    </li>
+                @endforeach
+            </ul>
+        </section>
+        <script>
+            (function () {
+                var el = document.getElementById('startPanel'), k = el.dataset.key;
+                try { if (localStorage.getItem(k) === '1') el.hidden = true; } catch (e) {}
+                document.getElementById('startDismiss').addEventListener('click', function () {
+                    el.hidden = true;
+                    try { localStorage.setItem(k, '1'); } catch (e) {}
+                });
+            })();
+        </script>
+    @endif
+
     {{-- ============ أرقام سريعة ============ --}}
     <section class="row g-3 mb-4">
         <div class="col-md-4">

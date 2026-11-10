@@ -32,7 +32,16 @@ class EventController extends Controller
         $pending = EventRequest::where('status', EventRequest::PENDING)
             ->whereHas('event', fn ($q) => $q->upcoming()->where('user_id', $user->id))->count();
 
-        return view('dashboard', compact('upcoming', 'myHosted', 'myJoined', 'pending'));
+        $hasBio = filled($user->bio) && filled($user->avatar_path);
+        $steps = [
+            ['done' => $hasBio, 'title' => 'أكمل ملفك الشخصي', 'text' => 'أضف صورتك ونبذة مختصرة ليتعرّف عليك المنظّمون.', 'url' => route('settings'), 'cta' => 'إكمال الملف'],
+            ['done' => $user->hasVerifiedEmail(), 'title' => 'وثّق بريدك الإلكتروني', 'text' => 'يضمن وصول إشعارات الطلبات والتذكيرات إليك.', 'url' => route('verification.notice'), 'cta' => 'توثيق البريد'],
+            ['done' => $user->savedEvents()->exists(), 'title' => 'احفظ لقاءً يهمّك', 'text' => 'تصفّح اللقاءات واحفظ ما يناسب تخصصك للرجوع إليه.', 'url' => route('events.index'), 'cta' => 'تصفّح اللقاءات'],
+            ['done' => $user->eventRequests()->exists(), 'title' => 'قدّم طلب انضمام', 'text' => 'اختر لقاءً قريبًا منك وأرسل طلبك إلى المنظّم.', 'url' => route('events.index'), 'cta' => 'اختر لقاءً'],
+            ['done' => $user->hostedEvents()->exists(), 'title' => 'انشر لقاءك الأول', 'text' => 'حدّد الموعد والمكان وعدد المقاعد، ودع المجتمع يأتي إليك.', 'url' => route('events.create'), 'cta' => 'انشر لقاءً'],
+        ];
+
+        return view('dashboard', compact('upcoming', 'myHosted', 'myJoined', 'pending', 'steps'));
     }
 
     /** قائمة الأحداث الجاية (مع فلترة) */

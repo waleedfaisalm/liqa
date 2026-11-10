@@ -35,7 +35,9 @@
                 </div>
 
                 <div class="col-lg-6">
-                    <div class="float-stack">
+                    <div class="hero-art">
+                    @include('partials.hero-art')
+                    <div class="hero-art__chips">
                         @php
                             $grads = ['linear-gradient(135deg,#a855f7,#6366f1)', 'linear-gradient(135deg,#fb923c,#db2777)', 'linear-gradient(135deg,#38bdf8,#6366f1)'];
                             if ($upcoming->isNotEmpty()) {
@@ -53,8 +55,8 @@
                                 ];
                             }
                         @endphp
-                        @foreach ($floats as $i => $f)
-                            <div class="float-card float-card--{{ $i + 1 }}">
+                        @foreach (array_slice($floats, 0, 1) as $i => $f)
+                            <div class="float-card hero-art__chip">
                                 <div class="float-card__head">
                                     <span class="float-card__dot" style="background: {{ $grads[$i] }}"></span>
                                     <span class="min-w-0">
@@ -68,6 +70,7 @@
                                 </div>
                             </div>
                         @endforeach
+                    </div>
                     </div>
                     @if ($upcoming->isEmpty())
                         <p class="small text-center hint mt-3 mb-0">أمثلة توضيحية لشكل اللقاءات على المنصة</p>

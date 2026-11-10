@@ -1498,3 +1498,29 @@ h1, h2, h3, .liqa-title { overflow-wrap: anywhere; }
     .tab-pills::-webkit-scrollbar { display: none; }
     .tab-pill { flex: none; white-space: nowrap; }
 }
+
+/* ===== رسم الواجهة الرئيسية ===== */
+.hero-art { position: relative; max-width: 30rem; margin-inline: auto; }
+.hero-art__svg { display: block; width: 100%; height: auto; filter: drop-shadow(0 18px 40px rgba(147, 51, 234, .25)); }
+.hero-art__chips { position: absolute; inset-inline-start: 0; bottom: 4%; width: min(15rem, 62%); }
+.hero-art__chip { box-shadow: 0 14px 32px rgba(0, 0, 0, .45); animation: heroFloat 6s ease-in-out infinite; }
+@keyframes heroFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+@media (prefers-reduced-motion: reduce) { .hero-art__chip { animation: none; } }
+@media (max-width: 575.98px) { .hero-art__chips { display: none; } .hero-art { max-width: 22rem; } }
+
+/* ===== لوحة «ابدأ هنا» ===== */
+.start-panel { padding: 1.4rem; border-radius: 1.25rem; border: 1px solid rgba(168, 85, 247, .35);
+    background: linear-gradient(135deg, rgba(147, 51, 234, .14), rgba(219, 39, 119, .08)), var(--liqa-surface); }
+.start-panel[hidden] { display: none; }
+.start-progress { height: .55rem; background: rgba(255, 255, 255, .08); border-radius: 99px; }
+.start-progress .progress-bar { background: linear-gradient(90deg, #9333ea, #db2777); border-radius: 99px; }
+.start-step { display: flex; align-items: center; gap: .85rem; padding: .75rem 0; border-top: 1px solid rgba(255, 255, 255, .07); }
+.start-step:first-child { border-top: 0; }
+.start-step__mark { flex: 0 0 2rem; height: 2rem; display: grid; place-items: center; border-radius: 50%; font-weight: 700; font-size: .9rem;
+    background: rgba(168, 85, 247, .18); color: #d8b4fe; }
+.start-step.is-done .start-step__mark { background: rgba(52, 211, 153, .2); color: #6ee7b7; }
+.start-step.is-done .start-step__title { text-decoration: line-through; opacity: .6; }
+.start-step__body { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.start-step__title { font-weight: 700; }
+.start-step__text { font-size: .85rem; color: var(--bs-secondary-color, #a1a1b5); }
+@media (max-width: 575.98px) { .start-step { flex-wrap: wrap; } .start-step .btn { margin-inline-start: 2.85rem; } }
