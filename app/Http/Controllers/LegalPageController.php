@@ -28,9 +28,9 @@ class LegalPageController extends Controller
 
         // العنوان: سطر يبدأ بـ "# " (حتى لو لحقه النص مباشرة)، والفقرات تُفصل بسطر فارغ
         $blocks = collect();
-        foreach (preg_split('/\R{2,}/', $text) as $chunk) {
+        foreach (preg_split('/\R{2,}/u', $text) as $chunk) {
             $para = [];
-            foreach (preg_split('/\R/', trim($chunk)) as $line) {
+            foreach (preg_split('/\R/u', trim($chunk)) as $line) {
                 if (str_starts_with($line, '# ')) {
                     if ($para) {
                         $blocks->push(['p', trim(implode("\n", $para))]);
