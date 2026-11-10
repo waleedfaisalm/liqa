@@ -13,6 +13,16 @@ php artisan storage:link --force >/dev/null 2>&1 || true
 php artisan migrate --force
 php artisan liqa:bootstrap
 
+# حذف بيانات التجربة مرة واحدة: اضبط LIQA_CLEAN_DEMO=1 (واختياريًا LIQA_CLEAN_ALSO ببريد أو أكثر مفصولة بفاصلة)
+# ثم احذف المتغير بعد أول تشغيل. وأوقف LIQA_DEMO حتى لا تُنشأ البيانات مجددًا.
+if [ "${LIQA_CLEAN_DEMO:-0}" = "1" ]; then
+    if [ -n "${LIQA_CLEAN_ALSO:-}" ]; then
+        php artisan liqa:clean-demo --force --also="$LIQA_CLEAN_ALSO" || true
+    else
+        php artisan liqa:clean-demo --force || true
+    fi
+fi
+
 if [ "${LIQA_DEMO:-0}" = "1" ]; then
     php artisan liqa:demo-events || true
 fi

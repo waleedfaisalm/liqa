@@ -7,7 +7,7 @@ use Illuminate\Console\Command;
 
 /**
  * يجهّز المنصة عند أول تشغيل على الاستضافة: ينشئ حساب المالك من المتغيرات
- * OWNER_EMAIL و OWNER_PASSWORD و OWNER_NAME (آمن للتكرار).
+ * OWNER_EMAIL و OWNER_PASSWORD و OWNER_NAME (آمن للتكرار، ولا يغيّر كلمة مرور حساب موجود).
  */
 class BootstrapPlatform extends Command
 {
@@ -20,8 +20,8 @@ class BootstrapPlatform extends Command
         $email = strtolower(trim((string) env('OWNER_EMAIL')));
         $password = (string) env('OWNER_PASSWORD');
 
-        if ($email === '' || strlen($password) < 8) {
-            $this->warn('لم يُنشأ حساب المالك: اضبط OWNER_EMAIL و OWNER_PASSWORD (8 أحرف على الأقل).');
+        if ($email === '') {
+            $this->warn('لم يُنشأ حساب المالك: اضبط OWNER_EMAIL.');
 
             return self::SUCCESS;
         }
@@ -29,16 +29,25 @@ class BootstrapPlatform extends Command
         $user = User::where('email', $email)->first() ?? new User(['email' => $email]);
         $isNew = ! $user->exists;
 
+        // كلمة المرور تُعيَّن عند الإنشاء فقط (أو عند طلب صريح LIQA_RESET_OWNER_PASSWORD=1)،
+        // حتى لا تُستعاد كلمة المتغير بعد أن يغيّرها المالك من المنصة.
+        $setPassword = $isNew || filter_var(env('LIQA_RESET_OWNER_PASSWORD'), FILTER_VALIDATE_BOOLEAN);
+
+        if ($setPassword && strlen($password) < 8) {
+            $this->warn('لم تُعيَّن كلمة مرور المالك: اضبط OWNER_PASSWORD (8 أحرف على الأقل).');
+
+            return self::SUCCESS;
+        }
+
         $user->forceFill([
             'name' => $user->name ?: (env('OWNER_NAME') ?: 'مالك المنصة'),
             'email' => $email,
-            'password' => $password,
             'specialty' => $user->specialty ?: 'مطوّر',
             'onboarded_at' => $user->onboarded_at ?: now(),
             'email_verified_at' => $user->email_verified_at ?: now(),
             'is_admin' => true,
             'is_super_admin' => true,
-        ])->save();
+        ] + ($setPassword ? ['password' => $password] : []))->save();
 
         User::where('id', '!=', $user->id)->update(['is_super_admin' => false]);
 
