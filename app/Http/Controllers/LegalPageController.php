@@ -26,14 +26,25 @@ class LegalPageController extends Controller
 
         $text = str_replace('{email}', \App\Models\Setting::get('support_email') ?: (string) config('mail.from.address'), self::content($type));
 
-        $blocks = collect(preg_split('/\R{2,}/', $text))->map(function ($block) {
-            $block = trim($block);
-            if (str_starts_with($block, '# ')) {
-                return ['h', trim(substr($block, 2))];
+        // العنوان: سطر يبدأ بـ "# " (حتى لو لحقه النص مباشرة)، والفقرات تُفصل بسطر فارغ
+        $blocks = collect();
+        foreach (preg_split('/\R{2,}/', $text) as $chunk) {
+            $para = [];
+            foreach (preg_split('/\R/', trim($chunk)) as $line) {
+                if (str_starts_with($line, '# ')) {
+                    if ($para) {
+                        $blocks->push(['p', trim(implode("\n", $para))]);
+                        $para = [];
+                    }
+                    $blocks->push(['h', trim(substr($line, 2))]);
+                } else {
+                    $para[] = $line;
+                }
             }
-
-            return ['p', $block];
-        })->filter(fn ($b) => $b[1] !== '')->values();
+            if ($para && trim(implode('', $para)) !== '') {
+                $blocks->push(['p', trim(implode("\n", $para))]);
+            }
+        }
 
         return view('pages.legal', [
             'title' => self::PAGES[$type],

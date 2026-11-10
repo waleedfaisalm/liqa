@@ -10,7 +10,7 @@
             @if ($kind === 'h')
                 <h2 class="h5 text-white mt-4">{{ $text }}</h2>
             @else
-                <p class="text-secondary">{!! nl2br(e($text)) !!}</p>
+                <p class="legal-p">{!! nl2br(e($text)) !!}</p>
             @endif
         @endforeach
     </div>
