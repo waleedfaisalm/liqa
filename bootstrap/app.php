@@ -24,7 +24,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // خلف وسيط الاستضافة (HTTPS يُنهى عنده): الثقة بترويسات الوسيط ليُبنى الرابط والكوكيز بشكل صحيح
         $middleware->trustProxies(at: '*');
 
-        $middleware->web(append: [EnsureNotSuspended::class, TrackLastSeen::class]);
+        $middleware->web(append: [EnsureNotSuspended::class, TrackLastSeen::class, \App\Http\Middleware\RunDueReminders::class]);
 
         $middleware->alias([
             'onboarded' => EnsureOnboarded::class,

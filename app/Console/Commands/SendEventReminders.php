@@ -5,6 +5,8 @@ namespace App\Console\Commands;
 use App\Models\Event;
 use App\Models\UserNotification;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class SendEventReminders extends Command
 {
@@ -41,12 +43,15 @@ class SendEventReminders extends Command
                     return;
                 }
 
-                $participants->each(fn ($user) => UserNotification::send(
-                    $user,
-                    'event_reminder',
-                    'تذكير: يبدأ حدث «'.$event->title.'» '.$event->whenLabel().'.',
-                    route('events.show', $event),
-                ));
+                $participants->each(function ($user) use ($event) {
+                    UserNotification::send(
+                        $user,
+                        'event_reminder',
+                        'تذكير: يبدأ حدث «'.$event->title.'» '.$event->whenLabel().'.',
+                        route('events.show', $event),
+                    );
+                    $this->mailReminder($user, $event);
+                });
 
                 Event::whereKey($event->id)->update(['reminder_sent_at' => now()]);
                 $count++;
@@ -84,5 +89,25 @@ class SendEventReminders extends Command
             });
 
         return $count;
+    }
+
+    /** بريد تذكير للعضو (إن كانت إشعاراته مفعّلة)، ولا يوقف الباقي عند فشل الإرسال */
+    private function mailReminder($user, Event $event): void
+    {
+        if (! $user->notifications_enabled || ! $user->email) {
+            return;
+        }
+
+        try {
+            $body = "مرحبًا {$user->name}،\n\n"
+                ."تذكير بأن لقاء «{$event->title}» يبدأ {$event->whenLabel()}.\n"
+                .'تفاصيل اللقاء: '.route('events.show', $event)."\n\n"
+                .'نتمنى لك لقاءً مثمرًا.'."\n"
+                .config('app.name');
+
+            Mail::raw($body, fn ($m) => $m->to($user->email)->subject('تذكير: لقاء «'.$event->title.'» غدًا'));
+        } catch (\Throwable $e) {
+            Log::warning('reminder mail failed: '.$e->getMessage());
+        }
     }
 }

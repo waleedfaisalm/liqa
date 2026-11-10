@@ -44,6 +44,8 @@ use Illuminate\Support\Facades\Route;
 // ---------- الصفحة الرئيسية (للزائر والعضو) ----------
 Route::get('/', [\App\Http\Controllers\LandingController::class, 'index'])->name('landing');
 Route::get('/sitemap.xml', [\App\Http\Controllers\SeoController::class, 'sitemap']);
+// تشغيل التذكيرات من خدمة خارجية (cron-job.org مثلًا): /cron/reminders?key=CRON_SECRET
+Route::get('/cron/reminders', [\App\Http\Controllers\SeoController::class, 'reminders'])->middleware('throttle:30,1');
 Route::get('/avatar/{user}', [\App\Http\Controllers\AvatarController::class, 'show'])->whereNumber('user')->name('avatar');
 Route::get('/privacy', [LegalPageController::class, 'show'])->defaults('type', 'privacy')->name('privacy');
 Route::get('/contact', [ContactController::class, 'create'])->name('contact');
