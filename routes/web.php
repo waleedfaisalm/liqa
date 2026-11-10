@@ -43,6 +43,7 @@ use Illuminate\Support\Facades\Route;
 
 // ---------- الصفحة الرئيسية (للزائر والعضو) ----------
 Route::get('/', [\App\Http\Controllers\LandingController::class, 'index'])->name('landing');
+Route::get('/sitemap.xml', [\App\Http\Controllers\SeoController::class, 'sitemap']);
 Route::get('/avatar/{user}', [\App\Http\Controllers\AvatarController::class, 'show'])->whereNumber('user')->name('avatar');
 Route::get('/privacy', [LegalPageController::class, 'show'])->defaults('type', 'privacy')->name('privacy');
 Route::get('/contact', [ContactController::class, 'create'])->name('contact');
