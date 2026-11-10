@@ -1500,9 +1500,9 @@ h1, h2, h3, .liqa-title { overflow-wrap: anywhere; }
 }
 
 /* ===== رسم الواجهة الرئيسية ===== */
-.hero-art { position: relative; max-width: 30rem; margin-inline: auto; }
+.hero-art { position: relative; max-width: 34rem; margin-inline: auto; }
 .hero-art__svg { display: block; width: 100%; height: auto; filter: drop-shadow(0 18px 40px rgba(147, 51, 234, .25)); }
-.hero-art__chips { position: absolute; inset-inline-start: 0; bottom: 4%; width: min(15rem, 62%); }
+.hero-art__chips { position: relative; width: min(18rem, 90%); margin: -.5rem auto 0; }
 .hero-art__chip { box-shadow: 0 14px 32px rgba(0, 0, 0, .45); animation: heroFloat 6s ease-in-out infinite; }
 @keyframes heroFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
 @media (prefers-reduced-motion: reduce) { .hero-art__chip { animation: none; } }
