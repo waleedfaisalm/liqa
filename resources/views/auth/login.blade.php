@@ -31,7 +31,7 @@
             @error('password') <div class="invalid-feedback">{{ $message }}</div> @enderror
         </div>
 
-        <div class="d-flex align-items-center justify-content-between">
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
             <div class="form-check mb-0">
                 <input class="form-check-input" type="checkbox" name="remember" id="remember" value="1">
                 <label class="form-check-label small" for="remember">تذكّرني</label>

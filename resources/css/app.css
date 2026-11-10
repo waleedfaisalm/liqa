@@ -1396,3 +1396,31 @@ body {
 .qr-box { background: #fff; border-radius: 12px; padding: 12px; display: inline-block; line-height: 0; }
 .recovery-codes { display: grid; grid-template-columns: repeat(2, 1fr); gap: .5rem; font-family: monospace; direction: ltr; }
 .recovery-codes code { background: rgba(255,255,255,.07); padding: .4rem .6rem; border-radius: 8px; text-align: center; color: #fff; }
+
+/* ============================================================
+   تحسينات الجوال
+   ============================================================ */
+h1, h2, h3, .liqa-title { overflow-wrap: anywhere; }
+
+.request-row .me-auto { min-width: 0; flex: 1 1 11rem; }
+
+.pagination { flex-wrap: wrap; justify-content: center; gap: 0.25rem 0; }
+
+@media (max-width: 575.98px) {
+    /* منع تكبير الصفحة تلقائيًا في iOS عند التركيز على الحقول */
+    .form-control, .form-select, textarea { font-size: 16px; }
+
+    .form-card { padding: 1.5rem 1rem 1.25rem; border-radius: 1.25rem; }
+
+    .request-row { padding: 0.65rem 0.75rem; }
+    .request-row form { margin-inline-start: auto; }
+
+    .dash-hero .btn { flex: 1 1 100%; justify-content: center; }
+    .dash-hero .display-6 { font-size: 1.6rem; }
+
+    .meta-list--inline { gap: 0.4rem 1rem; }
+
+    .event-card { padding: 1rem; }
+
+    main .container, .container { padding-inline: 1rem; }
+}

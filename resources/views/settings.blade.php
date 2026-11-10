@@ -5,7 +5,7 @@
 @section('content')
     @php $user = auth()->user(); @endphp
 
-    <div class="d-flex align-items-center justify-content-between mb-4">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-4">
         <h1 class="h2 liqa-title mb-0">التعديل والإعدادات</h1>
         <a href="{{ route('profile') }}" class="btn btn-liqa-outline px-3 d-flex align-items-center">العودة إلى الملف الشخصي</a>
     </div>
