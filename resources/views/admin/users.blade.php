@@ -18,7 +18,7 @@
 
     <form method="GET" class="d-flex flex-wrap gap-2 mb-3">
         <input type="hidden" name="tab" value="{{ $tab }}">
-        <input type="search" name="q" value="{{ $search }}" class="form-control" style="max-width: 360px" placeholder="ابحث بالاسم أو البريد الإلكتروني">
+        <input type="search" name="q" value="{{ $search }}" class="form-control" style="max-width: 360px; flex: 1 1 14rem" placeholder="ابحث بالاسم أو البريد الإلكتروني">
         <button class="btn btn-liqa px-4" type="submit">بحث</button>
     </form>
 
@@ -45,7 +45,7 @@
                 <tbody>
                     @forelse ($users as $u)
                         <tr>
-                            <td>
+                            <td data-label="المستخدم">
                                 <a href="{{ route('admin.users.show', $u) }}" class="d-flex align-items-center gap-2 text-decoration-none">
                                     <span class="avatar-wrap">
                                         <x-avatar :user="$u" :size="36" />
@@ -57,10 +57,10 @@
                                     </span>
                                 </a>
                             </td>
-                            <td>{{ $u->specialty ?: '—' }}</td>
-                            <td>{{ $u->hosted_events_count }}</td>
-                            <td class="small text-secondary">{{ $u->created_at->translatedFormat('j F Y') }}</td>
-                            <td class="small">
+                            <td data-label="التخصص">{{ $u->specialty ?: '—' }}</td>
+                            <td data-label="الأحداث">{{ $u->hosted_events_count }}</td>
+                            <td data-label="الانضمام" class="small text-secondary">{{ $u->created_at->translatedFormat('j F Y') }}</td>
+                            <td data-label="آخر ظهور" class="small">
                                 @if ($u->isOnline())
                                     <span class="text-success-emphasis fw-bold"><span class="presence-dot presence-dot--inline"></span> متصل الآن</span>
                                 @elseif ($u->last_seen_at)
@@ -69,7 +69,7 @@
                                     <span class="text-secondary">—</span>
                                 @endif
                             </td>
-                            <td>
+                            <td data-label="الحالة">
                                 <div class="d-flex flex-wrap gap-1">
                                     @if ($u->isOwner()) <span class="liqa-badge liqa-badge--sky">المالك</span> @elseif ($u->is_admin) <span class="liqa-badge">مدير</span> @endif
                                     @if ($u->isSuspended()) <span class="liqa-badge liqa-badge--red">موقوف</span> @endif
@@ -77,7 +77,7 @@
                                     @if (! $u->is_admin && ! $u->isSuspended() && $u->hasVerifiedEmail()) <span class="liqa-badge liqa-badge--green">نشط</span> @endif
                                 </div>
                             </td>
-                            <td>
+                            <td data-label="الإجراءات">
                                 @php
                                     $me = auth()->user();
                                     $canSuspend = ! $u->is($me) && ! $u->isOwner() && ($me->isOwner() || ! $u->is_admin);

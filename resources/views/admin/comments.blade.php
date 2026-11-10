@@ -25,15 +25,15 @@
                 <tbody>
                     @forelse ($comments as $c)
                         <tr>
-                            <td>
+                            <td data-label="الكاتب">
                                 @if ($c->user) <a href="{{ route('admin.users.show', $c->user) }}">{{ $c->user->name }}</a> @else — @endif
                             </td>
-                            <td style="max-width: 380px; white-space: normal">{{ $c->body }}</td>
-                            <td>
+                            <td data-label="التعليق" style="max-width: 380px; white-space: normal">{{ $c->body }}</td>
+                            <td data-label="الحدث">
                                 @if ($c->event) <a href="{{ route('events.show', $c->event) }}">{{ \Illuminate\Support\Str::limit($c->event->title, 40) }}</a> @else — @endif
                             </td>
-                            <td class="small text-secondary">{{ $c->created_at->diffForHumans() }}</td>
-                            <td class="text-end">
+                            <td data-label="الوقت" class="small text-secondary">{{ $c->created_at->diffForHumans() }}</td>
+                            <td data-label="الإجراء" class="text-end">
                                 <form method="POST" action="{{ route('admin.comments.destroy', $c) }}" onsubmit="return confirm('حذف هذا التعليق نهائيًا؟')">
                                     @csrf @method('DELETE')
                                     <button class="btn btn-sm btn-liqa-danger px-3">حذف</button>

@@ -75,6 +75,10 @@
                             </li>
                         </ul>
                     </div>
+                    <form method="POST" action="{{ route('logout') }}" class="d-lg-none mt-3 mb-2">
+                        @csrf
+                        <button type="submit" class="btn btn-liqa-outline w-100 text-danger d-flex align-items-center justify-content-center gap-2"><x-icon name="logout" :size="17" /> تسجيل الخروج</button>
+                    </form>
                     </div>
                 </div>
             </div>

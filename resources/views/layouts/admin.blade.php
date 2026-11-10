@@ -33,7 +33,7 @@
     @endphp
 
     <header class="site-header">
-        <div class="container d-flex flex-wrap align-items-center justify-content-between gap-2 py-2">
+        <div class="container d-flex align-items-center justify-content-between gap-2 py-2">
             <a class="d-flex align-items-center gap-2 text-decoration-none" href="{{ route('admin.dashboard') }}">
                 <x-logo :size="32" />
                 <span class="fs-5 fw-bold text-white">{{ \App\Models\Setting::site('name') }}</span>

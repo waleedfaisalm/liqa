@@ -39,22 +39,22 @@
                 <tbody>
                     @forelse ($events as $event)
                         <tr>
-                            <td>
+                            <td data-label="الحدث">
                                 <a href="{{ route('events.show', $event) }}" class="fw-bold text-white text-decoration-none">{{ $event->title }}</a>
                                 <div class="small text-secondary">{{ $event->typeLabel() }} · {{ $event->modeLabel() }}</div>
                             </td>
-                            <td>
+                            <td data-label="المنظّم">
                                 <a href="{{ route('users.show', $event->host) }}" class="text-decoration-none">{{ $event->host->name }}</a>
                             </td>
-                            <td class="small">{{ $event->whenLabel() }}</td>
-                            <td><bdi dir="ltr">{{ $event->accepted_requests_count }} / {{ $event->capacity }}</bdi></td>
-                            <td>
+                            <td data-label="الموعد" class="small">{{ $event->whenLabel() }}</td>
+                            <td data-label="المشاركون"><bdi dir="ltr">{{ $event->accepted_requests_count }} / {{ $event->capacity }}</bdi></td>
+                            <td data-label="الحالة">
                                 @if ($event->isCancelled()) <span class="liqa-badge liqa-badge--red">ملغي</span>
                                 @elseif ($event->hasEnded()) <span class="liqa-badge">انتهى</span>
                                 @else <span class="liqa-badge liqa-badge--green">قادم</span>
                                 @endif
                             </td>
-                            <td>
+                            <td data-label="الإجراءات">
                                 <div class="d-flex flex-wrap gap-1 justify-content-end">
                                     <a href="{{ route('events.show', $event) }}" class="btn btn-sm btn-liqa-outline px-3">عرض</a>
                                     @if (! $event->isCancelled() && ! $event->hasEnded())

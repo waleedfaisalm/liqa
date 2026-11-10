@@ -25,12 +25,12 @@
                 <tbody>
                     @forelse ($ratings as $r)
                         <tr>
-                            <td>@if ($r->rater) <a href="{{ route('admin.users.show', $r->rater) }}">{{ $r->rater->name }}</a> @else — @endif</td>
-                            <td>@if ($r->ratee) <a href="{{ route('admin.users.show', $r->ratee) }}">{{ $r->ratee->name }}</a> @else — @endif</td>
-                            <td class="text-nowrap">{{ $r->stars }} / 5</td>
-                            <td style="max-width: 320px; white-space: normal" class="small">{{ $r->comment ?: '—' }}</td>
-                            <td class="small text-secondary">{{ $r->created_at->diffForHumans() }}</td>
-                            <td class="text-end">
+                            <td data-label="من">@if ($r->rater) <a href="{{ route('admin.users.show', $r->rater) }}">{{ $r->rater->name }}</a> @else — @endif</td>
+                            <td data-label="إلى">@if ($r->ratee) <a href="{{ route('admin.users.show', $r->ratee) }}">{{ $r->ratee->name }}</a> @else — @endif</td>
+                            <td data-label="التقييم" class="text-nowrap">{{ $r->stars }} / 5</td>
+                            <td data-label="التعليق" style="max-width: 320px; white-space: normal" class="small">{{ $r->comment ?: '—' }}</td>
+                            <td data-label="الوقت" class="small text-secondary">{{ $r->created_at->diffForHumans() }}</td>
+                            <td data-label="الإجراء" class="text-end">
                                 <form method="POST" action="{{ route('admin.ratings.destroy', $r) }}" onsubmit="return confirm('حذف هذا التقييم نهائيًا؟')">
                                     @csrf @method('DELETE')
                                     <button class="btn btn-sm btn-liqa-danger px-3">حذف</button>

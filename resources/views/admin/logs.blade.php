@@ -31,10 +31,10 @@
                 <tbody>
                     @forelse ($logs as $log)
                         <tr>
-                            <td class="small text-secondary" title="{{ $log->created_at }}">{{ $log->created_at->translatedFormat('j F، g:i a') }}</td>
-                            <td>{{ $log->admin_name ?: '—' }}</td>
-                            <td><span class="liqa-badge {{ $log->actionClass() }}">{{ $log->actionLabel() }}</span></td>
-                            <td>
+                            <td data-label="الوقت" class="small text-secondary" title="{{ $log->created_at }}">{{ $log->created_at->translatedFormat('j F، g:i a') }}</td>
+                            <td data-label="المدير">{{ $log->admin_name ?: '—' }}</td>
+                            <td data-label="الإجراء"><span class="liqa-badge {{ $log->actionClass() }}">{{ $log->actionLabel() }}</span></td>
+                            <td data-label="الهدف">
                                 @if ($log->target_label)
                                     @if ($log->target_type === 'user' && $log->target_id)
                                         <a href="{{ route('admin.users.show', $log->target_id) }}">{{ $log->target_label }}</a>
@@ -45,8 +45,8 @@
                                     @else {{ $log->target_label }} @endif
                                 @else — @endif
                             </td>
-                            <td class="small text-secondary">{{ $log->details ?: '—' }}</td>
-                            <td class="small text-secondary" dir="ltr">{{ $log->ip ?: '—' }}</td>
+                            <td data-label="التفاصيل" class="small text-secondary">{{ $log->details ?: '—' }}</td>
+                            <td data-label="عنوان IP" class="small text-secondary" dir="ltr">{{ $log->ip ?: '—' }}</td>
                         </tr>
                     @empty
                         <tr><td colspan="6" class="text-center text-secondary py-4">لا توجد إجراءات مسجّلة.</td></tr>
