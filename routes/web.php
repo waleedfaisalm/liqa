@@ -114,6 +114,14 @@ Route::middleware(['auth', 'verified', 'onboarded'])->group(function () {
 
     // الغرفة المباشرة (صوت وفيديو)
     Route::get('/events/{event}/room', [\App\Http\Controllers\EventRoomController::class, 'show'])->whereNumber('event')->middleware('throttle:30,1')->name('events.room');
+    Route::middleware('throttle:90,1')->group(function () {
+        Route::post('/events/{event}/room/knock', [\App\Http\Controllers\EventRoomController::class, 'knock'])->whereNumber('event')->name('events.room.knock');
+        Route::get('/events/{event}/room/status', [\App\Http\Controllers\EventRoomController::class, 'status'])->whereNumber('event')->name('events.room.status');
+        Route::post('/events/{event}/room/token', [\App\Http\Controllers\EventRoomController::class, 'token'])->whereNumber('event')->name('events.room.token');
+        Route::get('/events/{event}/room/waiting', [\App\Http\Controllers\EventRoomController::class, 'waiting'])->whereNumber('event')->name('events.room.waiting');
+        Route::post('/events/{event}/room/decide', [\App\Http\Controllers\EventRoomController::class, 'decide'])->whereNumber('event')->name('events.room.decide');
+        Route::post('/events/{event}/room/lobby', [\App\Http\Controllers\EventRoomController::class, 'lobby'])->whereNumber('event')->name('events.room.lobby');
+    });
     Route::post('/events/{event}/room/remove', [\App\Http\Controllers\EventRoomController::class, 'remove'])->whereNumber('event')->middleware('throttle:30,1')->name('events.room.remove');
 
     // طلبات الانضمام

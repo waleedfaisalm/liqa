@@ -43,7 +43,7 @@ class Event extends Model
 
     protected function casts(): array
     {
-        return ['starts_at' => 'datetime'];
+        return ['starts_at' => 'datetime', 'room_lobby' => 'boolean'];
     }
 
     // ---------- علاقات ----------
@@ -61,6 +61,11 @@ class Event extends Model
     public function acceptedRequests(): HasMany
     {
         return $this->hasMany(EventRequest::class)->where('status', EventRequest::ACCEPTED);
+    }
+
+    public function roomEntries(): HasMany
+    {
+        return $this->hasMany(EventRoomEntry::class);
     }
 
     public function comments(): HasMany

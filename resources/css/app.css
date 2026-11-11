@@ -1600,3 +1600,14 @@ button.is-loading { opacity: .65; cursor: progress; }
 .room-btn--leave { background: #dc2626; border-color: #dc2626; }
 .room-btn[hidden] { display: none; }
 .room-prejoin { max-width: 32rem; margin-inline: auto; }
+.room-tile__initial { position: relative; z-index: 1; }
+
+/* غرفة الانتظار */
+.room-spinner { width: 2.6rem; height: 2.6rem; border-radius: 50%; border: 3px solid rgba(168, 85, 247, .25); border-top-color: #a855f7; animation: roomSpin 0.9s linear infinite; }
+@keyframes roomSpin { to { transform: rotate(360deg); } }
+.room-lobbybar { padding: .8rem 1rem; border-radius: 1rem; border: 1px solid var(--liqa-border); background: rgba(29, 26, 58, .6); }
+.room-waiting { margin-top: .8rem; padding-top: .8rem; border-top: 1px solid var(--liqa-border); }
+.wait-row { display: flex; align-items: center; gap: .7rem; padding: .45rem 0; }
+.wait-row__avatar { width: 2.2rem; height: 2.2rem; border-radius: 50%; display: grid; place-items: center; flex: 0 0 auto; overflow: hidden; background: linear-gradient(135deg, #9333ea, #db2777); font-weight: 700; font-size: .9rem; }
+.wait-row__avatar img { width: 100%; height: 100%; object-fit: cover; }
+.wait-row__name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

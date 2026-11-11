@@ -24,6 +24,17 @@ if (root) {
     document.getElementById('icoShare').innerHTML = ICONS.share;
     document.getElementById('icoLeave').innerHTML = ICONS.leave;
 
+    const api = async (url, method = 'GET', body = null) => {
+        const res = await fetch(url, {
+            method,
+            headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', 'X-CSRF-TOKEN': root.dataset.csrf },
+            body: body ? JSON.stringify(body) : null,
+        });
+        let data = {};
+        try { data = await res.json(); } catch (e) { /* فارغ */ }
+        return { ok: res.ok, status: res.status, data };
+    };
+
     let room = null;
     const tiles = new Map(); // identity -> {el, video, ...}
     let leaving = false;
@@ -54,7 +65,10 @@ if (root) {
             img.alt = '';
             avatar.appendChild(img);
         } else {
-            avatar.textContent = m.initial || (p.name || '?').charAt(0);
+            const ini = document.createElement('span');
+            ini.className = 'room-tile__initial';
+            ini.textContent = m.initial || (p.name || '?').charAt(0);
+            avatar.appendChild(ini);
         }
 
         const video = document.createElement('video');
@@ -207,7 +221,7 @@ if (root) {
         return sync;
     }
 
-    async function join() {
+    async function join(token, serverUrl) {
         const joinBtn = document.getElementById('roomJoin');
         joinBtn.disabled = true;
         errBox.classList.add('d-none');
@@ -244,16 +258,20 @@ if (root) {
             });
 
         try {
-            await room.connect(root.dataset.url, root.dataset.token);
+            await room.connect(serverUrl, token);
             await room.startAudio();
         } catch (e) {
             joinBtn.disabled = false;
+            document.getElementById('roomWait').classList.add('d-none');
+            prejoin.classList.remove('d-none');
             showError('تعذّر الاتصال بالغرفة. تحقق من اتصالك وأعد المحاولة.');
             return;
         }
 
         prejoin.classList.add('d-none');
+        document.getElementById('roomWait').classList.add('d-none');
         stage.classList.remove('d-none');
+        if (isHost) startHostPanel();
 
         refresh(room.localParticipant);
         room.remoteParticipants.forEach((p) => {
@@ -269,6 +287,117 @@ if (root) {
         sync();
     }
 
-    document.getElementById('roomJoin').addEventListener('click', join);
+    // ---- المشارك: طلب الدخول وانتظار الموافقة ----
+    let pollTimer = null;
+    const waitBox = document.getElementById('roomWait');
+
+    function stopPoll() { if (pollTimer) { clearInterval(pollTimer); pollTimer = null; } }
+
+    function showWait(title, text, final = false) {
+        prejoin.classList.add('d-none');
+        waitBox.classList.remove('d-none');
+        document.getElementById('roomWaitTitle').textContent = title;
+        document.getElementById('roomWaitText').textContent = text;
+        if (final) waitBox.querySelector('.room-spinner').classList.add('d-none');
+    }
+
+    async function enterWithToken() {
+        const r = await api(root.dataset.tokenUrl, 'POST');
+        if (!r.ok) {
+            showWait('تعذّر الدخول', r.data.message || 'لم يُقبل دخولك.', true);
+            return;
+        }
+        showWait('جارٍ الدخول إلى الغرفة…', 'لحظات ويتم الاتصال.');
+        await join(r.data.token, r.data.url);
+    }
+
+    function handleStatus(status) {
+        if (status === 'admitted') { stopPoll(); enterWithToken(); return true; }
+        if (status === 'denied') { stopPoll(); showWait('رفض المنظّم دخولك', 'لم يُسمح لك بدخول هذه الغرفة.', true); return true; }
+        if (status === 'removed') { stopPoll(); showWait('أخرجك المنظّم', 'لا يمكنك دخول هذه الغرفة مجددًا.', true); return true; }
+        return false;
+    }
+
+    async function requestEntry() {
+        const joinBtn = document.getElementById('roomJoin');
+        joinBtn.disabled = true;
+        errBox.classList.add('d-none');
+
+        const r = await api(root.dataset.knockUrl, 'POST');
+        if (!r.ok) {
+            joinBtn.disabled = false;
+            showError(r.data.message || 'تعذّر إرسال الطلب. أعد المحاولة.');
+            return;
+        }
+        if (handleStatus(r.data.status)) return;
+
+        showWait('بانتظار موافقة المنظّم…', 'أُرسل طلبك، وستدخل الغرفة تلقائيًا بمجرد قبوله. أبقِ هذه الصفحة مفتوحة.');
+        pollTimer = setInterval(async () => {
+            const s = await api(root.dataset.statusUrl);
+            if (s.ok) handleStatus(s.data.status);
+        }, 3000);
+    }
+
+    // ---- المنظّم: لوحة المنتظرين وغرفة الانتظار ----
+    function startHostPanel() {
+        const panel = document.getElementById('roomWaiting');
+        const list = document.getElementById('waitList');
+        const count = document.getElementById('waitCount');
+        const toggle = document.getElementById('lobbyToggle');
+        if (!panel) return;
+
+        let lastCount = 0;
+
+        const render = (items) => {
+            list.innerHTML = '';
+            items.forEach((u) => {
+                const row = document.createElement('div');
+                row.className = 'wait-row';
+                const av = document.createElement('span');
+                av.className = 'wait-row__avatar';
+                if (u.avatar) { const im = document.createElement('img'); im.src = u.avatar; im.alt = ''; av.appendChild(im); } else { av.textContent = u.initial; }
+                const nm = document.createElement('span');
+                nm.className = 'wait-row__name';
+                nm.textContent = u.name;
+                const ok = document.createElement('button');
+                ok.type = 'button'; ok.className = 'btn btn-sm btn-liqa'; ok.textContent = 'قبول';
+                ok.addEventListener('click', async () => { ok.disabled = true; await api(root.dataset.decideUrl, 'POST', { action: 'admit', user_id: u.id }); poll(); });
+                const no = document.createElement('button');
+                no.type = 'button'; no.className = 'btn btn-sm btn-liqa-outline'; no.textContent = 'رفض';
+                no.addEventListener('click', async () => { no.disabled = true; await api(root.dataset.decideUrl, 'POST', { action: 'deny', user_id: u.id }); poll(); });
+                row.append(av, nm, ok, no);
+                list.appendChild(row);
+            });
+            count.textContent = String(items.length);
+            panel.classList.toggle('d-none', items.length === 0);
+            if (items.length > lastCount) {
+                try { document.title = '🔔 ' + items.length + ' بانتظار الدخول — ' + document.title.replace(/^🔔 \d+ بانتظار الدخول — /, ''); } catch (e) { /* يُتجاهل */ }
+            }
+            if (items.length === 0) document.title = document.title.replace(/^🔔 \d+ بانتظار الدخول — /, '');
+            lastCount = items.length;
+        };
+
+        const poll = async () => {
+            const r = await api(root.dataset.waitingUrl);
+            if (r.ok) render(r.data.waiting || []);
+        };
+
+        document.getElementById('admitAll').addEventListener('click', async () => {
+            await api(root.dataset.decideUrl, 'POST', { action: 'admit_all' });
+            poll();
+        });
+        toggle.addEventListener('change', async () => {
+            await api(root.dataset.lobbyUrl, 'POST', { enabled: toggle.checked });
+            poll();
+        });
+
+        poll();
+        setInterval(poll, 4000);
+    }
+
+    document.getElementById('roomJoin').addEventListener('click', () => {
+        if (isHost) join(root.dataset.token, root.dataset.url);
+        else requestEntry();
+    });
     window.addEventListener('beforeunload', () => { leaving = true; if (room) room.disconnect(); });
 }

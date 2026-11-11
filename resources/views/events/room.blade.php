@@ -7,6 +7,13 @@
          data-url="{{ $serverUrl }}"
          data-token="{{ $token }}"
          data-host="{{ $isHost ? '1' : '0' }}"
+         data-lobby="{{ $lobbyOn ? '1' : '0' }}"
+         data-knock-url="{{ route('events.room.knock', $event) }}"
+         data-status-url="{{ route('events.room.status', $event) }}"
+         data-token-url="{{ route('events.room.token', $event) }}"
+         data-waiting-url="{{ route('events.room.waiting', $event) }}"
+         data-decide-url="{{ route('events.room.decide', $event) }}"
+         data-lobby-url="{{ route('events.room.lobby', $event) }}"
          data-remove-url="{{ route('events.room.remove', $event) }}"
          data-csrf="{{ csrf_token() }}"
          data-exit="{{ route('events.show', $event) }}">
@@ -31,12 +38,40 @@
                     <input type="checkbox" class="form-check-input m-0" id="preCam"> <span>تشغيل الكاميرا</span>
                 </label>
             </div>
-            <button type="button" class="btn btn-liqa px-5" id="roomJoin">انضم إلى الغرفة</button>
+            @unless ($isHost)
+                @if ($lobbyOn)
+                    <p class="small text-secondary mb-3">سيصل طلبك إلى المنظّم، وتدخل الغرفة بعد موافقته.</p>
+                @endif
+            @endunless
+            <button type="button" class="btn btn-liqa px-5" id="roomJoin">{{ $isHost ? 'ابدأ الغرفة' : ($lobbyOn ? 'اطلب الدخول' : 'انضم إلى الغرفة') }}</button>
             <div class="small text-danger mt-3 d-none" id="roomError"></div>
+        </div>
+
+        {{-- شاشة الانتظار (للمشارك) --}}
+        <div class="liqa-card p-4 text-center room-prejoin d-none" id="roomWait">
+            <div class="room-spinner mx-auto mb-3"></div>
+            <h2 class="h5 liqa-title mb-2" id="roomWaitTitle">بانتظار موافقة المنظّم…</h2>
+            <p class="small text-secondary mb-3" id="roomWaitText">أُرسل طلبك، وستدخل الغرفة تلقائيًا بمجرد قبوله. أبقِ هذه الصفحة مفتوحة.</p>
+            <a href="{{ route('events.show', $event) }}" class="btn btn-liqa-outline btn-sm" id="roomWaitCancel">إلغاء والعودة</a>
         </div>
 
         {{-- الغرفة --}}
         <div class="room-stage d-none" id="roomStage">
+            @if ($isHost)
+                <div class="room-lobbybar mb-3" id="roomLobbyBar">
+                    <label class="form-check d-flex align-items-center gap-2 m-0 small">
+                        <input type="checkbox" class="form-check-input m-0" id="lobbyToggle" {{ $lobbyOn ? 'checked' : '' }}>
+                        <span>غرفة الانتظار (لا يدخل أحد إلا بموافقتك)</span>
+                    </label>
+                    <div class="room-waiting d-none" id="roomWaiting">
+                        <div class="d-flex align-items-center justify-content-between gap-2 mb-2">
+                            <strong class="small">بانتظار الدخول <span class="liqa-badge liqa-badge--pink" id="waitCount">0</span></strong>
+                            <button type="button" class="btn btn-sm btn-liqa" id="admitAll">قبول الجميع</button>
+                        </div>
+                        <div id="waitList"></div>
+                    </div>
+                </div>
+            @endif
             <div class="room-grid" id="roomGrid"></div>
             <div id="roomAudios" hidden></div>
 
