@@ -177,6 +177,60 @@ class AdminUserController extends Controller
         return back()->with('temp_password', $temp)->with('success', 'تمت إعادة تعيين كلمة مرور '.$user->name.'. سلّمه الكلمة المؤقتة ونبّهه إلى تغييرها من الإعدادات.');
     }
 
+    /** حذف حساب نهائيًا مع أحداثه وطلباته وتقييماته (بعد كتابة بريده للتأكيد) */
+    public function destroy(Request $request, User $user): RedirectResponse
+    {
+        $me = $request->user();
+
+        if ($user->is($me)) {
+            return back()->with('error', 'لا يمكنك حذف حسابك من هنا.');
+        }
+
+        if ($user->isOwner()) {
+            return back()->with('error', 'حساب المالك محمي ولا يُحذف.');
+        }
+
+        if ($user->is_admin && ! $me->isOwner()) {
+            return back()->with('error', 'حذف حسابات المديرين من صلاحية المالك فقط.');
+        }
+
+        $request->validate(['confirm_email' => ['required', 'string']], ['confirm_email.required' => 'اكتب بريد العضو لتأكيد الحذف.']);
+
+        if (Str::lower(trim((string) $request->input('confirm_email'))) !== Str::lower($user->email)) {
+            return back()->with('error', 'البريد المكتوب لا يطابق بريد العضو، لم يُحذف شيء.');
+        }
+
+        $name = $user->name;
+        $email = $user->email;
+        $eventsCount = $user->hostedEvents()->count();
+
+        DB::transaction(function () use ($user) {
+            // إبلاغ المشاركين بإلغاء الأحداث القادمة التي ينظّمها
+            \App\Models\Event::upcoming()->where('user_id', $user->id)->get()->each(function ($event) {
+                \App\Models\EventRequest::where('event_id', $event->id)
+                    ->whereIn('status', [\App\Models\EventRequest::ACCEPTED, \App\Models\EventRequest::PENDING, \App\Models\EventRequest::WAITLISTED])
+                    ->with('user')->get()
+                    ->each(fn ($r) => $r->user && \App\Models\UserNotification::send(
+                        $r->user, 'event_cancelled', 'أُلغي الحدث «'.$event->title.'» من قِبل إدارة المنصة.', route('events.index')
+                    ));
+            });
+
+            Report::where('target_type', 'user')->where('target_id', $user->id)->delete();
+            Report::where('reporter_id', $user->id)->delete();
+            DB::table('sessions')->where('user_id', $user->id)->delete();
+
+            if ($user->avatar_path && ! str_starts_with($user->avatar_path, 'db:')) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($user->avatar_path);
+            }
+
+            $user->delete();
+        });
+
+        AdminLog::record($me, 'user.deleted', 'user', null, $name.' <'.$email.'>', $eventsCount.' حدث محذوف');
+
+        return redirect()->route('admin.users')->with('success', 'تم حذف حساب «'.$name.'» نهائيًا مع '.$eventsCount.' حدث نظّمها.');
+    }
+
     /** منح صلاحية الإدارة أو سحبها */
     public function role(Request $request, User $user): RedirectResponse
     {

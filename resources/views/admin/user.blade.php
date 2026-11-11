@@ -7,6 +7,7 @@
         $me = auth()->user();
         $canSuspend = ! $u->is($me) && ! $u->isOwner() && ($me->isOwner() || ! $u->is_admin);
         $canChangeRole = $me->isOwner() && ! $u->is($me) && ! $u->isOwner();
+        $canDelete = ! $u->is($me) && ! $u->isOwner() && ($me->isOwner() || ! $u->is_admin);
         $canResetPassword = ! $u->is($me) && ! $u->isOwner() && ($me->isOwner() || ! $u->is_admin);
     @endphp
 
@@ -70,6 +71,19 @@
                 <form method="POST" action="{{ route('admin.users.password', $u) }}" onsubmit="return confirm('توليد كلمة مرور مؤقتة جديدة لهذا العضو؟ ستتوقف كلمة مروره الحالية عن العمل.')">
                     @csrf @method('PATCH')
                     <button class="btn btn-liqa-outline w-100">إعادة تعيين كلمة المرور</button>
+                </form>
+            </div>
+            @endif
+
+            @if ($canDelete)
+            <div class="liqa-card p-3 p-md-4 mb-3 border-danger-subtle" id="delete" style="border-color: rgba(248,113,113,.45)">
+                <h2 class="h5 text-danger mb-2">منطقة الخطر</h2>
+                <p class="small text-secondary">يحذف الحساب نهائيًا مع <strong class="text-white">{{ $u->hosted_events_count }}</strong> حدث نظّمها وطلباته وتقييماته وتعليقاته. يُبلَّغ المشاركون في أحداثه القادمة بالإلغاء. لا يمكن التراجع عن هذا الإجراء.</p>
+                <form method="POST" action="{{ route('admin.users.destroy', $u) }}" onsubmit="return confirm('حذف هذا الحساب وكل أحداثه نهائيًا؟ لا يمكن التراجع.')">
+                    @csrf @method('DELETE')
+                    <label class="form-label small">اكتب بريد العضو للتأكيد:</label>
+                    <input type="text" name="confirm_email" class="form-control mb-2" dir="ltr" placeholder="{{ $u->email }}" autocomplete="off" required>
+                    <button class="btn btn-danger w-100">حذف الحساب وأحداثه نهائيًا</button>
                 </form>
             </div>
             @endif
