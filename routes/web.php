@@ -112,6 +112,10 @@ Route::middleware(['auth', 'verified', 'onboarded'])->group(function () {
     Route::put('/events/{event}', [EventController::class, 'update'])->whereNumber('event')->name('events.update');
     Route::delete('/events/{event}', [EventController::class, 'destroy'])->whereNumber('event')->name('events.destroy');
 
+    // الغرفة المباشرة (صوت وفيديو)
+    Route::get('/events/{event}/room', [\App\Http\Controllers\EventRoomController::class, 'show'])->whereNumber('event')->middleware('throttle:30,1')->name('events.room');
+    Route::post('/events/{event}/room/remove', [\App\Http\Controllers\EventRoomController::class, 'remove'])->whereNumber('event')->middleware('throttle:30,1')->name('events.room.remove');
+
     // طلبات الانضمام
     Route::post('/events/{event}/join', [EventRequestController::class, 'store'])->whereNumber('event')->middleware('throttle:20,1')->name('events.join');
     Route::delete('/events/{event}/join', [EventRequestController::class, 'destroy'])->whereNumber('event')->name('events.leave');

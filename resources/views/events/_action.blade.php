@@ -4,6 +4,8 @@
             <div class="fw-bold text-white mb-1">أنت المنظّم</div>
             <div class="small hint mb-3">إدارة الطلبات والتعديل من هنا</div>
 
+            @include('events._room_btn', ['event' => $event])
+
             @if ($open)
                 <a href="{{ route('events.edit', $event) }}" class="btn btn-liqa w-100 mb-2 d-flex align-items-center justify-content-center gap-2">
                     تعديل الحدث <x-icon name="edit" :size="17" />
@@ -41,6 +43,9 @@
                 </div>
                 @if ($myRequest->status === 'waitlisted')
                     <p class="small text-secondary mb-3">ترتيبك في قائمة الانتظار: <strong class="text-white">{{ $waitlistPosition }}</strong>. سننقل طلبك إلى المنظّم فور توفّر مقعد.</p>
+                @endif
+                @if ($myRequest->status === 'accepted')
+                    @include('events._room_btn', ['event' => $event])
                 @endif
                 @if ($myRequest->status !== 'rejected' && ! $started)
                     <form method="POST" action="{{ route('events.leave', $event) }}"

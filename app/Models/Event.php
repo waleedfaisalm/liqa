@@ -93,6 +93,28 @@ class Event extends Model
         return $this->endsAt()->isPast();
     }
 
+    /** الغرفة المباشرة تُفتح قبل الموعد بنصف ساعة وتُغلق بعد انتهاء الحدث بثلاث ساعات */
+    public const ROOM_OPENS_BEFORE_MINUTES = 30;
+
+    public const ROOM_CLOSES_AFTER_HOURS = 3;
+
+    public function roomOpensAt(): Carbon
+    {
+        return $this->starts_at->copy()->subMinutes(self::ROOM_OPENS_BEFORE_MINUTES);
+    }
+
+    public function roomIsOpen(): bool
+    {
+        return ! $this->isCancelled()
+            && now()->gte($this->roomOpensAt())
+            && now()->lte($this->endsAt()->copy()->addHours(self::ROOM_CLOSES_AFTER_HOURS));
+    }
+
+    public function roomName(): string
+    {
+        return 'liqa-event-'.$this->id;
+    }
+
     public function isCancelled(): bool
     {
         return $this->status === self::CANCELLED;
