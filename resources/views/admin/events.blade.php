@@ -67,6 +67,8 @@
                                     <form method="POST" action="{{ route('admin.events.destroy', $event) }}"
                                           onsubmit="return confirm('حذف هذا الحدث نهائيًا مع طلباته وتعليقاته وتقييماته؟ لا يمكن التراجع، ولا يتأثر حساب المنظّم.')">
                                         @csrf @method('DELETE')
+                                        <input type="hidden" name="tab" value="{{ $tab }}">
+                                        <input type="hidden" name="q" value="{{ $search }}">
                                         <button class="btn btn-sm btn-liqa-danger px-3">حذف</button>
                                     </form>
                                 </div>

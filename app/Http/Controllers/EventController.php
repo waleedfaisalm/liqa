@@ -118,6 +118,17 @@ class EventController extends Controller
 
         $data = $this->normalizePlace($request->validate($this->rules()));
 
+        // حماية من النقر المزدوج: حدث مطابق (نفس العنوان والموعد) أُنشئ للتو من نفس العضو
+        $duplicate = Event::where('user_id', $request->user()->id)
+            ->where('title', $data['title'])
+            ->where('starts_at', $data['starts_at'])
+            ->where('created_at', '>=', now()->subMinutes(2))
+            ->first();
+
+        if ($duplicate) {
+            return redirect()->route('events.show', $duplicate)->with('success', 'تم نشر الحدث. يمكن للأعضاء الآن تقديم طلبات الانضمام.');
+        }
+
         $event = new Event($data);
         $event->user_id = $request->user()->id;
         $event->status = Event::PUBLISHED;

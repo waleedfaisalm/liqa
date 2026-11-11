@@ -93,6 +93,7 @@ class AdminEventController extends Controller
 
         $event->delete();
 
-        return back()->with('success', 'تم حذف الحدث «'.$title.'» نهائيًا.');
+        return redirect()->route('admin.events', array_filter(['tab' => $request->input('tab'), 'q' => $request->input('q')]))
+            ->with('success', 'تم حذف الحدث «'.$title.'» نهائيًا.');
     }
 }

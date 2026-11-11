@@ -1568,3 +1568,5 @@ h1, h2, h3, .liqa-title { overflow-wrap: anywhere; }
 .legal-p { color: #cfcde6; line-height: 1.95; margin-bottom: 1rem; }
 .legal h2 { padding-top: .5rem; margin-top: 1.75rem !important; margin-bottom: .6rem; border-top: 1px solid var(--liqa-border); }
 .legal h2:first-of-type { border-top: 0; }
+
+button.is-loading { opacity: .65; cursor: progress; }
