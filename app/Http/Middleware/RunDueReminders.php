@@ -27,7 +27,7 @@ class RunDueReminders
         }
 
         try {
-            if (! Cache::add('liqa:reminders-lock', 1, 600)) {
+            if (! Cache::store('file')->add('liqa:reminders-lock', 1, 600)) {
                 return;
             }
 

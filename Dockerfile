@@ -27,7 +27,8 @@ FROM dunglas/frankenphp:1-php8.4-bookworm AS runtime
 RUN apt-get update && apt-get install -y --no-install-recommends libcap2-bin \
     && rm -rf /var/lib/apt/lists/* \
     && install-php-extensions pdo_pgsql pdo_mysql pdo_sqlite intl zip opcache gd \
-    && cp "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
+    && cp "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini" \
+    && printf "opcache.enable=1\nopcache.validate_timestamps=0\nopcache.memory_consumption=192\nopcache.max_accelerated_files=20000\nrealpath_cache_size=4096K\nrealpath_cache_ttl=600\n" > "$PHP_INI_DIR/conf.d/zz-liqa.ini"
 
 WORKDIR /app
 COPY --chown=www-data:www-data . .

@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Schema;
 
 class Setting extends Model
 {
@@ -37,8 +36,11 @@ class Setting extends Model
     private static function all_(): array
     {
         if (self::$cache === null) {
+            // كاش ملفّي محلي (بدون رحلة شبكة لقاعدة البيانات في كل طلب)، ويُمسح عند أي حفظ
             try {
-                self::$cache = Schema::hasTable('settings') ? static::query()->pluck('value', 'key')->all() : [];
+                self::$cache = \Illuminate\Support\Facades\Cache::store('file')->remember('liqa.settings', 60, function () {
+                    return static::query()->pluck('value', 'key')->all();
+                });
             } catch (\Throwable) {
                 self::$cache = [];
             }
@@ -95,5 +97,9 @@ class Setting extends Model
     {
         static::updateOrCreate(['key' => $key], ['value' => $value]);
         self::$cache = null;
+        try {
+            \Illuminate\Support\Facades\Cache::store('file')->forget('liqa.settings');
+        } catch (\Throwable) {
+        }
     }
 }

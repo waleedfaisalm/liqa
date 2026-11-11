@@ -16,7 +16,7 @@ class LandingController extends Controller
 
     public function index(): View
     {
-        $stats = Cache::remember('landing.stats', 600, function () {
+        $stats = Cache::store('file')->remember('landing.stats', 600, function () {
             return [
                 'members' => User::where('is_admin', false)->whereNotNull('onboarded_at')->count(),
                 'events' => Event::where('status', Event::PUBLISHED)->count(),

@@ -7,5 +7,11 @@
 :{$PORT:80} {
 	root * /app/public
 	encode zstd gzip
+
+	@hashed path /build/*
+	header @hashed Cache-Control "public, max-age=31536000, immutable"
+	@brand path /brand/* /favicon.svg /favicon.ico
+	header @brand Cache-Control "public, max-age=86400"
+
 	php_server
 }
