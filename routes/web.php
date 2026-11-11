@@ -179,6 +179,7 @@ Route::prefix('admin')->group(function () {
 
         Route::middleware('admin.can:events')->group(function () {
             Route::get('/events', [AdminEventController::class, 'index'])->name('admin.events');
+            Route::delete('/events/{event}', [AdminEventController::class, 'destroy'])->middleware('throttle:20,1')->whereNumber('event')->name('admin.events.destroy');
             Route::patch('/events/{event}/cancel', [AdminEventController::class, 'cancel'])->whereNumber('event')->name('admin.events.cancel');
         });
 

@@ -64,6 +64,11 @@
                                             <button class="btn btn-sm btn-liqa-danger px-3">إلغاء</button>
                                         </form>
                                     @endif
+                                    <form method="POST" action="{{ route('admin.events.destroy', $event) }}"
+                                          onsubmit="return confirm('حذف هذا الحدث نهائيًا مع طلباته وتعليقاته وتقييماته؟ لا يمكن التراجع، ولا يتأثر حساب المنظّم.')">
+                                        @csrf @method('DELETE')
+                                        <button class="btn btn-sm btn-liqa-danger px-3">حذف</button>
+                                    </form>
                                 </div>
                             </td>
                         </tr>

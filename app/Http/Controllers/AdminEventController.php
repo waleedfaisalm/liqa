@@ -69,4 +69,30 @@ class AdminEventController extends Controller
 
         return back()->with('success', 'تم إلغاء الحدث وإشعار المعنيين.');
     }
+
+    /** حذف حدث نهائيًا (مع طلباته وتعليقاته وتقييماته) دون المساس بحساب المنظّم */
+    public function destroy(Request $request, Event $event): RedirectResponse
+    {
+        $title = $event->title;
+        $host = $event->host;
+
+        // إبلاغ المعنيين إن كان الحدث قادمًا ولم يُلغَ
+        if (! $event->isCancelled() && ! $event->hasEnded()) {
+            $event->requests()
+                ->whereIn('status', [EventRequest::PENDING, EventRequest::ACCEPTED, EventRequest::WAITLISTED])
+                ->with('user')->get()->pluck('user')->push($host)->filter()->unique('id')
+                ->each(fn ($user) => UserNotification::send(
+                    $user,
+                    'event_cancelled',
+                    'تم حذف حدث «'.$title.'» من قِبل إدارة المنصة.',
+                    route('events.index'),
+                ));
+        }
+
+        AdminLog::record($request->user(), 'event.deleted', 'event', $event->id, $title, 'المنظّم: '.($host?->name ?? '—'));
+
+        $event->delete();
+
+        return back()->with('success', 'تم حذف الحدث «'.$title.'» نهائيًا.');
+    }
 }
