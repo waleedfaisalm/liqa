@@ -63,6 +63,10 @@
                         <input type="checkbox" class="form-check-input m-0" id="lobbyToggle" {{ $lobbyOn ? 'checked' : '' }}>
                         <span>غرفة الانتظار (لا يدخل أحد إلا بموافقتك)</span>
                     </label>
+                    <label class="form-check d-flex align-items-center gap-2 m-0 small mt-2">
+                        <input type="checkbox" class="form-check-input m-0" id="chatToggle" checked>
+                        <span>السماح للمشاركين بالكتابة في المحادثة</span>
+                    </label>
                     <div class="room-waiting d-none" id="roomWaiting">
                         <div class="d-flex align-items-center justify-content-between gap-2 mb-2">
                             <strong class="small">بانتظار الدخول <span class="liqa-badge liqa-badge--pink" id="waitCount">0</span></strong>
@@ -75,9 +79,25 @@
             <div class="room-grid" id="roomGrid"></div>
             <div id="roomAudios" hidden></div>
 
+            {{-- المحادثة النصية --}}
+            <aside class="room-chat d-none" id="roomChat" aria-label="المحادثة">
+                <div class="room-chat__head">
+                    <strong>المحادثة</strong>
+                    <button type="button" class="btn btn-sm btn-liqa-outline" id="chatClose">إغلاق</button>
+                </div>
+                <div class="room-chat__list" id="chatList">
+                    <div class="room-chat__empty small text-secondary" id="chatEmpty">لا توجد رسائل بعد. المحادثة تخص الحاضرين الآن ولا تُحفظ بعد انتهاء الغرفة.</div>
+                </div>
+                <form class="room-chat__form" id="chatForm" autocomplete="off">
+                    <input type="text" class="form-control" id="chatInput" maxlength="500" placeholder="اكتب رسالة…" aria-label="رسالة">
+                    <button type="submit" class="btn btn-liqa" id="chatSend">إرسال</button>
+                </form>
+            </aside>
+
             <div class="room-controls" id="roomControls">
                 <button type="button" class="room-btn" id="btnMic" data-on="1"><span class="room-btn__icon" id="icoMic"></span><span class="room-btn__label">الميكروفون</span></button>
                 <button type="button" class="room-btn" id="btnCam" data-on="1"><span class="room-btn__icon" id="icoCam"></span><span class="room-btn__label">الكاميرا</span></button>
+                <button type="button" class="room-btn" id="btnChat"><span class="room-btn__icon" id="icoChat"></span><span class="room-btn__label">المحادثة</span><span class="room-btn__dot d-none" id="chatDot">0</span></button>
                 <button type="button" class="room-btn" id="btnShare" hidden><span class="room-btn__icon" id="icoShare"></span><span class="room-btn__label">مشاركة الشاشة</span></button>
                 <button type="button" class="room-btn room-btn--leave" id="btnLeave"><span class="room-btn__icon" id="icoLeave"></span><span class="room-btn__label">مغادرة</span></button>
             </div>

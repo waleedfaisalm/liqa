@@ -17,12 +17,14 @@ if (root) {
         camOff: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l18 18M7 6h7a2 2 0 0 1 2 2v3m0 3v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 .6-1.4M16 10l5-3v10l-3-1.8"/></svg>',
         share: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4M9 10l3-3 3 3M12 7v6"/></svg>',
         leave: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 4H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h5M15 8l4 4-4 4M19 12H9"/></svg>',
+        chat: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H9l-5 4z"/></svg>',
         kick: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>',
     };
     document.getElementById('icoMic').innerHTML = ICONS.mic;
     document.getElementById('icoCam').innerHTML = ICONS.cam;
     document.getElementById('icoShare').innerHTML = ICONS.share;
     document.getElementById('icoLeave').innerHTML = ICONS.leave;
+    document.getElementById('icoChat').innerHTML = ICONS.chat;
 
     const api = async (url, method = 'GET', body = null) => {
         const res = await fetch(url, {
@@ -221,6 +223,106 @@ if (root) {
         return sync;
     }
 
+
+    // ---- المحادثة النصية (عبر قناة بيانات LiveKit، لا تُحفظ) ----
+    let chatLocked = false; // يمنع المشاركين من الكتابة (يتحكم به المنظّم)
+    let chatOpen = false;
+    let unread = 0;
+    let lastSent = 0;
+    const enc = new TextEncoder();
+    const dec = new TextDecoder();
+
+    function setupChat() {
+        const panel = document.getElementById('roomChat');
+        const list = document.getElementById('chatList');
+        const empty = document.getElementById('chatEmpty');
+        const form = document.getElementById('chatForm');
+        const input = document.getElementById('chatInput');
+        const dot = document.getElementById('chatDot');
+        const btn = document.getElementById('btnChat');
+
+        const time = () => new Date().toLocaleTimeString('ar', { hour: 'numeric', minute: '2-digit' });
+
+        const refreshLock = () => {
+            const blocked = chatLocked && !isHost;
+            input.disabled = blocked;
+            document.getElementById('chatSend').disabled = blocked;
+            input.placeholder = blocked ? 'أوقف المنظّم الكتابة في المحادثة' : 'اكتب رسالة…';
+        };
+
+        const addMessage = (name, text, mine, host) => {
+            if (empty) empty.remove();
+            const row = document.createElement('div');
+            row.className = 'chat-msg' + (mine ? ' is-mine' : '');
+            const head = document.createElement('div');
+            head.className = 'chat-msg__head';
+            head.textContent = (mine ? 'أنت' : name) + (host ? ' · المنظّم' : '') + ' · ' + time();
+            const body = document.createElement('div');
+            body.className = 'chat-msg__body';
+            body.textContent = text; // نص خام فقط، بدون HTML
+            row.append(head, body);
+            list.appendChild(row);
+            list.scrollTop = list.scrollHeight;
+        };
+
+        const setOpen = (v) => {
+            chatOpen = v;
+            panel.classList.toggle('d-none', !v);
+            if (v) { unread = 0; dot.classList.add('d-none'); setTimeout(() => input.focus(), 50); list.scrollTop = list.scrollHeight; }
+        };
+
+        btn.addEventListener('click', () => setOpen(!chatOpen));
+        document.getElementById('chatClose').addEventListener('click', () => setOpen(false));
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const text = input.value.trim().slice(0, 500);
+            if (!text || (chatLocked && !isHost)) return;
+            if (Date.now() - lastSent < 400) return; // حدّ بسيط ضد الإغراق
+            lastSent = Date.now();
+            input.value = '';
+            try {
+                await room.localParticipant.publishData(enc.encode(JSON.stringify({ t: text })), { reliable: true, topic: 'chat' });
+                addMessage(room.localParticipant.name, text, true, isHost);
+            } catch (err) {
+                addMessage('النظام', 'تعذّر إرسال الرسالة.', false, false);
+            }
+        });
+
+        room.on(RoomEvent.DataReceived, (payload, participant, kind, topic) => {
+            if (!participant) return;
+            let data;
+            try { data = JSON.parse(dec.decode(payload)); } catch (e) { return; }
+            const fromHost = !!meta(participant).host; // البيانات الوصفية موقّعة من الخادم ولا يمكن تزويرها
+
+            if (topic === 'control') {
+                if (fromHost && typeof data.chatLocked === 'boolean') { chatLocked = data.chatLocked; refreshLock(); }
+                return;
+            }
+            if (topic !== 'chat' || typeof data.t !== 'string') return;
+            if (chatLocked && !fromHost) return;
+
+            addMessage(participant.name || 'عضو', data.t.slice(0, 500), false, fromHost);
+            if (!chatOpen) {
+                unread += 1;
+                dot.textContent = String(unread);
+                dot.classList.remove('d-none');
+            }
+        });
+
+        // المنظّم: مفتاح السماح بالكتابة، ويُعلَن للقادمين الجدد
+        if (isHost) {
+            const toggle = document.getElementById('chatToggle');
+            const broadcast = () => room.localParticipant
+                .publishData(enc.encode(JSON.stringify({ chatLocked })), { reliable: true, topic: 'control' }).catch(() => {});
+            toggle.addEventListener('change', () => { chatLocked = !toggle.checked; broadcast(); });
+            room.on(RoomEvent.ParticipantConnected, () => { if (chatLocked) setTimeout(broadcast, 800); });
+        }
+
+        refreshLock();
+    }
+
     async function join(token, serverUrl) {
         const joinBtn = document.getElementById('roomJoin');
         joinBtn.disabled = true;
@@ -281,6 +383,7 @@ if (root) {
             });
         });
         const sync = wireControls();
+        setupChat();
 
         try { if (wantMic) await room.localParticipant.setMicrophoneEnabled(true); } catch (e) { alert('تعذّر الوصول إلى الميكروفون.'); }
         try { if (wantCam) await room.localParticipant.setCameraEnabled(true); } catch (e) { alert('تعذّر الوصول إلى الكاميرا.'); }
