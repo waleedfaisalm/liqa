@@ -23,7 +23,7 @@
          data-csrf="{{ csrf_token() }}"
          data-exit="{{ route('events.show', $event) }}">
 
-        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+        <div class="room-head d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
             <div>
                 <a href="{{ route('events.show', $event) }}" class="small text-decoration-none">← العودة إلى صفحة الحدث</a>
                 <h1 class="h4 liqa-title mb-0 mt-1">{{ $event->title }}</h1>
@@ -68,7 +68,7 @@
         {{-- الغرفة --}}
         <div class="room-stage d-none" id="roomStage">
             {{-- لوحة التحكم: تظهر للمنظّم والمنظّم المساعد --}}
-            <div class="room-lobbybar mb-3 d-none" id="roomLobbyBar">
+            <div class="room-lobbybar mb-3" id="roomLobbyBar">
                 <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 owner-only">
                     <label class="form-check d-flex align-items-center gap-2 m-0 small">
                         <input type="checkbox" class="form-check-input m-0" id="lobbyToggle" {{ $lobbyOn ? 'checked' : '' }}>
@@ -141,6 +141,7 @@
                 <button type="button" class="room-btn" id="btnHand" title="رفع اليد"><span class="room-btn__icon" id="icoHand"></span><span class="room-btn__label">رفع اليد</span></button>
                 <button type="button" class="room-btn" id="btnReact" title="ردود الفعل"><span class="room-btn__icon" id="icoReact"></span><span class="room-btn__label">تفاعل</span></button>
                 <button type="button" class="room-btn" id="btnPeople"><span class="room-btn__icon" id="icoPeople"></span><span class="room-btn__label">المشاركون</span><span class="room-btn__dot d-none" id="handDot">0</span></button>
+                <button type="button" class="room-btn manager-only" id="btnManage" title="إدارة الغرفة"><span class="room-btn__icon" id="icoManage"></span><span class="room-btn__label">الإدارة</span></button>
                 <button type="button" class="room-btn" id="btnChat"><span class="room-btn__icon" id="icoChat"></span><span class="room-btn__label">المحادثة</span><span class="room-btn__dot d-none" id="chatDot">0</span></button>
                 <button type="button" class="room-btn room-btn--leave" id="btnLeave"><span class="room-btn__icon" id="icoLeave"></span><span class="room-btn__label">مغادرة</span></button>
             </div>

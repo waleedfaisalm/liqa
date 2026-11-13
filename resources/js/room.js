@@ -22,6 +22,8 @@ if (root) {
         hand: '<span class="room-emoji">✋</span>',
         react: '<span class="room-emoji">🙂</span>',
         people: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3 20a6 6 0 0 1 12 0M16 5a3 3 0 0 1 0 6M18 14a5.5 5.5 0 0 1 3 5"/></svg>',
+        manage: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>',
+        pin: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4l5 5-3 1-3.5 3.5.5 4-1.5 1.5-3.5-3.5L5 20l-1-1 4.5-4.5L5 11l1.5-1.5 4 .5L14 6.5z"/></svg>',
         kick: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>',
     };
     document.getElementById('icoMic').innerHTML = ICONS.mic;
@@ -32,6 +34,7 @@ if (root) {
     document.getElementById('icoHand').innerHTML = ICONS.hand;
     document.getElementById('icoReact').innerHTML = ICONS.react;
     document.getElementById('icoPeople').innerHTML = ICONS.people;
+    document.getElementById('icoManage').innerHTML = ICONS.manage;
 
     const meta = (p) => {
         try { return JSON.parse(p.metadata || '{}'); } catch { return {}; }
@@ -72,6 +75,56 @@ if (root) {
     function showError(msg) {
         errBox.textContent = msg;
         errBox.classList.remove('d-none');
+    }
+
+
+    // ---- توزيع البطاقات (مثل Meet/Zoom): تملأ الشاشة، ومشاركة الشاشة أو التثبيت يكبّر بطاقة ----
+    let pinnedId = null;
+    let layoutFrame = 0;
+
+    function scheduleLayout() {
+        if (layoutFrame) return;
+        layoutFrame = requestAnimationFrame(() => { layoutFrame = 0; layoutGrid(); });
+    }
+
+    function pickSpotlight() {
+        if (pinnedId && tiles.has(pinnedId)) return pinnedId;
+        for (const [id, t] of tiles) if (t.el.classList.contains('is-screen')) return id;
+        return null;
+    }
+
+    function layoutGrid() {
+        const n = tiles.size;
+        if (!n) return;
+
+        const spot = n > 1 ? pickSpotlight() : null;
+        grid.classList.toggle('has-spot', !!spot);
+        tiles.forEach((t, id) => {
+            t.el.classList.toggle('is-spot', id === spot);
+            t.pinBtn.classList.toggle('is-on', id === pinnedId);
+        });
+        if (spot) return;
+
+        const W = grid.clientWidth;
+        const H = grid.clientHeight;
+        if (!W || !H) return;
+        const gap = 8;
+        let best = { cols: 1, area: -1 };
+        for (let cols = 1; cols <= n; cols++) {
+            const rows = Math.ceil(n / cols);
+            const w = (W - (cols - 1) * gap) / cols;
+            const h = (H - (rows - 1) * gap) / rows;
+            const tw = Math.min(w, (h * 16) / 9);
+            const area = tw * ((tw * 9) / 16);
+            if (area > best.area + 1) best = { cols, rows, area };
+        }
+        grid.style.setProperty('--cols', String(best.cols));
+        grid.style.setProperty('--rows', String(Math.ceil(n / best.cols)));
+    }
+
+    function togglePin(id) {
+        pinnedId = pinnedId === id ? null : id;
+        scheduleLayout();
     }
 
     function ensureTile(p) {
@@ -120,6 +173,15 @@ if (root) {
 
         el.append(avatar, video, label, handEl);
 
+        const pinBtn = document.createElement('button');
+        pinBtn.type = 'button';
+        pinBtn.className = 'room-tile__pin';
+        pinBtn.title = 'تثبيت / إلغاء التثبيت';
+        pinBtn.innerHTML = ICONS.pin;
+        pinBtn.addEventListener('click', () => togglePin(p.identity));
+        el.appendChild(pinBtn);
+        el.addEventListener('dblclick', (e) => { if (!e.target.closest('button')) togglePin(p.identity); });
+
         if (!p.isLocal) {
             const kick = document.createElement('button');
             kick.type = 'button';
@@ -131,7 +193,7 @@ if (root) {
         }
 
         grid.appendChild(el);
-        t = { el, video, micEl, avatar, badge, handEl };
+        t = { el, video, micEl, avatar, badge, handEl, pinBtn };
         tiles.set(p.identity, t);
         updateLayout();
         return t;
@@ -178,6 +240,7 @@ if (root) {
         t.el.classList.toggle('has-hand', up);
 
         schedulePeople();
+        scheduleLayout();
     }
 
     function handAt(p) {
@@ -193,7 +256,9 @@ if (root) {
             updateLayout();
         }
         prevHands.delete(p.identity);
+        if (pinnedId === p.identity) pinnedId = null;
         schedulePeople();
+        scheduleLayout();
     }
 
     function updateLayout() {
@@ -202,6 +267,7 @@ if (root) {
         countEl.textContent = n + ' في الغرفة';
         countEl.classList.toggle('d-none', n === 0);
         schedulePeople();
+        scheduleLayout();
     }
 
     async function removeParticipant(p, btn) {
@@ -474,6 +540,7 @@ if (root) {
         document.getElementById('peopleClose').addEventListener('click', () => setOpen(false));
         document.getElementById('btnChat').addEventListener('click', () => { if (chatOpen) setOpen(false); });
 
+        document.getElementById('btnManage').addEventListener('click', () => document.getElementById('roomLobbyBar').classList.toggle('is-open'));
         document.getElementById('muteAll').addEventListener('click', () => {
             if (!confirm('كتم ميكروفونات جميع المشاركين؟ يستطيع كل منهم تشغيله من جديد.')) return;
             muteTargets([...room.remoteParticipants.values()].filter((p) => !hostLike(p) || isOwner).filter((p) => !meta(p).host));
@@ -639,6 +706,11 @@ if (root) {
         prejoin.classList.add('d-none');
         document.getElementById('roomWait').classList.add('d-none');
         stage.classList.remove('d-none');
+        root.classList.add('in-call');
+        document.documentElement.classList.add('room-lock');
+        if (window.ResizeObserver) new ResizeObserver(scheduleLayout).observe(grid);
+        window.addEventListener('resize', scheduleLayout);
+        scheduleLayout();
         if (isOwner) document.getElementById('roomLobbyBar').classList.remove('d-none');
         if (canManage && !hostPanelStarted) { hostPanelStarted = true; startHostPanel(); }
         startTimer();
@@ -746,7 +818,7 @@ if (root) {
             });
             count.textContent = String(items.length);
             panel.classList.toggle('d-none', items.length === 0);
-            bar.classList.toggle('d-none', !(isOwner || items.length > 0)); // المساعد يرى اللوحة فقط حين يوجد منتظرون
+            bar.classList.toggle('has-waiting', items.length > 0); // تفتح لوحة الإدارة تلقائيًا عند وجود منتظرين
             if (items.length > lastCount) {
                 toast('🔔 ' + items.length + ' بانتظار الدخول');
                 try { document.title = '🔔 ' + items.length + ' بانتظار الدخول — ' + document.title.replace(/^🔔 \d+ بانتظار الدخول — /, ''); } catch (e) { /* يُتجاهل */ }

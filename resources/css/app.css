@@ -1671,3 +1671,61 @@ button.is-loading { opacity: .65; cursor: progress; }
 .people-row__acts { flex-basis: 100%; display: flex; flex-wrap: wrap; gap: .35rem; padding-inline-start: 2.8rem; }
 .people-row__acts .btn { font-size: .75rem; padding: .15rem .55rem; }
 .people-row__acts .btn.is-danger { color: #fca5a5; border-color: rgba(248, 113, 113, .5); }
+
+/* ===== وضع الاجتماع بملء الشاشة (على نمط Meet / Zoom) ===== */
+html.room-lock, html.room-lock body { overflow: hidden; }
+.room.in-call { position: fixed; inset: 0; height: 100dvh; z-index: 1050; display: flex; flex-direction: column; background: #0a0814; --g: 8px; }
+.room.in-call .room-head { margin: 0 !important; padding: .55rem 1rem; flex: 0 0 auto; }
+.room.in-call .room-head > div:first-child > a { display: none; }
+.room.in-call .room-head h1 { font-size: 1rem; }
+.room.in-call .room-stage { flex: 1; min-height: 0; display: flex; flex-direction: column; position: relative; }
+
+/* الشبكة: تملأ المساحة وتختار أنسب عدد أعمدة */
+.room.in-call .room-grid { flex: 1; min-height: 0; padding: 0 .75rem .6rem; display: flex; flex-wrap: wrap; align-content: center; justify-content: center; gap: var(--g); position: relative; grid-template-columns: none; }
+.room.in-call .room-tile { aspect-ratio: auto; border-radius: .85rem; border-width: 2px; flex: 0 0 calc((100% - (var(--cols, 1) - 1) * var(--g)) / var(--cols, 1)); height: calc((100% - (var(--rows, 1) - 1) * var(--g)) / var(--rows, 1)); container-type: size; }
+.room.in-call .room-tile__avatar { font-size: clamp(1.6rem, 12cqmin, 3.6rem); }
+.room.in-call .room-tile__avatar::before { width: clamp(3.6rem, 36cqmin, 9rem); height: clamp(3.6rem, 36cqmin, 9rem); }
+.room.in-call .room-tile__avatar > img { width: clamp(3.6rem, 36cqmin, 9rem); height: clamp(3.6rem, 36cqmin, 9rem); }
+.room.in-call .room-tile__label { padding: .5rem .8rem; font-size: .9rem; }
+
+/* تكبير بطاقة (مشاركة شاشة أو تثبيت) والبقية في شريط جانبي */
+.room.in-call .room-grid.has-spot { flex-wrap: nowrap; flex-direction: column; justify-content: flex-start; align-content: stretch; overflow-y: auto; }
+.room.in-call .room-grid.has-spot .room-tile { flex: 0 0 auto; width: 220px; height: auto; aspect-ratio: 16 / 10; margin-inline-start: auto; }
+.room.in-call .room-grid.has-spot .room-tile.is-spot { position: absolute; top: 0; bottom: .6rem; inset-inline-start: .75rem; inset-inline-end: calc(220px + .75rem + var(--g)); width: auto; aspect-ratio: auto; margin: 0; }
+.room.in-call .room-tile.is-spot.is-screen .room-tile__video { object-fit: contain; }
+@media (max-width: 767.98px) {
+  .room.in-call .room-grid { padding: 0 .4rem .4rem; }
+  .room.in-call .room-grid.has-spot { flex-direction: row; overflow-x: auto; overflow-y: hidden; align-items: flex-end; padding-top: 0; }
+  .room.in-call .room-grid.has-spot .room-tile { width: 130px; height: 90px; aspect-ratio: auto; margin: 0; }
+  .room.in-call .room-grid.has-spot .room-tile.is-spot { top: 0; bottom: calc(90px + .4rem + var(--g)); inset-inline: .4rem; width: auto; height: auto; }
+}
+
+/* زر التثبيت */
+.room-tile__pin { position: absolute; top: .5rem; inset-inline-end: .5rem; z-index: 4; width: 1.9rem; height: 1.9rem; border-radius: 50%; border: 0; display: grid; place-items: center; background: rgba(0, 0, 0, .6); color: #fff; opacity: 0; transition: opacity .15s; }
+.room-tile:hover .room-tile__pin, .room-tile__pin:focus, .room-tile__pin.is-on { opacity: 1; }
+.room-tile__pin.is-on { background: #a855f7; }
+.room:not(.is-owner) .room-tile.is-cohost-tile .room-tile__kick, .room-tile__kick { inset-inline-end: 2.6rem; }
+@media (hover: none) { .room-tile__pin { opacity: .85; } }
+
+/* شريط التحكم أسفل الشاشة */
+.room.in-call .room-controls { position: static; flex: 0 0 auto; padding: .65rem .8rem calc(.65rem + env(safe-area-inset-bottom)); gap: .6rem; background: rgba(10, 8, 20, .98); }
+.room.in-call .room-btn { border-radius: 1rem; }
+
+/* لوحة الإدارة تصبح نافذة عائمة تُفتح بزر «الإدارة» أو عند وجود منتظرين */
+.room.in-call .room-lobbybar { display: none; position: fixed; top: 3.2rem; inset-inline-end: .75rem; width: min(26rem, calc(100vw - 1.5rem)); max-height: 65dvh; overflow: auto; z-index: 1038; margin: 0 !important; background: rgba(16, 13, 34, .98); box-shadow: 0 18px 50px rgba(0, 0, 0, .55); }
+.room.in-call .room-lobbybar.is-open, .room.in-call .room-lobbybar.has-waiting { display: block; }
+.room:not(.is-manager) .room-lobbybar { display: none !important; }
+
+/* اللوحات الجانبية وطبقات التفاعل فوق الشريط الجديد */
+.room.in-call .room-chat { inset-block: 3.2rem 5.8rem; }
+.room.in-call .room-reactbar { bottom: 5.6rem; }
+.room.in-call .room-reacts { bottom: 5.6rem; }
+.room.in-call .room-toasts { top: 3.4rem; }
+@media (max-width: 575.98px) {
+  .room.in-call .room-chat { inset-block: auto 5.4rem; height: 62dvh; }
+  .room.in-call .room-controls { gap: .35rem; padding-inline: .4rem; }
+  .room.in-call .room-btn { width: min(2.8rem, calc((100vw - 1rem - 7 * .35rem) / 8)); min-width: 0; height: min(2.8rem, calc((100vw - 1rem - 7 * .35rem) / 8)); padding: 0; border-radius: 50%; justify-content: center; }
+  .room.in-call .room-btn__label { display: none; }
+  .room.in-call .room-btn__dot { top: -.25rem; inset-inline-end: -.25rem; }
+  .room.in-call .room-head h1 { max-width: 11rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+}
