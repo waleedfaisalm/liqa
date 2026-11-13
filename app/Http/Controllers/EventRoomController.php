@@ -13,7 +13,7 @@ use Illuminate\View\View;
 
 class EventRoomController extends Controller
 {
-    /** صفحة الغرفة المباشرة للمنظّم والمشاركين المقبولين فقط */
+    /** صفحة الغرفة المباشرة: للمنظّم والمشاركين المقبولين، ولغيرهم عبر الرابط بموافقة المنظّم */
     public function show(Request $request, Event $event): View|RedirectResponse
     {
         $user = $request->user();
@@ -33,9 +33,12 @@ class EventRoomController extends Controller
         return view('events.room', [
             'event' => $event,
             'isHost' => $isHost,
+            'isCohost' => ! $isHost && $this->isCohost($event, $user),
+            'viaLink' => ! $isHost && ! $event->isParticipant($user),
             'token' => $isHost ? $this->tokenFor($event, $user, true) : null,
             'serverUrl' => LiveKit::url(),
             'lobbyOn' => (bool) $event->room_lobby,
+            'linkOn' => (bool) $event->room_link,
         ]);
     }
 
@@ -52,9 +55,15 @@ class EventRoomController extends Controller
             return response()->json(['status' => 'admitted']);
         }
 
+        $viaLink = ! $event->isParticipant($user);
+
+        // من يدخل بالرابط ينتظر موافقة المنظّم دائمًا، حتى لو أُوقفت غرفة الانتظار
         $entry = $event->roomEntries()->firstOrCreate(
             ['user_id' => $user->id],
-            ['status' => $event->room_lobby ? EventRoomEntry::WAITING : EventRoomEntry::ADMITTED],
+            [
+                'status' => ($event->room_lobby || $viaLink) ? EventRoomEntry::WAITING : EventRoomEntry::ADMITTED,
+                'via_link' => $viaLink,
+            ],
         );
 
         return response()->json(['status' => $this->effectiveStatus($event, $entry)]);
@@ -93,10 +102,10 @@ class EventRoomController extends Controller
         return response()->json(['token' => $this->tokenFor($event, $user, $event->isHostedBy($user)), 'url' => LiveKit::url()]);
     }
 
-    /** المنظّم: قائمة المنتظرين */
+    /** المنظّم أو المساعد: قائمة المنتظرين */
     public function waiting(Request $request, Event $event): JsonResponse
     {
-        abort_unless($event->isHostedBy($request->user()), 403);
+        abort_unless($this->canManage($event, $request->user()), 403);
 
         $list = $event->roomEntries()->where('status', EventRoomEntry::WAITING)->with('user')->oldest()->get()
             ->map(fn ($e) => [
@@ -104,15 +113,16 @@ class EventRoomController extends Controller
                 'name' => $e->user->name,
                 'avatar' => $e->user->avatarUrl(),
                 'initial' => $e->user->initial(),
+                'link' => (bool) $e->via_link,
             ])->values();
 
         return response()->json(['waiting' => $list, 'lobby' => (bool) $event->room_lobby]);
     }
 
-    /** المنظّم: قبول أو رفض (أو قبول الجميع) */
+    /** المنظّم أو المساعد: قبول أو رفض (أو قبول الجميع) */
     public function decide(Request $request, Event $event): JsonResponse
     {
-        abort_unless($event->isHostedBy($request->user()), 403);
+        abort_unless($this->canManage($event, $request->user()), 403);
 
         $data = $request->validate([
             'action' => ['required', 'in:admit,deny,admit_all'],
@@ -141,18 +151,98 @@ class EventRoomController extends Controller
         return response()->json(['lobby' => $on]);
     }
 
-    /** المنظّم يُخرج مشاركًا من الغرفة ويمنعه من العودة */
-    public function remove(Request $request, Event $event): JsonResponse
+    /** المنظّم: السماح بالدخول بالرابط أو إيقافه */
+    public function link(Request $request, Event $event): JsonResponse
     {
         abort_unless($event->isHostedBy($request->user()), 403);
 
-        $data = $request->validate(['identity' => ['required', 'string', 'regex:/^\d+$/']]);
+        $on = $request->boolean('enabled');
+        $event->forceFill(['room_link' => $on])->save();
 
-        if ($data['identity'] === (string) $request->user()->id) {
+        return response()->json(['link' => $on]);
+    }
+
+    /** المنظّم: ترقية مشارك إلى منظّم مساعد أو إلغاء ذلك */
+    public function cohost(Request $request, Event $event): JsonResponse
+    {
+        abort_unless($event->isHostedBy($request->user()), 403);
+
+        $data = $request->validate(['identity' => ['required', 'string', 'regex:/^\d+$/'], 'on' => ['required', 'boolean']]);
+
+        $target = User::find((int) $data['identity']);
+        if (! $target || $event->isHostedBy($target)) {
+            return response()->json(['ok' => false, 'message' => 'لا يمكن تعديل هذا العضو.'], 422);
+        }
+
+        $entry = $event->roomEntries()->where('user_id', $target->id)->first();
+        if (! $entry || $entry->status !== EventRoomEntry::ADMITTED) {
+            return response()->json(['ok' => false, 'message' => 'يجب أن يكون العضو داخل الغرفة.'], 422);
+        }
+
+        $on = (bool) $data['on'];
+        $entry->forceFill(['is_cohost' => $on])->save();
+
+        // تحديث فوري لمن هو متصل الآن؛ وإلا يُطبَّق عند دخوله القادم
+        if (LiveKit::configured()) {
+            LiveKit::updateMetadata($event->roomName(), (string) $target->id, $this->metaFor($target, false, $on));
+        }
+
+        return response()->json(['ok' => true, 'cohost' => $on]);
+    }
+
+    /** كتم ميكروفونات من الخادم (منظّم أو مساعد) */
+    public function mute(Request $request, Event $event): JsonResponse
+    {
+        $user = $request->user();
+        abort_unless($this->canManage($event, $user), 403);
+
+        $data = $request->validate([
+            'targets' => ['required', 'array', 'max:100'],
+            'targets.*.identity' => ['required', 'string', 'regex:/^\d+$/'],
+            'targets.*.sid' => ['required', 'string', 'max:80', 'regex:/^[A-Za-z0-9_\-]+$/'],
+        ]);
+
+        $isOwner = $event->isHostedBy($user);
+        $cohosts = $event->roomEntries()->where('is_cohost', true)->pluck('user_id')->map(fn ($id) => (string) $id)->all();
+        $done = 0;
+
+        foreach ($data['targets'] as $t) {
+            $id = $t['identity'];
+
+            if ($id === (string) $event->user_id || $id === (string) $user->id || (! $isOwner && in_array($id, $cohosts, true))) {
+                continue;
+            }
+
+            if (LiveKit::configured() && LiveKit::mute($event->roomName(), $id, $t['sid'])) {
+                $done++;
+            }
+        }
+
+        return response()->json(['muted' => $done]);
+    }
+
+    /** المنظّم أو المساعد يُخرج مشاركًا من الغرفة ويمنعه من العودة */
+    public function remove(Request $request, Event $event): JsonResponse
+    {
+        $user = $request->user();
+        abort_unless($this->canManage($event, $user), 403);
+
+        $data = $request->validate(['identity' => ['required', 'string', 'regex:/^\d+$/']]);
+        $id = (int) $data['identity'];
+
+        if ($id === $user->id) {
             return response()->json(['ok' => false, 'message' => 'لا يمكنك إخراج نفسك.'], 422);
         }
 
-        $event->roomEntries()->updateOrCreate(['user_id' => (int) $data['identity']], ['status' => EventRoomEntry::REMOVED]);
+        if ($id === $event->user_id) {
+            return response()->json(['ok' => false, 'message' => 'لا يمكن إخراج المنظّم.'], 422);
+        }
+
+        if (! $event->isHostedBy($user) && $this->isCohost($event, User::find($id))) {
+            return response()->json(['ok' => false, 'message' => 'وحده المنظّم يخرج منظّمًا مساعدًا.'], 422);
+        }
+
+        $event->roomEntries()->updateOrCreate(['user_id' => $id], ['status' => EventRoomEntry::REMOVED, 'is_cohost' => false]);
 
         $ok = LiveKit::configured() && LiveKit::remove($event->roomName(), $data['identity']);
 
@@ -164,8 +254,12 @@ class EventRoomController extends Controller
     /** سبب المنع (أو null إن كان الدخول مسموحًا) */
     private function gate(Event $event, ?User $user): ?string
     {
-        if (! $user || ! $event->isParticipant($user)) {
-            return 'الغرفة المباشرة متاحة للمنظّم والمشاركين المقبولين فقط.';
+        if (! $user) {
+            return 'سجّل الدخول للانضمام إلى الغرفة.';
+        }
+
+        if (! $event->isParticipant($user) && ! $event->room_link) {
+            return 'الدخول إلى هذه الغرفة متاح للمشاركين المقبولين فقط.';
         }
 
         if ($event->isCancelled()) {
@@ -185,14 +279,30 @@ class EventRoomController extends Controller
         return null;
     }
 
-    /** إن أوقف المنظّم غرفة الانتظار يُعدّ المنتظرون مقبولين */
+    /** إن أوقف المنظّم غرفة الانتظار يُعدّ المنتظرون مقبولين، إلا من دخل بالرابط */
     private function effectiveStatus(Event $event, EventRoomEntry $entry): string
     {
-        if ($entry->status === EventRoomEntry::WAITING && ! $event->room_lobby) {
+        if ($entry->status === EventRoomEntry::WAITING && ! $event->room_lobby && ! $entry->via_link) {
             return EventRoomEntry::ADMITTED;
         }
 
         return $entry->status;
+    }
+
+    private function isCohost(Event $event, ?User $user): bool
+    {
+        return $user !== null && $event->roomEntries()
+            ->where('user_id', $user->id)->where('is_cohost', true)->where('status', EventRoomEntry::ADMITTED)->exists();
+    }
+
+    private function canManage(Event $event, ?User $user): bool
+    {
+        return $event->isHostedBy($user) || $this->isCohost($event, $user);
+    }
+
+    private function metaFor(User $user, bool $host, bool $cohost): array
+    {
+        return ['avatar' => $user->avatarUrl(), 'host' => $host, 'cohost' => $cohost, 'initial' => $user->initial()];
     }
 
     private function tokenFor(Event $event, User $user, bool $admin): string
@@ -201,7 +311,7 @@ class EventRoomController extends Controller
             $event->roomName(),
             (string) $user->id,
             $user->name,
-            ['avatar' => $user->avatarUrl(), 'host' => $admin, 'initial' => $user->initial()],
+            $this->metaFor($user, $admin, ! $admin && $this->isCohost($event, $user)),
             admin: $admin,
         );
     }

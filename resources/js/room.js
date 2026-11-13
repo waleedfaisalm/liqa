@@ -8,7 +8,8 @@ if (root) {
     const stage = document.getElementById('roomStage');
     const errBox = document.getElementById('roomError');
     const countEl = document.getElementById('roomCount');
-    const isHost = root.dataset.host === '1';
+    const isOwner = root.dataset.host === '1';
+    let canManage = isOwner || root.dataset.cohost === '1'; // المنظّم أو المنظّم المساعد
 
     const ICONS = {
         mic: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>',
@@ -18,6 +19,9 @@ if (root) {
         share: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4M9 10l3-3 3 3M12 7v6"/></svg>',
         leave: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 4H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h5M15 8l4 4-4 4M19 12H9"/></svg>',
         chat: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H9l-5 4z"/></svg>',
+        hand: '<span class="room-emoji">✋</span>',
+        react: '<span class="room-emoji">🙂</span>',
+        people: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3 20a6 6 0 0 1 12 0M16 5a3 3 0 0 1 0 6M18 14a5.5 5.5 0 0 1 3 5"/></svg>',
         kick: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>',
     };
     document.getElementById('icoMic').innerHTML = ICONS.mic;
@@ -25,6 +29,30 @@ if (root) {
     document.getElementById('icoShare').innerHTML = ICONS.share;
     document.getElementById('icoLeave').innerHTML = ICONS.leave;
     document.getElementById('icoChat').innerHTML = ICONS.chat;
+    document.getElementById('icoHand').innerHTML = ICONS.hand;
+    document.getElementById('icoReact').innerHTML = ICONS.react;
+    document.getElementById('icoPeople').innerHTML = ICONS.people;
+
+    const meta = (p) => {
+        try { return JSON.parse(p.metadata || '{}'); } catch { return {}; }
+    };
+    const hostLike = (p) => { const m = meta(p); return !!(m.host || m.cohost); };
+    const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text) e.textContent = text; return e; };
+    let selfMuteUntil = 0;   // لتمييز كتم المنظّم عن كتمك أنت
+    let syncControls = () => {};
+    let myHand = 0;          // وقت رفع يدك (0 = منخفضة)
+    const prevHands = new Map();
+
+    // إشعار صغير أعلى الشاشة
+    function toast(text) {
+        const box = document.getElementById('roomToasts');
+        if (!box) return;
+        const t = el('div', 'room-toast', text);
+        box.appendChild(t);
+        setTimeout(() => t.classList.add('is-out'), 3200);
+        setTimeout(() => t.remove(), 3700);
+        while (box.children.length > 4) box.firstChild.remove();
+    }
 
     const api = async (url, method = 'GET', body = null) => {
         const res = await fetch(url, {
@@ -40,10 +68,6 @@ if (root) {
     let room = null;
     const tiles = new Map(); // identity -> {el, video, ...}
     let leaving = false;
-
-    const meta = (p) => {
-        try { return JSON.parse(p.metadata || '{}'); } catch { return {}; }
-    };
 
     function showError(msg) {
         errBox.textContent = msg;
@@ -86,17 +110,17 @@ if (root) {
         nameEl.textContent = (p.name || 'عضو') + (p.isLocal ? ' (أنت)' : '');
         const micEl = document.createElement('span');
         micEl.className = 'room-tile__mic';
-        label.append(micEl, nameEl);
-        if (m.host) {
-            const badge = document.createElement('span');
-            badge.className = 'room-tile__host';
-            badge.textContent = 'المنظّم';
-            label.appendChild(badge);
-        }
+        const badge = document.createElement('span');
+        badge.className = 'room-tile__host d-none';
+        label.append(micEl, nameEl, badge);
 
-        el.append(avatar, video, label);
+        const handEl = document.createElement('span');
+        handEl.className = 'room-tile__hand d-none';
+        handEl.textContent = '✋';
 
-        if (isHost && !p.isLocal) {
+        el.append(avatar, video, label, handEl);
+
+        if (!p.isLocal) {
             const kick = document.createElement('button');
             kick.type = 'button';
             kick.className = 'room-tile__kick';
@@ -107,7 +131,7 @@ if (root) {
         }
 
         grid.appendChild(el);
-        t = { el, video, micEl, avatar };
+        t = { el, video, micEl, avatar, badge, handEl };
         tiles.set(p.identity, t);
         updateLayout();
         return t;
@@ -142,6 +166,23 @@ if (root) {
         const micOn = !!(mic && mic.track && !mic.isMuted);
         t.micEl.innerHTML = micOn ? '' : ICONS.micOff;
         t.micEl.classList.toggle('is-off', !micOn);
+
+        const m = meta(p);
+        t.el.classList.toggle('is-host-tile', !!m.host);
+        t.el.classList.toggle('is-cohost-tile', !!m.cohost);
+        t.badge.textContent = m.host ? 'المنظّم' : 'منظّم مساعد';
+        t.badge.classList.toggle('d-none', !(m.host || m.cohost));
+
+        const up = handAt(p) > 0;
+        t.handEl.classList.toggle('d-none', !up);
+        t.el.classList.toggle('has-hand', up);
+
+        schedulePeople();
+    }
+
+    function handAt(p) {
+        if (p.isLocal) return myHand;
+        return parseInt((p.attributes && p.attributes.hand) || '0', 10) || 0;
     }
 
     function remove(p) {
@@ -151,6 +192,8 @@ if (root) {
             tiles.delete(p.identity);
             updateLayout();
         }
+        prevHands.delete(p.identity);
+        schedulePeople();
     }
 
     function updateLayout() {
@@ -158,18 +201,14 @@ if (root) {
         grid.dataset.count = String(Math.min(n, 9));
         countEl.textContent = n + ' في الغرفة';
         countEl.classList.toggle('d-none', n === 0);
+        schedulePeople();
     }
 
     async function removeParticipant(p, btn) {
         if (!confirm('إخراج ' + (p.name || 'هذا العضو') + ' من الغرفة؟ لن يستطيع الدخول مجددًا.')) return;
         btn.disabled = true;
-        try {
-            await fetch(root.dataset.removeUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': root.dataset.csrf },
-                body: JSON.stringify({ identity: p.identity }),
-            });
-        } catch (e) { /* يُتجاهل */ }
+        const r = await api(root.dataset.removeUrl, 'POST', { identity: p.identity });
+        if (!r.ok) toast(r.data.message || 'تعذّر إخراج العضو.');
         btn.disabled = false;
     }
 
@@ -194,6 +233,7 @@ if (root) {
         };
 
         btnMic.addEventListener('click', async () => {
+            selfMuteUntil = Date.now() + 1500;
             try { await lp.setMicrophoneEnabled(!lp.isMicrophoneEnabled); } catch (e) { alert('تعذّر الوصول إلى الميكروفون. تأكد من منح الإذن للمتصفح.'); }
             sync();
         });
@@ -218,6 +258,7 @@ if (root) {
 
         room.on(RoomEvent.LocalTrackPublished, sync);
         room.on(RoomEvent.LocalTrackUnpublished, sync);
+        syncControls = sync;
         sync();
 
         return sync;
@@ -244,19 +285,19 @@ if (root) {
         const time = () => new Date().toLocaleTimeString('ar', { hour: 'numeric', minute: '2-digit' });
 
         const refreshLock = () => {
-            const blocked = chatLocked && !isHost;
+            const blocked = chatLocked && !canManage;
             input.disabled = blocked;
             document.getElementById('chatSend').disabled = blocked;
             input.placeholder = blocked ? 'أوقف المنظّم الكتابة في المحادثة' : 'اكتب رسالة…';
         };
 
-        const addMessage = (name, text, mine, host) => {
+        const addMessage = (name, text, mine, role) => {
             if (empty) empty.remove();
             const row = document.createElement('div');
             row.className = 'chat-msg' + (mine ? ' is-mine' : '');
             const head = document.createElement('div');
             head.className = 'chat-msg__head';
-            head.textContent = (mine ? 'أنت' : name) + (host ? ' · المنظّم' : '') + ' · ' + time();
+            head.textContent = (mine ? 'أنت' : name) + (role ? ' · ' + role : '') + ' · ' + time();
             const body = document.createElement('div');
             body.className = 'chat-msg__body';
             body.textContent = text; // نص خام فقط، بدون HTML
@@ -278,15 +319,15 @@ if (root) {
             e.preventDefault();
             e.stopPropagation();
             const text = input.value.trim().slice(0, 500);
-            if (!text || (chatLocked && !isHost)) return;
+            if (!text || (chatLocked && !canManage)) return;
             if (Date.now() - lastSent < 400) return; // حدّ بسيط ضد الإغراق
             lastSent = Date.now();
             input.value = '';
             try {
                 await room.localParticipant.publishData(enc.encode(JSON.stringify({ t: text })), { reliable: true, topic: 'chat' });
-                addMessage(room.localParticipant.name, text, true, isHost);
+                addMessage(room.localParticipant.name, text, true, isOwner ? 'المنظّم' : (canManage ? 'منظّم مساعد' : ''));
             } catch (err) {
-                addMessage('النظام', 'تعذّر إرسال الرسالة.', false, false);
+                addMessage('النظام', 'تعذّر إرسال الرسالة.', false, '');
             }
         });
 
@@ -294,7 +335,8 @@ if (root) {
             if (!participant) return;
             let data;
             try { data = JSON.parse(dec.decode(payload)); } catch (e) { return; }
-            const fromHost = !!meta(participant).host; // البيانات الوصفية موقّعة من الخادم ولا يمكن تزويرها
+            const fromHost = hostLike(participant); // البيانات الوصفية من الخادم ولا يمكن تزويرها
+            const roleOf = (pp) => (meta(pp).host ? 'المنظّم' : (meta(pp).cohost ? 'منظّم مساعد' : ''));
 
             if (topic === 'control') {
                 if (fromHost && typeof data.chatLocked === 'boolean') { chatLocked = data.chatLocked; refreshLock(); }
@@ -303,7 +345,7 @@ if (root) {
             if (topic !== 'chat' || typeof data.t !== 'string') return;
             if (chatLocked && !fromHost) return;
 
-            addMessage(participant.name || 'عضو', data.t.slice(0, 500), false, fromHost);
+            addMessage(participant.name || 'عضو', data.t.slice(0, 500), false, roleOf(participant));
             if (!chatOpen) {
                 unread += 1;
                 dot.textContent = String(unread);
@@ -312,7 +354,7 @@ if (root) {
         });
 
         // المنظّم: مفتاح السماح بالكتابة، ويُعلَن للقادمين الجدد
-        if (isHost) {
+        if (isOwner) {
             const toggle = document.getElementById('chatToggle');
             const broadcast = () => room.localParticipant
                 .publishData(enc.encode(JSON.stringify({ chatLocked })), { reliable: true, topic: 'control' }).catch(() => {});
@@ -321,6 +363,214 @@ if (root) {
         }
 
         refreshLock();
+    }
+
+
+    // ---- المشاركون (قائمة جانبية) ----
+    let peopleOpen = false;
+    let peopleFrame = 0;
+
+    const everyone = () => (room ? [room.localParticipant, ...room.remoteParticipants.values()] : []);
+
+    function schedulePeople() {
+        if (peopleFrame) return;
+        peopleFrame = requestAnimationFrame(() => { peopleFrame = 0; renderPeople(); });
+    }
+
+    function micPub(p) { return p.getTrackPublication(Track.Source.Microphone); }
+
+    async function muteTargets(list) {
+        const targets = list
+            .map((p) => ({ identity: p.identity, pub: micPub(p) }))
+            .filter((x) => x.pub && x.pub.trackSid && !x.pub.isMuted)
+            .map((x) => ({ identity: x.identity, sid: x.pub.trackSid }));
+        if (!targets.length) { toast('لا توجد ميكروفونات مفتوحة لكتمها.'); return; }
+        const r = await api(root.dataset.muteUrl, 'POST', { targets });
+        toast(r.ok ? 'تم كتم ' + (r.data.muted || 0) + ' ميكروفون.' : 'تعذّر الكتم. أعد المحاولة.');
+    }
+
+    function sendControl(obj, dest) {
+        const opts = { reliable: true, topic: 'control' };
+        if (dest) opts.destinationIdentities = dest;
+        return room.localParticipant.publishData(enc.encode(JSON.stringify(obj)), opts).catch(() => {});
+    }
+
+    function renderPeople() {
+        if (!room) return;
+        const all = everyone();
+        document.getElementById('peopleTotal').textContent = String(all.length);
+
+        const hands = all.filter((p) => handAt(p) > 0);
+        const dot = document.getElementById('handDot');
+        dot.textContent = String(hands.length);
+        dot.classList.toggle('d-none', !(canManage && hands.length > 0));
+
+        if (!peopleOpen) return;
+
+        const rank = (p) => {
+            const m = meta(p);
+            return (m.host ? 0 : 1000) + (m.cohost ? 0 : 500) + (handAt(p) > 0 ? 0 : 100);
+        };
+        all.sort((a, b) => (rank(a) - rank(b)) || ((handAt(a) || 0) - (handAt(b) || 0)) || String(a.name).localeCompare(String(b.name), 'ar'));
+
+        const list = document.getElementById('peopleList');
+        list.innerHTML = '';
+
+        all.forEach((p) => {
+            const m = meta(p);
+            const row = el('div', 'people-row');
+
+            const av = el('span', 'wait-row__avatar');
+            if (m.avatar) { const im = document.createElement('img'); im.src = m.avatar; im.alt = ''; av.appendChild(im); } else { av.textContent = m.initial || (p.name || '?').charAt(0); }
+
+            const info = el('div', 'people-row__info');
+            info.appendChild(el('div', 'people-row__name', (p.name || 'عضو') + (p.isLocal ? ' (أنت)' : '')));
+            const role = m.host ? 'المنظّم' : (m.cohost ? 'منظّم مساعد' : '');
+            if (role) info.appendChild(el('div', 'people-row__role', role));
+
+            const state = el('span', 'people-row__state');
+            if (handAt(p) > 0) state.appendChild(el('span', 'people-row__hand', '✋'));
+            const mp = micPub(p);
+            const micOn = !!(mp && mp.track && !mp.isMuted);
+            const mic = el('span', 'people-row__mic' + (micOn ? '' : ' is-off'));
+            mic.innerHTML = micOn ? ICONS.mic.replace(/width="22" height="22"/, 'width="16" height="16"') : ICONS.micOff.replace(/width="22" height="22"/, 'width="16" height="16"');
+            state.appendChild(mic);
+
+            row.append(av, info, state);
+
+            if (canManage && !p.isLocal && !m.host) {
+                const acts = el('div', 'people-row__acts');
+                const small = (txt, fn) => { const b = el('button', 'btn btn-sm btn-liqa-outline', txt); b.type = 'button'; b.addEventListener('click', async () => { b.disabled = true; await fn(); b.disabled = false; }); return b; };
+
+                if (handAt(p) > 0) acts.appendChild(small('إنزال اليد', () => sendControl({ lower: p.identity }, [p.identity])));
+                if (micOn && (isOwner || !m.cohost)) acts.appendChild(small('كتم', () => muteTargets([p])));
+                if (isOwner) {
+                    acts.appendChild(small(m.cohost ? 'إلغاء المساعد' : 'منظّم مساعد', async () => {
+                        const r = await api(root.dataset.cohostUrl, 'POST', { identity: p.identity, on: !m.cohost });
+                        toast(r.ok ? (m.cohost ? 'أُلغيت صلاحية المساعد.' : 'أصبح ' + (p.name || 'العضو') + ' منظّمًا مساعدًا.') : (r.data.message || 'تعذّر التعديل.'));
+                    }));
+                }
+                if (isOwner || !m.cohost) {
+                    const k = small('إخراج', () => removeParticipant(p, k));
+                    k.classList.add('is-danger');
+                    acts.appendChild(k);
+                }
+                row.appendChild(acts);
+            }
+            list.appendChild(row);
+        });
+    }
+
+    function setupPeople() {
+        const panel = document.getElementById('roomPeople');
+        const chatPanel = document.getElementById('roomChat');
+        const btn = document.getElementById('btnPeople');
+        const setOpen = (v) => {
+            peopleOpen = v;
+            panel.classList.toggle('d-none', !v);
+            if (v) { chatPanel.classList.add('d-none'); chatOpen = false; renderPeople(); }
+        };
+        btn.addEventListener('click', () => setOpen(!peopleOpen));
+        document.getElementById('peopleClose').addEventListener('click', () => setOpen(false));
+        document.getElementById('btnChat').addEventListener('click', () => { if (chatOpen) setOpen(false); });
+
+        document.getElementById('muteAll').addEventListener('click', () => {
+            if (!confirm('كتم ميكروفونات جميع المشاركين؟ يستطيع كل منهم تشغيله من جديد.')) return;
+            muteTargets([...room.remoteParticipants.values()].filter((p) => !hostLike(p) || isOwner).filter((p) => !meta(p).host));
+        });
+        document.getElementById('lowerAll').addEventListener('click', () => {
+            sendControl({ lower: 'all' });
+            toast('أُنزلت الأيدي المرفوعة.');
+        });
+    }
+
+    // ---- رفع اليد (خصائص المشارك، فيراها حتى القادمون لاحقًا) ----
+    function setupHand() {
+        const btn = document.getElementById('btnHand');
+        const apply = async (up) => {
+            myHand = up ? Date.now() : 0;
+            btn.classList.toggle('is-active', up);
+            refresh(room.localParticipant);
+            try { await room.localParticipant.setAttributes({ hand: up ? String(myHand) : '' }); } catch (e) { toast('تعذّر تحديث رفع اليد.'); }
+        };
+        btn.addEventListener('click', () => apply(!myHand));
+
+        room.on(RoomEvent.ParticipantAttributesChanged, (changed, p) => {
+            if (p.isLocal) return;
+            refresh(p);
+            const up = handAt(p) > 0;
+            if (up && !prevHands.get(p.identity) && canManage) toast('✋ ' + (p.name || 'عضو') + ' رفع يده');
+            prevHands.set(p.identity, up);
+        });
+
+        room.on(RoomEvent.DataReceived, (payload, participant, kind, topic) => {
+            if (topic !== 'control' || !participant || !hostLike(participant)) return;
+            let d; try { d = JSON.parse(dec.decode(payload)); } catch (e) { return; }
+            if (d && d.lower && myHand && (d.lower === 'all' || d.lower === room.localParticipant.identity)) {
+                apply(false);
+                toast('أنزل المنظّم يدك.');
+            }
+        });
+    }
+
+    // ---- ردود الفعل السريعة ----
+    const REACTIONS = ['👍', '👏', '❤️', '😂', '🎉'];
+    function setupReactions() {
+        const bar = document.getElementById('reactBar');
+        const btn = document.getElementById('btnReact');
+        const layer = document.getElementById('roomReacts');
+        let last = 0;
+
+        const spawn = (emoji, name) => {
+            const f = el('div', 'react-float');
+            f.style.insetInlineStart = (8 + Math.random() * 80) + '%';
+            f.appendChild(el('span', 'react-float__emoji', emoji));
+            if (name) f.appendChild(el('span', 'react-float__name', name));
+            layer.appendChild(f);
+            setTimeout(() => f.remove(), 3200);
+            while (layer.children.length > 25) layer.firstChild.remove();
+        };
+
+        btn.addEventListener('click', (e) => { e.stopPropagation(); bar.classList.toggle('d-none'); });
+        document.addEventListener('click', (e) => { if (!bar.contains(e.target)) bar.classList.add('d-none'); });
+
+        bar.querySelectorAll('button').forEach((b) => b.addEventListener('click', () => {
+            if (Date.now() - last < 300) return;
+            last = Date.now();
+            const emoji = b.dataset.emoji;
+            spawn(emoji, 'أنت');
+            room.localParticipant.publishData(enc.encode(JSON.stringify({ e: emoji })), { reliable: false, topic: 'react' }).catch(() => {});
+        }));
+
+        room.on(RoomEvent.DataReceived, (payload, participant, kind, topic) => {
+            if (topic !== 'react' || !participant) return;
+            let d; try { d = JSON.parse(dec.decode(payload)); } catch (e) { return; }
+            if (d && REACTIONS.includes(d.e)) spawn(d.e, participant.name || '');
+        });
+    }
+
+    // ---- المؤقّت ونسخ الرابط ----
+    function startTimer() {
+        const t = document.getElementById('roomTimer');
+        const t0 = Date.now();
+        t.classList.remove('d-none');
+        const pad = (n) => String(n).padStart(2, '0');
+        setInterval(() => {
+            const s = Math.floor((Date.now() - t0) / 1000);
+            const h = Math.floor(s / 3600);
+            t.textContent = (h ? h + ':' : '') + pad(Math.floor((s % 3600) / 60)) + ':' + pad(s % 60);
+        }, 1000);
+    }
+
+    // ---- صلاحيات المنظّم / المنظّم المساعد ----
+    let hostPanelStarted = false;
+    function setManager(v) {
+        canManage = v;
+        root.classList.toggle('is-manager', v);
+        if (v && !hostPanelStarted) { hostPanelStarted = true; startHostPanel(); }
+        if (isOwner) document.getElementById('roomLobbyBar').classList.remove('d-none');
+        everyone().forEach((p) => refresh(p));
+        schedulePeople();
     }
 
     async function join(token, serverUrl) {
@@ -346,8 +596,24 @@ if (root) {
                 track.detach().forEach((el) => el.remove());
                 refresh(p);
             })
-            .on(RoomEvent.TrackMuted, (pub, p) => refresh(p))
-            .on(RoomEvent.TrackUnmuted, (pub, p) => refresh(p))
+            .on(RoomEvent.TrackMuted, (pub, p) => {
+                refresh(p);
+                if (p.isLocal) {
+                    syncControls();
+                    if (pub.source === Track.Source.Microphone && Date.now() > selfMuteUntil) toast('تم كتم ميكروفونك من قِبل المنظّم. يمكنك تشغيله متى شئت.');
+                }
+            })
+            .on(RoomEvent.TrackUnmuted, (pub, p) => { refresh(p); if (p.isLocal) syncControls(); })
+            .on(RoomEvent.ParticipantMetadataChanged, (prev, p) => {
+                if (!p) return;
+                refresh(p);
+                if (p.isLocal) {
+                    const was = canManage;
+                    setManager(isOwner || !!meta(p).cohost);
+                    if (!was && canManage) toast('أصبحت منظّمًا مساعدًا: يمكنك قبول المنتظرين وإدارة الغرفة.');
+                    if (was && !canManage) toast('أُلغيت صلاحية المنظّم المساعد.');
+                }
+            })
             .on(RoomEvent.ActiveSpeakersChanged, (speakers) => {
                 const ids = new Set(speakers.map((s) => s.identity));
                 tiles.forEach((t, id) => t.el.classList.toggle('is-speaking', ids.has(id)));
@@ -373,7 +639,9 @@ if (root) {
         prejoin.classList.add('d-none');
         document.getElementById('roomWait').classList.add('d-none');
         stage.classList.remove('d-none');
-        if (isHost) startHostPanel();
+        if (isOwner) document.getElementById('roomLobbyBar').classList.remove('d-none');
+        if (canManage && !hostPanelStarted) { hostPanelStarted = true; startHostPanel(); }
+        startTimer();
 
         refresh(room.localParticipant);
         room.remoteParticipants.forEach((p) => {
@@ -384,6 +652,10 @@ if (root) {
         });
         const sync = wireControls();
         setupChat();
+        setupPeople();
+        setupHand();
+        setupReactions();
+        root.classList.toggle('is-manager', canManage);
 
         try { if (wantMic) await room.localParticipant.setMicrophoneEnabled(true); } catch (e) { alert('تعذّر الوصول إلى الميكروفون.'); }
         try { if (wantCam) await room.localParticipant.setCameraEnabled(true); } catch (e) { alert('تعذّر الوصول إلى الكاميرا.'); }
@@ -443,6 +715,7 @@ if (root) {
 
     // ---- المنظّم: لوحة المنتظرين وغرفة الانتظار ----
     function startHostPanel() {
+        const bar = document.getElementById('roomLobbyBar');
         const panel = document.getElementById('roomWaiting');
         const list = document.getElementById('waitList');
         const count = document.getElementById('waitCount');
@@ -461,7 +734,7 @@ if (root) {
                 if (u.avatar) { const im = document.createElement('img'); im.src = u.avatar; im.alt = ''; av.appendChild(im); } else { av.textContent = u.initial; }
                 const nm = document.createElement('span');
                 nm.className = 'wait-row__name';
-                nm.textContent = u.name;
+                nm.textContent = u.name + (u.link ? ' · عبر الرابط' : '');
                 const ok = document.createElement('button');
                 ok.type = 'button'; ok.className = 'btn btn-sm btn-liqa'; ok.textContent = 'قبول';
                 ok.addEventListener('click', async () => { ok.disabled = true; await api(root.dataset.decideUrl, 'POST', { action: 'admit', user_id: u.id }); poll(); });
@@ -473,7 +746,9 @@ if (root) {
             });
             count.textContent = String(items.length);
             panel.classList.toggle('d-none', items.length === 0);
+            bar.classList.toggle('d-none', !(isOwner || items.length > 0)); // المساعد يرى اللوحة فقط حين يوجد منتظرون
             if (items.length > lastCount) {
+                toast('🔔 ' + items.length + ' بانتظار الدخول');
                 try { document.title = '🔔 ' + items.length + ' بانتظار الدخول — ' + document.title.replace(/^🔔 \d+ بانتظار الدخول — /, ''); } catch (e) { /* يُتجاهل */ }
             }
             if (items.length === 0) document.title = document.title.replace(/^🔔 \d+ بانتظار الدخول — /, '');
@@ -481,6 +756,7 @@ if (root) {
         };
 
         const poll = async () => {
+            if (!canManage) return;
             const r = await api(root.dataset.waitingUrl);
             if (r.ok) render(r.data.waiting || []);
         };
@@ -489,17 +765,29 @@ if (root) {
             await api(root.dataset.decideUrl, 'POST', { action: 'admit_all' });
             poll();
         });
-        toggle.addEventListener('change', async () => {
-            await api(root.dataset.lobbyUrl, 'POST', { enabled: toggle.checked });
-            poll();
-        });
+
+        if (isOwner) {
+            toggle.addEventListener('change', async () => {
+                await api(root.dataset.lobbyUrl, 'POST', { enabled: toggle.checked });
+                poll();
+            });
+            document.getElementById('linkToggle').addEventListener('change', async (e) => {
+                const r = await api(root.dataset.linkUrl, 'POST', { enabled: e.target.checked });
+                toast(r.ok ? (e.target.checked ? 'فُعّل الدخول بالرابط.' : 'أُوقف الدخول بالرابط.') : 'تعذّر الحفظ.');
+            });
+            document.getElementById('copyLink').addEventListener('click', async () => {
+                const url = root.dataset.roomLink;
+                try { await navigator.clipboard.writeText(url); toast('تم نسخ رابط الغرفة.'); }
+                catch (e) { window.prompt('انسخ الرابط:', url); }
+            });
+        }
 
         poll();
         setInterval(poll, 4000);
     }
 
     document.getElementById('roomJoin').addEventListener('click', () => {
-        if (isHost) join(root.dataset.token, root.dataset.url);
+        if (isOwner) join(root.dataset.token, root.dataset.url);
         else requestEntry();
     });
     window.addEventListener('beforeunload', () => { leaving = true; if (room) room.disconnect(); });

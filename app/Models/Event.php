@@ -43,7 +43,7 @@ class Event extends Model
 
     protected function casts(): array
     {
-        return ['starts_at' => 'datetime', 'room_lobby' => 'boolean'];
+        return ['starts_at' => 'datetime', 'room_lobby' => 'boolean', 'room_link' => 'boolean'];
     }
 
     // ---------- علاقات ----------

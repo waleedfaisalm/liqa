@@ -16,7 +16,12 @@ class EventRoomEntry extends Model
 
     public const REMOVED = 'removed';
 
-    protected $fillable = ['event_id', 'user_id', 'status'];
+    protected $fillable = ['event_id', 'user_id', 'status', 'is_cohost', 'via_link'];
+
+    protected function casts(): array
+    {
+        return ['is_cohost' => 'boolean', 'via_link' => 'boolean'];
+    }
 
     public function user(): BelongsTo
     {

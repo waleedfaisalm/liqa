@@ -37,6 +37,7 @@ class LiveKit
                 'canPublish' => true,
                 'canSubscribe' => true,
                 'canPublishData' => true,
+                'canUpdateOwnMetadata' => true, // لرفع اليد عبر خصائص المشارك
                 'roomAdmin' => $admin,
             ],
         ]);
@@ -44,6 +45,27 @@ class LiveKit
 
     /** طرد مشارك من الغرفة (يتطلب صلاحية إدارة على الخادم) */
     public static function remove(string $room, string $identity): bool
+    {
+        return self::call($room, 'RemoveParticipant', ['room' => $room, 'identity' => $identity]);
+    }
+
+    /** كتم مسار صوتي لمشارك من الخادم (لا يستطيع تجاهله) */
+    public static function mute(string $room, string $identity, string $trackSid): bool
+    {
+        return self::call($room, 'MutePublishedTrack', ['room' => $room, 'identity' => $identity, 'track_sid' => $trackSid, 'muted' => true]);
+    }
+
+    /** تحديث البيانات الوصفية لمشارك متصل (مثلاً ترقيته إلى منظّم مساعد فورًا) */
+    public static function updateMetadata(string $room, string $identity, array $metadata): bool
+    {
+        return self::call($room, 'UpdateParticipant', [
+            'room' => $room,
+            'identity' => $identity,
+            'metadata' => json_encode($metadata, JSON_UNESCAPED_UNICODE),
+        ]);
+    }
+
+    private static function call(string $room, string $method, array $body): bool
     {
         $http = preg_replace('#^wss?://#', 'https://', rtrim(self::url(), '/'));
 
@@ -55,10 +77,12 @@ class LiveKit
             'video' => ['room' => $room, 'roomAdmin' => true],
         ]);
 
-        $response = Http::withToken($admin)->acceptJson()->timeout(8)
-            ->post($http.'/twirp/livekit.RoomService/RemoveParticipant', ['room' => $room, 'identity' => $identity]);
-
-        return $response->successful();
+        try {
+            return Http::withToken($admin)->acceptJson()->timeout(8)
+                ->post($http.'/twirp/livekit.RoomService/'.$method, $body)->successful();
+        } catch (\Throwable $e) {
+            return false;
+        }
     }
 
     private static function sign(array $payload): string

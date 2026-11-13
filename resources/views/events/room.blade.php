@@ -3,10 +3,11 @@
 @section('title', 'الغرفة المباشرة — '.$event->title)
 
 @section('content')
-    <div class="room" id="room"
+    <div class="room{{ $isHost ? ' is-owner is-manager' : ($isCohost ? ' is-manager' : '') }}" id="room"
          data-url="{{ $serverUrl }}"
          data-token="{{ $token }}"
          data-host="{{ $isHost ? '1' : '0' }}"
+         data-cohost="{{ $isCohost ? '1' : '0' }}"
          data-lobby="{{ $lobbyOn ? '1' : '0' }}"
          data-knock-url="{{ route('events.room.knock', $event) }}"
          data-status-url="{{ route('events.room.status', $event) }}"
@@ -14,7 +15,11 @@
          data-waiting-url="{{ route('events.room.waiting', $event) }}"
          data-decide-url="{{ route('events.room.decide', $event) }}"
          data-lobby-url="{{ route('events.room.lobby', $event) }}"
+         data-link-url="{{ route('events.room.link', $event) }}"
+         data-cohost-url="{{ route('events.room.cohost', $event) }}"
+         data-mute-url="{{ route('events.room.mute', $event) }}"
          data-remove-url="{{ route('events.room.remove', $event) }}"
+         data-room-link="{{ route('events.room', $event) }}"
          data-csrf="{{ csrf_token() }}"
          data-exit="{{ route('events.show', $event) }}">
 
@@ -23,7 +28,10 @@
                 <a href="{{ route('events.show', $event) }}" class="small text-decoration-none">← العودة إلى صفحة الحدث</a>
                 <h1 class="h4 liqa-title mb-0 mt-1">{{ $event->title }}</h1>
             </div>
-            <span class="liqa-badge liqa-badge--green d-none" id="roomCount"></span>
+            <div class="d-flex align-items-center gap-2">
+                <span class="liqa-badge liqa-badge--pink d-none" id="roomTimer" title="مدة وجودك في الغرفة">00:00</span>
+                <span class="liqa-badge liqa-badge--green d-none" id="roomCount"></span>
+            </div>
         </div>
 
         {{-- شاشة ما قبل الدخول --}}
@@ -39,11 +47,13 @@
                 </label>
             </div>
             @unless ($isHost)
-                @if ($lobbyOn)
+                @if ($viaLink)
+                    <p class="small text-secondary mb-3">دخلت عبر رابط الغرفة. سيصل طلبك إلى المنظّم، وتدخل بعد موافقته.</p>
+                @elseif ($lobbyOn)
                     <p class="small text-secondary mb-3">سيصل طلبك إلى المنظّم، وتدخل الغرفة بعد موافقته.</p>
                 @endif
             @endunless
-            <button type="button" class="btn btn-liqa px-5" id="roomJoin">{{ $isHost ? 'ابدأ الغرفة' : ($lobbyOn ? 'اطلب الدخول' : 'انضم إلى الغرفة') }}</button>
+            <button type="button" class="btn btn-liqa px-5" id="roomJoin">{{ $isHost ? 'ابدأ الغرفة' : (($lobbyOn || $viaLink) ? 'اطلب الدخول' : 'انضم إلى الغرفة') }}</button>
             <div class="small text-danger mt-3 d-none" id="roomError"></div>
         </div>
 
@@ -57,27 +67,49 @@
 
         {{-- الغرفة --}}
         <div class="room-stage d-none" id="roomStage">
-            @if ($isHost)
-                <div class="room-lobbybar mb-3" id="roomLobbyBar">
+            {{-- لوحة التحكم: تظهر للمنظّم والمنظّم المساعد --}}
+            <div class="room-lobbybar mb-3 d-none" id="roomLobbyBar">
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 owner-only">
                     <label class="form-check d-flex align-items-center gap-2 m-0 small">
                         <input type="checkbox" class="form-check-input m-0" id="lobbyToggle" {{ $lobbyOn ? 'checked' : '' }}>
                         <span>غرفة الانتظار (لا يدخل أحد إلا بموافقتك)</span>
                     </label>
-                    <label class="form-check d-flex align-items-center gap-2 m-0 small mt-2">
-                        <input type="checkbox" class="form-check-input m-0" id="chatToggle" checked>
-                        <span>السماح للمشاركين بالكتابة في المحادثة</span>
-                    </label>
-                    <div class="room-waiting d-none" id="roomWaiting">
-                        <div class="d-flex align-items-center justify-content-between gap-2 mb-2">
-                            <strong class="small">بانتظار الدخول <span class="liqa-badge liqa-badge--pink" id="waitCount">0</span></strong>
-                            <button type="button" class="btn btn-sm btn-liqa" id="admitAll">قبول الجميع</button>
-                        </div>
-                        <div id="waitList"></div>
-                    </div>
+                    <button type="button" class="btn btn-sm btn-liqa-outline" id="copyLink">نسخ رابط الغرفة</button>
                 </div>
-            @endif
+                <label class="form-check d-flex align-items-center gap-2 m-0 small mt-2 owner-only">
+                    <input type="checkbox" class="form-check-input m-0" id="linkToggle" {{ $linkOn ? 'checked' : '' }}>
+                    <span>السماح بالدخول بالرابط لمن ليس مشاركًا في الحدث (بعد موافقتك)</span>
+                </label>
+                <label class="form-check d-flex align-items-center gap-2 m-0 small mt-2 owner-only">
+                    <input type="checkbox" class="form-check-input m-0" id="chatToggle" checked>
+                    <span>السماح للمشاركين بالكتابة في المحادثة</span>
+                </label>
+                <div class="room-waiting d-none" id="roomWaiting">
+                    <div class="d-flex align-items-center justify-content-between gap-2 mb-2">
+                        <strong class="small">بانتظار الدخول <span class="liqa-badge liqa-badge--pink" id="waitCount">0</span></strong>
+                        <button type="button" class="btn btn-sm btn-liqa" id="admitAll">قبول الجميع</button>
+                    </div>
+                    <div id="waitList"></div>
+                </div>
+            </div>
+
             <div class="room-grid" id="roomGrid"></div>
             <div id="roomAudios" hidden></div>
+            <div class="room-toasts" id="roomToasts" aria-live="polite"></div>
+            <div class="room-reacts" id="roomReacts" aria-hidden="true"></div>
+
+            {{-- المشاركون --}}
+            <aside class="room-chat d-none" id="roomPeople" aria-label="المشاركون">
+                <div class="room-chat__head">
+                    <strong>المشاركون <span class="liqa-badge liqa-badge--green" id="peopleTotal">0</span></strong>
+                    <button type="button" class="btn btn-sm btn-liqa-outline" id="peopleClose">إغلاق</button>
+                </div>
+                <div class="people-tools manager-only">
+                    <button type="button" class="btn btn-sm btn-liqa-outline" id="muteAll">كتم الجميع</button>
+                    <button type="button" class="btn btn-sm btn-liqa-outline" id="lowerAll">إنزال كل الأيدي</button>
+                </div>
+                <div class="room-chat__list people-list" id="peopleList"></div>
+            </aside>
 
             {{-- المحادثة النصية --}}
             <aside class="room-chat d-none" id="roomChat" aria-label="المحادثة">
@@ -94,11 +126,22 @@
                 </form>
             </aside>
 
+            <div class="room-reactbar d-none" id="reactBar">
+                <button type="button" data-emoji="👍" aria-label="إعجاب">👍</button>
+                <button type="button" data-emoji="👏" aria-label="تصفيق">👏</button>
+                <button type="button" data-emoji="❤️" aria-label="قلب">❤️</button>
+                <button type="button" data-emoji="😂" aria-label="ضحك">😂</button>
+                <button type="button" data-emoji="🎉" aria-label="احتفال">🎉</button>
+            </div>
+
             <div class="room-controls" id="roomControls">
                 <button type="button" class="room-btn" id="btnMic" data-on="1"><span class="room-btn__icon" id="icoMic"></span><span class="room-btn__label">الميكروفون</span></button>
                 <button type="button" class="room-btn" id="btnCam" data-on="1"><span class="room-btn__icon" id="icoCam"></span><span class="room-btn__label">الكاميرا</span></button>
-                <button type="button" class="room-btn" id="btnChat"><span class="room-btn__icon" id="icoChat"></span><span class="room-btn__label">المحادثة</span><span class="room-btn__dot d-none" id="chatDot">0</span></button>
                 <button type="button" class="room-btn" id="btnShare" hidden><span class="room-btn__icon" id="icoShare"></span><span class="room-btn__label">مشاركة الشاشة</span></button>
+                <button type="button" class="room-btn" id="btnHand" title="رفع اليد"><span class="room-btn__icon" id="icoHand"></span><span class="room-btn__label">رفع اليد</span></button>
+                <button type="button" class="room-btn" id="btnReact" title="ردود الفعل"><span class="room-btn__icon" id="icoReact"></span><span class="room-btn__label">تفاعل</span></button>
+                <button type="button" class="room-btn" id="btnPeople"><span class="room-btn__icon" id="icoPeople"></span><span class="room-btn__label">المشاركون</span><span class="room-btn__dot d-none" id="handDot">0</span></button>
+                <button type="button" class="room-btn" id="btnChat"><span class="room-btn__icon" id="icoChat"></span><span class="room-btn__label">المحادثة</span><span class="room-btn__dot d-none" id="chatDot">0</span></button>
                 <button type="button" class="room-btn room-btn--leave" id="btnLeave"><span class="room-btn__icon" id="icoLeave"></span><span class="room-btn__label">مغادرة</span></button>
             </div>
         </div>
