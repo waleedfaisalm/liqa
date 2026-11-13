@@ -116,7 +116,16 @@ class EventController extends Controller
             return redirect()->route('events.index')->with('error', 'إنشاء الأحداث الجديدة متوقف مؤقتًا من إدارة المنصة.');
         }
 
-        $data = $this->normalizePlace($request->validate($this->rules()));
+        $validated = $request->validate($this->rules() + [
+            'repeat' => ['nullable', Rule::in(['none', 'weekly', 'biweekly', 'monthly'])],
+            'occurrences' => ['nullable', 'required_unless:repeat,none', 'integer', 'min:2', 'max:12'],
+        ]);
+
+        $repeat = $validated['repeat'] ?? 'none';
+        $occurrences = $repeat === 'none' ? 1 : (int) ($validated['occurrences'] ?? 2);
+        unset($validated['repeat'], $validated['occurrences']);
+
+        $data = $this->normalizePlace($validated);
 
         // حماية من النقر المزدوج: حدث مطابق (نفس العنوان والموعد) أُنشئ للتو من نفس العضو
         $duplicate = Event::where('user_id', $request->user()->id)
@@ -129,12 +138,30 @@ class EventController extends Controller
             return redirect()->route('events.show', $duplicate)->with('success', 'تم نشر الحدث. يمكن للأعضاء الآن تقديم طلبات الانضمام.');
         }
 
-        $event = new Event($data);
-        $event->user_id = $request->user()->id;
-        $event->status = Event::PUBLISHED;
-        $event->save();
+        $seriesId = $occurrences > 1 ? (string) \Illuminate\Support\Str::uuid() : null;
+        $first = null;
+        $start = \Illuminate\Support\Carbon::parse($data['starts_at']);
 
-        return redirect()->route('events.show', $event)->with('success', 'تم نشر الحدث. يمكن للأعضاء الآن تقديم طلبات الانضمام.');
+        for ($i = 0; $i < $occurrences; $i++) {
+            $event = new Event($data);
+            $event->starts_at = match ($repeat) {
+                'weekly' => $start->copy()->addWeeks($i),
+                'biweekly' => $start->copy()->addWeeks(2 * $i),
+                'monthly' => $start->copy()->addMonthsNoOverflow($i),
+                default => $start->copy(),
+            };
+            $event->user_id = $request->user()->id;
+            $event->status = Event::PUBLISHED;
+            $event->series_id = $seriesId;
+            $event->save();
+            $first ??= $event;
+        }
+
+        $message = $occurrences > 1
+            ? 'تم نشر '.$occurrences.' لقاءات متكررة. يمكن للأعضاء الانضمام إلى كل لقاء على حدة.'
+            : 'تم نشر الحدث. يمكن للأعضاء الآن تقديم طلبات الانضمام.';
+
+        return redirect()->route('events.show', $first)->with('success', $message);
     }
 
     public function show(Request $request, Event $event): View
@@ -168,7 +195,13 @@ class EventController extends Controller
             ? $event->requests()->where('status', EventRequest::WAITLISTED)->where('id', '<=', $myRequest->id)->count()
             : null;
 
+        $series = $event->series_id
+            ? Event::where('series_id', $event->series_id)->where('id', '!=', $event->id)
+                ->where('status', Event::PUBLISHED)->orderBy('starts_at')->limit(12)->get()
+            : collect();
+
         return view('events.show', [
+            'series' => $series,
             'waitlistPosition' => $waitlistPosition,
             'comments' => $event->comments()->with('user')->oldest()->get(),
             'eventRatings' => $eventRatings,

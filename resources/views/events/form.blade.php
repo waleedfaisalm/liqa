@@ -122,6 +122,25 @@
                         @error('capacity') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
                 </div>
+                @unless ($editing)
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="liqa-label d-block" for="repeat">التكرار</label>
+                            <select id="repeat" name="repeat" class="form-select">
+                                @foreach (['none' => 'لقاء واحد (بلا تكرار)', 'weekly' => 'أسبوعيًا', 'biweekly' => 'كل أسبوعين', 'monthly' => 'شهريًا'] as $k => $label)
+                                    <option value="{{ $k }}" @selected(old('repeat', 'none') === $k)>{{ $label }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-6" id="occ-wrap" @if (old('repeat', 'none') === 'none') hidden @endif>
+                            <label class="liqa-label d-block" for="occurrences">عدد اللقاءات في السلسلة <span class="req">*</span></label>
+                            <input id="occurrences" type="number" name="occurrences" value="{{ old('occurrences', 4) }}" min="2" max="12"
+                                   class="form-control @error('occurrences') is-invalid @enderror">
+                            @error('occurrences') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                            <div class="hint">يُنشأ كل لقاء منفصلًا (بطلبات انضمام خاصة به)، ويمكنك تعديل أو إلغاء أي منها لاحقًا.</div>
+                        </div>
+                    </div>
+                @endunless
                 @if ($editing && $event->accepted_requests_count > 0)
                     <div class="hint mt-n2">الحد الأدنى {{ $minCap }} لوجود {{ $event->accepted_requests_count }} مشاركين مقبولين.</div>
                 @endif
@@ -147,6 +166,10 @@
         if (online) { document.getElementById('city-other-wrap').hidden = true; } else { syncCityOther(); }
         document.getElementById('location-label').firstChild.textContent = online ? 'رابط اللقاء أو المنصة ' : 'المكان بالتحديد ';
         document.getElementById('location').placeholder = online ? 'https://meet.google.com/...' : 'اسم المكان وعنوانه';
+    }
+    var repeatSel = document.getElementById('repeat');
+    if (repeatSel) {
+        repeatSel.addEventListener('change', function () { document.getElementById('occ-wrap').hidden = repeatSel.value === 'none'; });
     }
     function syncCount() { count.textContent = '· ' + desc.value.length + ' / 600'; }
 

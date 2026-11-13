@@ -26,7 +26,7 @@ class EventCalendarController extends Controller
             'DTSTART:'.$event->starts_at->copy()->utc()->format('Ymd\THis\Z'),
             'DTEND:'.$event->endsAt()->utc()->format('Ymd\THis\Z'),
             'SUMMARY:'.$this->escape($event->title),
-            'DESCRIPTION:'.$this->escape($event->description."\n\n".route('events.show', $event)),
+            'DESCRIPTION:'.$this->escape($event->description."\n\n".route('events.show', $event).(\App\Support\LiveKit::configured() ? "\n".'الغرفة المباشرة: '.route('events.room', $event) : '')),
             'LOCATION:'.$this->escape($event->placeLabel()),
             'URL:'.route('events.show', $event),
             'BEGIN:VALARM',

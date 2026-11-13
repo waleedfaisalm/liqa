@@ -247,7 +247,16 @@
                         'action' => 'TEMPLATE',
                         'text' => $event->title,
                         'dates' => $event->starts_at->copy()->utc()->format('Ymd\THis\Z').'/'.$event->endsAt()->utc()->format('Ymd\THis\Z'),
-                        'details' => $event->description."\n\n".route('events.show', $event),
+                        'details' => $event->description."\n\n".route('events.show', $event).(\App\Support\LiveKit::configured() ? "\n".'الغرفة المباشرة: '.route('events.room', $event) : ''),
+                        'location' => $event->placeLabel(),
+                    ]);
+                    $outlook = 'https://outlook.live.com/calendar/0/deeplink/compose?'.http_build_query([
+                        'path' => '/calendar/action/compose',
+                        'rru' => 'addevent',
+                        'subject' => $event->title,
+                        'startdt' => $event->starts_at->copy()->utc()->format('Y-m-d\TH:i:s\Z'),
+                        'enddt' => $event->endsAt()->utc()->format('Y-m-d\TH:i:s\Z'),
+                        'body' => $event->description."\n\n".route('events.show', $event),
                         'location' => $event->placeLabel(),
                     ]);
                 @endphp
@@ -255,7 +264,23 @@
                     <div class="fw-bold text-white mb-2 d-flex align-items-center gap-2"><x-icon name="calendar" :size="18" /> أضف إلى تقويمك</div>
                     <div class="d-grid gap-2">
                         <a href="{{ $gcal }}" target="_blank" rel="noopener" class="btn btn-liqa-outline">تقويم Google</a>
+                        <a href="{{ $outlook }}" target="_blank" rel="noopener" class="btn btn-liqa-outline">Outlook</a>
                         <a href="{{ route('events.calendar', $event) }}" class="btn btn-liqa-outline">تنزيل ملف (Apple / Outlook)</a>
+                    </div>
+                </div>
+            @endif
+
+            @if ($series->isNotEmpty())
+                <div class="liqa-card p-3 mb-3">
+                    <div class="fw-bold text-white mb-2 d-flex align-items-center gap-2"><x-icon name="calendar" :size="18" /> لقاءات متكررة</div>
+                    <p class="small text-secondary mb-2">هذا اللقاء جزء من سلسلة. مواعيد بقية اللقاءات:</p>
+                    <div class="d-grid gap-1">
+                        @foreach ($series as $s)
+                            <a href="{{ route('events.show', $s) }}" class="small text-decoration-none d-flex justify-content-between gap-2">
+                                <span>{{ $s->starts_at->translatedFormat('l j F') }}</span>
+                                <span class="text-secondary">{{ $s->starts_at->translatedFormat('g:i A') }}</span>
+                            </a>
+                        @endforeach
                     </div>
                 </div>
             @endif
