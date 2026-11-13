@@ -41,6 +41,12 @@
         <button type="submit" class="btn btn-liqa mt-2">إنشاء حساب</button>
     </form>
 
+    <div class="liqa-panel d-flex gap-3 align-items-start mt-4">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="flex-shrink-0 mt-1"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>
+        <p class="small text-secondary mb-0">سنرسل إليك رسالة لتفعيل بريدك. إن لم تجدها في صندوق الوارد، يرجى مراجعة مجلد الرسائل غير المرغوب فيها (Spam).</p>
+    </div>
+
     <p class="text-center text-secondary mt-4 mb-0">
         لديك حساب؟ <a href="{{ route('login') }}" class="fw-bold text-decoration-none">سجّل الدخول</a>
     </p>

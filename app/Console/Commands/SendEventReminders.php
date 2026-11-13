@@ -91,6 +91,26 @@ class SendEventReminders extends Command
         return $count;
     }
 
+    /** عبارة الموعد في عنوان البريد بحسب القرب الفعلي (قريبًا / اليوم / غدًا / بالتاريخ) */
+    private function whenPhrase(Event $event): string
+    {
+        $start = $event->starts_at;
+
+        if ($start->lte(now()->addHours(3))) {
+            return 'يبدأ قريبًا';
+        }
+
+        if ($start->isToday()) {
+            return 'اليوم';
+        }
+
+        if ($start->isTomorrow()) {
+            return 'غدًا';
+        }
+
+        return 'في '.$start->translatedFormat('l j F');
+    }
+
     /** بريد تذكير للعضو (إن كانت إشعاراته مفعّلة)، ولا يوقف الباقي عند فشل الإرسال */
     private function mailReminder($user, Event $event): void
     {
@@ -105,7 +125,7 @@ class SendEventReminders extends Command
                 .'نتمنى لك لقاءً مثمرًا.'."\n"
                 .config('app.name');
 
-            Mail::raw($body, fn ($m) => $m->to($user->email)->subject('تذكير: لقاء «'.$event->title.'» غدًا'));
+            Mail::raw($body, fn ($m) => $m->to($user->email)->subject('تذكير: لقاء «'.$event->title.'» '.$this->whenPhrase($event)));
         } catch (\Throwable $e) {
             Log::warning('reminder mail failed: '.$e->getMessage());
         }
