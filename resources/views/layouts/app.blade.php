@@ -21,6 +21,7 @@
             ['route' => 'landing', 'label' => 'الرئيسية', 'match' => 'landing'],
             ['route' => 'home', 'label' => 'لوحة التحكم', 'match' => 'home'],
             ['route' => 'events.index', 'label' => 'الأحداث', 'match' => 'events.index'],
+            ['route' => 'members.index', 'label' => 'الأعضاء', 'match' => 'members.index'],
             ['route' => 'events.mine', 'label' => 'أحداثي', 'match' => 'events.mine'],
             ['route' => 'notifications', 'label' => 'الإشعارات', 'match' => 'notifications'],
             ['route' => 'contact', 'label' => 'تواصل معنا', 'match' => 'contact'],

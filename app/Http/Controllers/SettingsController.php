@@ -36,6 +36,7 @@ class SettingsController extends Controller
         $user->specialty = $data['specialty'];
         $user->bio = $data['bio'] ?? null;
         $user->notifications_enabled = $request->boolean('notifications_enabled');
+        $user->profile_public = $request->boolean('profile_public');
 
         if ($request->hasFile('avatar')) {
             \App\Support\AvatarStore::save($user, $request->file('avatar'));

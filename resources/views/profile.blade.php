@@ -33,6 +33,16 @@
                     <div class="small text-secondary">من {{ $ratingsCount }} تقييم</div>
                 </div>
 
+                @if (count($badges))
+                    <div class="badge-list justify-content-center mb-3">
+                        @foreach ($badges as $b)
+                            <span class="badge-pill badge-pill--t{{ $b['tier'] }}" title="{{ $b['desc'] }}">{{ $b['icon'] }} {{ $b['label'] }}</span>
+                        @endforeach
+                    </div>
+                @elseif ($isMe)
+                    <p class="small hint">ستظهر شاراتك هنا عند مشاركتك في اللقاءات أو تنظيمها.</p>
+                @endif
+
                 <div class="small hint d-flex align-items-center justify-content-center gap-2 mb-3">
                     <x-icon name="calendar" :size="15" /> عضو منذ {{ $since }}
                 </div>

@@ -98,6 +98,7 @@ Route::middleware(['auth', 'verified', 'onboarded'])->group(function () {
 
     // البروفايل والإعدادات
     Route::get('/profile', [ProfileController::class, 'me'])->name('profile');
+    Route::get('/members', [\App\Http\Controllers\MembersController::class, 'index'])->name('members.index');
     Route::get('/users/{user}', [ProfileController::class, 'show'])->whereNumber('user')->name('users.show');
     Route::get('/settings', [SettingsController::class, 'edit'])->name('settings');
     Route::put('/settings', [SettingsController::class, 'update'])->name('settings.update');

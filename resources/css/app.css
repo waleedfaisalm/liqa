@@ -1751,3 +1751,13 @@ html.room-lock, html.room-lock body { overflow: hidden; }
 .room-pop__item.is-active { color: #f0abfc; font-weight: 700; }
 .room-pop__item.is-active::before { content: '✓ '; }
 .room-pop__item.is-danger { color: #fca5a5; }
+
+/* ===== دليل الأعضاء والشارات ===== */
+.member-card { display: block; height: 100%; padding: 1rem; border-radius: 1rem; background: var(--liqa-card, rgba(29, 26, 58, .7)); border: 1px solid var(--liqa-border); transition: transform .15s, border-color .15s; }
+.member-card:hover { transform: translateY(-2px); border-color: #a855f7; }
+.member-card__bio { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 2.6em; }
+.min-w-0 { min-width: 0; }
+.badge-list { display: flex; flex-wrap: wrap; gap: .35rem; }
+.badge-pill { display: inline-flex; align-items: center; gap: .25rem; padding: .2rem .65rem; border-radius: 99px; font-size: .75rem; font-weight: 600; color: #e9d5ff; background: rgba(168, 85, 247, .14); border: 1px solid rgba(168, 85, 247, .35); }
+.badge-pill--t2 { color: #fbcfe8; background: rgba(236, 72, 153, .14); border-color: rgba(236, 72, 153, .4); }
+.badge-pill--t3 { color: #fde68a; background: rgba(250, 204, 21, .12); border-color: rgba(250, 204, 21, .45); }

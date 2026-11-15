@@ -57,6 +57,7 @@ class ProfileController extends Controller
         $distribution = collect(range(5, 1))->mapWithKeys(fn ($n) => [$n => $allRatings->where('stars', $n)->count()]);
 
         return view('profile', [
+            'badges' => \App\Support\Badges::for($user),
             'profile' => $user,
             'isMe' => $isMe,
             'tab' => $tab,

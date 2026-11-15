@@ -66,6 +66,14 @@
                     <label class="form-check-label" for="notifications_enabled">إشعارات التطبيق</label>
                 </div>
 
+                <div class="form-check form-switch">
+                    <input type="hidden" name="profile_public" value="0">
+                    <input class="form-check-input" type="checkbox" role="switch" name="profile_public" id="profile_public"
+                           value="1" @checked(old('profile_public', $user->profile_public))>
+                    <label class="form-check-label" for="profile_public">إظهار ملفي في دليل الأعضاء</label>
+                    <div class="hint">عند الإيقاف لا يظهر اسمك في صفحة «الأعضاء» والبحث، ويبقى ملفك ظاهرًا لمن يصل إليه من الأحداث.</div>
+                </div>
+
                 <button type="submit" class="btn btn-liqa">حفظ التغييرات</button>
             </form>
         </div>

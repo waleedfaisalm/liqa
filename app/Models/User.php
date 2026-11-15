@@ -11,7 +11,7 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'password', 'specialty', 'bio', 'avatar_path', 'notifications_enabled'])]
+#[Fillable(['name', 'email', 'password', 'specialty', 'bio', 'avatar_path', 'notifications_enabled', 'profile_public'])]
 #[Hidden(['password', 'remember_token', 'two_factor_secret', 'two_factor_recovery_codes'])]
 class User extends Authenticatable implements MustVerifyEmail
 {
@@ -37,6 +37,7 @@ class User extends Authenticatable implements MustVerifyEmail
             'email_verified_at' => 'datetime',
             'onboarded_at' => 'datetime',
             'notifications_enabled' => 'boolean',
+            'profile_public' => 'boolean',
             'is_admin' => 'boolean',
             'is_super_admin' => 'boolean',
             'suspended_at' => 'datetime',
