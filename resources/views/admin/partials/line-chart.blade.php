@@ -21,7 +21,7 @@
                 <line x1="{{ $L }}" x2="{{ $W - $R }}" y1="{{ $y($gv) }}" y2="{{ $y($gv) }}" class="lchart__grid"/>
                 <text x="{{ $L - 6 }}" y="{{ $y($gv) + 4 }}" text-anchor="end" class="lchart__tick">{{ round($gv) }}</text>
             @endfor
-            @foreach ([0, 7, 14, 21, $n - 1] as $i)
+            @foreach (array_unique([0, intdiv($n - 1, 4), intdiv(2 * ($n - 1), 4), intdiv(3 * ($n - 1), 4), $n - 1]) as $i)
                 @if ($i < $n)
                     <text x="{{ $x($i) }}" y="{{ $H - 6 }}" text-anchor="middle" class="lchart__tick">{{ $labels[$i] }}</text>
                 @endif
@@ -41,7 +41,7 @@
         <summary>عرض البيانات كجدول</summary>
         <div class="table-responsive" style="max-height:220px">
             <table class="admin-table">
-                <thead><tr><th>اليوم</th>@foreach ($series as $s)<th>{{ $s['name'] }}</th>@endforeach</tr></thead>
+                <thead><tr><th>{{ $unit ?? 'اليوم' }}</th>@foreach ($series as $s)<th>{{ $s['name'] }}</th>@endforeach</tr></thead>
                 <tbody>
                     @foreach (array_reverse(array_keys($labels)) as $i)
                         <tr><td>{{ $labels[$i] }}</td>@foreach ($series as $s)<td>{{ $s['data'][$i] }}</td>@endforeach</tr>

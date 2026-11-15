@@ -18,6 +18,7 @@
     @php
         $nav = [
             ['group' => 'الرئيسية', 'route' => 'admin.dashboard', 'match' => 'admin.dashboard', 'label' => 'نظرة عامة', 'icon' => 'chart'],
+            ['group' => 'الرئيسية', 'route' => 'admin.stats', 'match' => 'admin.stats', 'perm' => 'stats', 'label' => 'الإحصاءات', 'icon' => 'chart'],
             ['group' => 'الإدارة', 'route' => 'admin.users', 'match' => 'admin.users*', 'perm' => 'users', 'label' => 'المستخدمون', 'icon' => 'users'],
             ['group' => 'الإدارة', 'route' => 'admin.events', 'match' => 'admin.events*', 'perm' => 'events', 'label' => 'الأحداث', 'icon' => 'calendar'],
             ['group' => 'الإدارة', 'route' => 'admin.comments', 'match' => ['admin.comments*', 'admin.ratings*'], 'perm' => 'comments', 'label' => 'التعليقات والتقييمات', 'icon' => 'chat'],

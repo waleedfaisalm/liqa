@@ -179,6 +179,7 @@ Route::prefix('admin')->group(function () {
     Route::middleware('admin')->group(function () {
         Route::post('/logout', [AdminAuthController::class, 'destroy'])->name('admin.logout');
         Route::get('/', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
+        Route::get('/stats', [\App\Http\Controllers\AdminStatsController::class, 'index'])->middleware('admin.can:stats')->name('admin.stats');
 
         // أمان الحساب (لكل مدير)
         Route::get('/security', [AdminSecurityController::class, 'show'])->name('admin.security');

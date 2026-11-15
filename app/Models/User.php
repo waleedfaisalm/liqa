@@ -20,6 +20,7 @@ class User extends Authenticatable implements MustVerifyEmail
     /** صلاحيات أقسام لوحة الإدارة (المالك يملكها كلها، والإعدادات له وحده) */
     public const PERMISSIONS = [
         'users' => 'إدارة المستخدمين',
+        'stats' => 'لوحة الإحصاءات',
         'events' => 'إدارة الأحداث',
         'comments' => 'التعليقات والتقييمات',
         'reports' => 'البلاغات ورسائل التواصل',
