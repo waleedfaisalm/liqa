@@ -39,6 +39,7 @@ class EventRoomController extends Controller
             'serverUrl' => LiveKit::url(),
             'lobbyOn' => (bool) $event->room_lobby,
             'linkOn' => (bool) $event->room_link,
+            'muteJoin' => (bool) $event->room_mute_join,
         ]);
     }
 
@@ -160,6 +161,27 @@ class EventRoomController extends Controller
         $event->forceFill(['room_link' => $on])->save();
 
         return response()->json(['link' => $on]);
+    }
+
+    /** المنظّم: إدخال المشاركين وميكروفوناتهم مكتومة */
+    public function muteJoin(Request $request, Event $event): JsonResponse
+    {
+        abort_unless($event->isHostedBy($request->user()), 403);
+
+        $on = $request->boolean('enabled');
+        $event->forceFill(['room_mute_join' => $on])->save();
+
+        return response()->json(['mute_join' => $on]);
+    }
+
+    /** المنظّم: إنهاء الاجتماع للجميع */
+    public function end(Request $request, Event $event): JsonResponse
+    {
+        abort_unless($event->isHostedBy($request->user()), 403);
+
+        $ok = LiveKit::configured() && LiveKit::deleteRoom($event->roomName());
+
+        return response()->json(['ok' => $ok]);
     }
 
     /** المنظّم: ترقية مشارك إلى منظّم مساعد أو إلغاء ذلك */

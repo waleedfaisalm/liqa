@@ -14,6 +14,9 @@
          data-token-url="{{ route('events.room.token', $event) }}"
          data-waiting-url="{{ route('events.room.waiting', $event) }}"
          data-decide-url="{{ route('events.room.decide', $event) }}"
+         data-mute-join="{{ $muteJoin ? '1' : '0' }}"
+         data-mutejoin-url="{{ route('events.room.mutejoin', $event) }}"
+         data-end-url="{{ route('events.room.end', $event) }}"
          data-lobby-url="{{ route('events.room.lobby', $event) }}"
          data-link-url="{{ route('events.room.link', $event) }}"
          data-cohost-url="{{ route('events.room.cohost', $event) }}"
@@ -46,6 +49,18 @@
                     <input type="checkbox" class="form-check-input m-0" id="preCam"> <span>تشغيل الكاميرا</span>
                 </label>
             </div>
+            <div class="pre-devices mb-4">
+                <button type="button" class="btn btn-sm btn-liqa-outline" id="preTest">اختبار الميكروفون والكاميرا واختيار الجهاز</button>
+                <div class="pre-devices__box d-none" id="preBox">
+                    <video id="preView" class="pre-view" autoplay playsinline muted></video>
+                    <div class="pre-level" title="مستوى صوت الميكروفون"><span id="preLevel"></span></div>
+                    <div class="row g-2 text-start mt-1">
+                        <div class="col-md-6"><label class="liqa-label d-block small" for="selMic">الميكروفون</label><select id="selMic" class="form-select form-select-sm"></select></div>
+                        <div class="col-md-6"><label class="liqa-label d-block small" for="selCam">الكاميرا</label><select id="selCam" class="form-select form-select-sm"></select></div>
+                    </div>
+                </div>
+            </div>
+            <p class="small text-warning mb-3 d-none" id="muteJoinNote">طلب المنظّم دخول المشاركين بميكروفونات مكتومة، ويمكنك تشغيل الميكروفون بعد الدخول.</p>
             @unless ($isHost)
                 @if ($viaLink)
                     <p class="small text-secondary mb-3">دخلت عبر رابط الغرفة. سيصل طلبك إلى المنظّم، وتدخل بعد موافقته.</p>
@@ -79,6 +94,10 @@
                 <label class="form-check d-flex align-items-center gap-2 m-0 small mt-2 owner-only">
                     <input type="checkbox" class="form-check-input m-0" id="linkToggle" {{ $linkOn ? 'checked' : '' }}>
                     <span>السماح بالدخول بالرابط لمن ليس مشاركًا في الحدث (بعد موافقتك)</span>
+                </label>
+                <label class="form-check d-flex align-items-center gap-2 m-0 small mt-2 owner-only">
+                    <input type="checkbox" class="form-check-input m-0" id="muteJoinToggle" {{ $muteJoin ? 'checked' : '' }}>
+                    <span>دخول المشاركين بميكروفونات مكتومة</span>
                 </label>
                 <label class="form-check d-flex align-items-center gap-2 m-0 small mt-2 owner-only">
                     <input type="checkbox" class="form-check-input m-0" id="chatToggle" checked>
@@ -126,6 +145,12 @@
                 </form>
             </aside>
 
+            <div class="room-pop d-none" id="devMenu"></div>
+            <div class="room-pop d-none" id="leaveMenu">
+                <button type="button" class="room-pop__item" id="leaveOnly">مغادرة فقط (يستمر الاجتماع)</button>
+                <button type="button" class="room-pop__item is-danger" id="endAll">إنهاء الاجتماع للجميع</button>
+            </div>
+
             <div class="room-reactbar d-none" id="reactBar">
                 <button type="button" data-emoji="👍" aria-label="إعجاب">👍</button>
                 <button type="button" data-emoji="👏" aria-label="تصفيق">👏</button>
@@ -135,8 +160,14 @@
             </div>
 
             <div class="room-controls" id="roomControls">
-                <button type="button" class="room-btn" id="btnMic" data-on="1"><span class="room-btn__icon" id="icoMic"></span><span class="room-btn__label">الميكروفون</span></button>
-                <button type="button" class="room-btn" id="btnCam" data-on="1"><span class="room-btn__icon" id="icoCam"></span><span class="room-btn__label">الكاميرا</span></button>
+                <div class="room-btn-group">
+                    <button type="button" class="room-btn" id="btnMic" data-on="1"><span class="room-btn__icon" id="icoMic"></span><span class="room-btn__label">الميكروفون</span></button>
+                    <button type="button" class="room-caret" id="caretMic" aria-label="اختيار الميكروفون">▾</button>
+                </div>
+                <div class="room-btn-group">
+                    <button type="button" class="room-btn" id="btnCam" data-on="1"><span class="room-btn__icon" id="icoCam"></span><span class="room-btn__label">الكاميرا</span></button>
+                    <button type="button" class="room-caret" id="caretCam" aria-label="اختيار الكاميرا">▾</button>
+                </div>
                 <button type="button" class="room-btn" id="btnShare" hidden><span class="room-btn__icon" id="icoShare"></span><span class="room-btn__label">مشاركة الشاشة</span></button>
                 <button type="button" class="room-btn" id="btnHand" title="رفع اليد"><span class="room-btn__icon" id="icoHand"></span><span class="room-btn__label">رفع اليد</span></button>
                 <button type="button" class="room-btn" id="btnReact" title="ردود الفعل"><span class="room-btn__icon" id="icoReact"></span><span class="room-btn__label">تفاعل</span></button>

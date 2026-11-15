@@ -121,6 +121,8 @@ Route::middleware(['auth', 'verified', 'onboarded'])->group(function () {
         Route::get('/events/{event}/room/waiting', [\App\Http\Controllers\EventRoomController::class, 'waiting'])->whereNumber('event')->name('events.room.waiting');
         Route::post('/events/{event}/room/decide', [\App\Http\Controllers\EventRoomController::class, 'decide'])->whereNumber('event')->name('events.room.decide');
         Route::post('/events/{event}/room/lobby', [\App\Http\Controllers\EventRoomController::class, 'lobby'])->whereNumber('event')->name('events.room.lobby');
+        Route::post('/events/{event}/room/mutejoin', [\App\Http\Controllers\EventRoomController::class, 'muteJoin'])->whereNumber('event')->name('events.room.mutejoin');
+        Route::post('/events/{event}/room/end', [\App\Http\Controllers\EventRoomController::class, 'end'])->whereNumber('event')->name('events.room.end');
         Route::post('/events/{event}/room/link', [\App\Http\Controllers\EventRoomController::class, 'link'])->whereNumber('event')->name('events.room.link');
         Route::post('/events/{event}/room/cohost', [\App\Http\Controllers\EventRoomController::class, 'cohost'])->whereNumber('event')->name('events.room.cohost');
         Route::post('/events/{event}/room/mute', [\App\Http\Controllers\EventRoomController::class, 'mute'])->whereNumber('event')->name('events.room.mute');

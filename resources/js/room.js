@@ -79,7 +79,8 @@ if (root) {
 
 
     // ---- توزيع البطاقات (مثل Meet/Zoom): تملأ الشاشة، ومشاركة الشاشة أو التثبيت يكبّر بطاقة ----
-    let pinnedId = null;
+    let pinnedId = null;   // تثبيتك الشخصي
+    let hostSpot = null;   // تثبيت المنظّم للجميع
     let layoutFrame = 0;
 
     function scheduleLayout() {
@@ -89,6 +90,7 @@ if (root) {
 
     function pickSpotlight() {
         if (pinnedId && tiles.has(pinnedId)) return pinnedId;
+        if (hostSpot && tiles.has(hostSpot)) return hostSpot;
         for (const [id, t] of tiles) if (t.el.classList.contains('is-screen')) return id;
         return null;
     }
@@ -257,6 +259,7 @@ if (root) {
         }
         prevHands.delete(p.identity);
         if (pinnedId === p.identity) pinnedId = null;
+        if (hostSpot === p.identity) hostSpot = null;
         schedulePeople();
         scheduleLayout();
     }
@@ -504,8 +507,17 @@ if (root) {
 
             row.append(av, info, state);
 
-            if (canManage && !p.isLocal && !m.host) {
+            if (canManage) {
                 const acts = el('div', 'people-row__acts');
+                const small = (txt, fn) => { const b = el('button', 'btn btn-sm btn-liqa-outline', txt); b.type = 'button'; b.addEventListener('click', async () => { b.disabled = true; await fn(); b.disabled = false; }); return b; };
+
+                const spotted = hostSpot === p.identity;
+                acts.appendChild(small(spotted ? 'إلغاء التثبيت للجميع' : 'تثبيت للجميع', () => setHostSpot(spotted ? null : p.identity)));
+                row.appendChild(acts);
+            }
+
+            if (canManage && !p.isLocal && !m.host) {
+                const acts = row.querySelector('.people-row__acts') || el('div', 'people-row__acts');
                 const small = (txt, fn) => { const b = el('button', 'btn btn-sm btn-liqa-outline', txt); b.type = 'button'; b.addEventListener('click', async () => { b.disabled = true; await fn(); b.disabled = false; }); return b; };
 
                 if (handAt(p) > 0) acts.appendChild(small('إنزال اليد', () => sendControl({ lower: p.identity }, [p.identity])));
@@ -521,7 +533,7 @@ if (root) {
                     k.classList.add('is-danger');
                     acts.appendChild(k);
                 }
-                row.appendChild(acts);
+                if (!acts.parentNode) row.appendChild(acts);
             }
             list.appendChild(row);
         });
@@ -640,15 +652,206 @@ if (root) {
         schedulePeople();
     }
 
+
+    // ---- تثبيت المنظّم للجميع + إنهاء الاجتماع ----
+    function setHostSpot(id) {
+        hostSpot = id;
+        scheduleLayout();
+        sendControl({ spot: id });
+    }
+
+    function setupControlHandlers() {
+        room.on(RoomEvent.DataReceived, (payload, participant, kind, topic) => {
+            if (topic !== 'control' || !participant || !hostLike(participant)) return;
+            let d; try { d = JSON.parse(dec.decode(payload)); } catch (e) { return; }
+            if (!d) return;
+
+            if ('spot' in d && (d.spot === null || typeof d.spot === 'string')) {
+                hostSpot = d.spot;
+                scheduleLayout();
+                schedulePeople();
+            }
+
+            if (d.ended === true) {
+                leaving = true;
+                toast('أنهى المنظّم الاجتماع.');
+                setTimeout(() => { try { room.disconnect(); } catch (e) { /* يُتجاهل */ } window.location.href = root.dataset.exit; }, 1800);
+            }
+        });
+
+        // المنظّم يعيد إعلان التثبيت للقادمين الجدد
+        room.on(RoomEvent.ParticipantConnected, () => { if (canManage && hostSpot) setTimeout(() => sendControl({ spot: hostSpot }), 800); });
+    }
+
+    async function endForAll() {
+        if (!confirm('إنهاء الاجتماع للجميع؟ سيُفصل كل الحاضرين الآن.')) return;
+        await sendControl({ ended: true });
+        await new Promise((r) => setTimeout(r, 600));
+        await api(root.dataset.endUrl, 'POST', {});
+        leaving = true;
+        try { room.disconnect(); } catch (e) { /* يُتجاهل */ }
+        window.location.href = root.dataset.exit;
+    }
+
+    // ---- قوائم منبثقة: اختيار الأجهزة والمغادرة ----
+    function placePop(pop, anchor) {
+        const r = anchor.getBoundingClientRect();
+        pop.classList.remove('d-none');
+        const w = pop.offsetWidth;
+        const left = Math.min(Math.max(8, r.left + r.width / 2 - w / 2), window.innerWidth - w - 8);
+        pop.style.left = left + 'px';
+    }
+
+    function setupPopMenus() {
+        const devMenu = document.getElementById('devMenu');
+        const leaveMenu = document.getElementById('leaveMenu');
+        const closeAll = () => { devMenu.classList.add('d-none'); leaveMenu.classList.add('d-none'); };
+
+        async function openDevices(kind, anchor) {
+            if (!devMenu.classList.contains('d-none') && devMenu.dataset.kind === kind) { closeAll(); return; }
+            closeAll();
+            devMenu.dataset.kind = kind;
+            devMenu.innerHTML = '';
+            const sections = kind === 'audioinput'
+                ? [['audioinput', 'الميكروفون'], ['audiooutput', 'مخرج الصوت']]
+                : [['videoinput', 'الكاميرا']];
+
+            for (const [k, title] of sections) {
+                let list = [];
+                try { list = await Room.getLocalDevices(k); } catch (e) { /* لا إذن */ }
+                devMenu.appendChild(el('div', 'room-pop__title', title));
+                if (!list.length) { devMenu.appendChild(el('div', 'room-pop__empty', k === 'audiooutput' ? 'غير مدعوم في هذا المتصفح' : 'لا توجد أجهزة')); continue; }
+                const active = room.getActiveDevice(k);
+                list.forEach((d, i) => {
+                    const b = el('button', 'room-pop__item' + (d.deviceId === active ? ' is-active' : ''), d.label || (title + ' ' + (i + 1)));
+                    b.type = 'button';
+                    b.addEventListener('click', async () => {
+                        try { await room.switchActiveDevice(k, d.deviceId); toast('تم تغيير الجهاز.'); } catch (e) { toast('تعذّر تغيير الجهاز.'); }
+                        closeAll();
+                    });
+                    devMenu.appendChild(b);
+                });
+            }
+            placePop(devMenu, anchor);
+        }
+
+        document.getElementById('caretMic').addEventListener('click', (e) => { e.stopPropagation(); openDevices('audioinput', e.currentTarget); });
+        document.getElementById('caretCam').addEventListener('click', (e) => { e.stopPropagation(); openDevices('videoinput', e.currentTarget); });
+
+        // زر المغادرة: للمنظّم خياران (مغادرة فقط / إنهاء للجميع)
+        if (isOwner) {
+            const btn = document.getElementById('btnLeave');
+            btn.addEventListener('click', (e) => {
+                e.stopImmediatePropagation();
+                if (!leaveMenu.classList.contains('d-none')) { closeAll(); return; }
+                closeAll();
+                placePop(leaveMenu, btn);
+            }, true);
+            document.getElementById('leaveOnly').addEventListener('click', () => {
+                closeAll();
+                leaving = true;
+                room.disconnect();
+                window.location.href = root.dataset.exit;
+            });
+            document.getElementById('endAll').addEventListener('click', () => { closeAll(); endForAll(); });
+        }
+
+        document.addEventListener('click', (e) => {
+            if (!devMenu.contains(e.target) && !leaveMenu.contains(e.target)) closeAll();
+        });
+    }
+
+    // ---- ما قبل الدخول: اختبار الأجهزة واختيارها ----
+    const chosen = { audio: null, video: null };
+    let previewStream = null;
+    let previewCtx = null;
+    let previewRaf = 0;
+
+    function stopPreview() {
+        if (previewRaf) { cancelAnimationFrame(previewRaf); previewRaf = 0; }
+        if (previewCtx) { previewCtx.close().catch(() => {}); previewCtx = null; }
+        if (previewStream) { previewStream.getTracks().forEach((t) => t.stop()); previewStream = null; }
+        const v = document.getElementById('preView');
+        if (v) v.srcObject = null;
+    }
+
+    function setupPrejoin() {
+        const testBtn = document.getElementById('preTest');
+        const box = document.getElementById('preBox');
+        const view = document.getElementById('preView');
+        const level = document.getElementById('preLevel');
+        const selMic = document.getElementById('selMic');
+        const selCam = document.getElementById('selCam');
+        if (!testBtn || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { if (testBtn) testBtn.hidden = true; return; }
+
+        const fill = (sel, list, kind, current) => {
+            sel.innerHTML = '';
+            list.forEach((d, i) => {
+                const o = document.createElement('option');
+                o.value = d.deviceId;
+                o.textContent = d.label || (kind + ' ' + (i + 1));
+                if (d.deviceId === current) o.selected = true;
+                sel.appendChild(o);
+            });
+            if (!list.length) { const o = document.createElement('option'); o.textContent = 'لا توجد أجهزة'; sel.appendChild(o); sel.disabled = true; } else { sel.disabled = false; }
+        };
+
+        async function start() {
+            stopPreview();
+            const audio = chosen.audio ? { deviceId: { exact: chosen.audio } } : true;
+            const video = chosen.video ? { deviceId: { exact: chosen.video } } : true;
+            try {
+                previewStream = await navigator.mediaDevices.getUserMedia({ audio, video });
+            } catch (e) {
+                try { previewStream = await navigator.mediaDevices.getUserMedia({ audio }); }
+                catch (e2) { showError('تعذّر الوصول إلى الميكروفون والكاميرا. تأكد من منح الإذن للمتصفح.'); return; }
+            }
+            box.classList.remove('d-none');
+            view.srcObject = previewStream;
+            view.classList.toggle('d-none', previewStream.getVideoTracks().length === 0);
+
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            const at = previewStream.getAudioTracks()[0];
+            const vt = previewStream.getVideoTracks()[0];
+            fill(selMic, devices.filter((d) => d.kind === 'audioinput'), 'ميكروفون', at && at.getSettings().deviceId);
+            fill(selCam, devices.filter((d) => d.kind === 'videoinput'), 'كاميرا', vt && vt.getSettings().deviceId);
+
+            // مؤشر مستوى الصوت
+            if (at && (window.AudioContext || window.webkitAudioContext)) {
+                previewCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const an = previewCtx.createAnalyser();
+                an.fftSize = 256;
+                previewCtx.createMediaStreamSource(new MediaStream([at])).connect(an);
+                const buf = new Uint8Array(an.frequencyBinCount);
+                const tick = () => {
+                    an.getByteFrequencyData(buf);
+                    const avg = buf.reduce((a, b) => a + b, 0) / buf.length;
+                    level.style.width = Math.min(100, Math.round(avg * 1.8)) + '%';
+                    previewRaf = requestAnimationFrame(tick);
+                };
+                tick();
+            }
+        }
+
+        testBtn.addEventListener('click', start);
+        selMic.addEventListener('change', () => { chosen.audio = selMic.value; start(); });
+        selCam.addEventListener('change', () => { chosen.video = selCam.value; start(); });
+    }
+
     async function join(token, serverUrl) {
         const joinBtn = document.getElementById('roomJoin');
         joinBtn.disabled = true;
         errBox.classList.add('d-none');
 
-        const wantMic = document.getElementById('preMic').checked;
+        stopPreview();
+        const forcedMute = root.dataset.muteJoin === '1' && !canManage;
+        const wantMic = document.getElementById('preMic').checked && !forcedMute;
         const wantCam = document.getElementById('preCam').checked;
 
-        room = new Room({ adaptiveStream: true, dynacast: true });
+        const opts = { adaptiveStream: true, dynacast: true };
+        if (chosen.audio) opts.audioCaptureDefaults = { deviceId: chosen.audio };
+        if (chosen.video) opts.videoCaptureDefaults = { deviceId: chosen.video };
+        room = new Room(opts);
 
         room
             .on(RoomEvent.ParticipantConnected, (p) => refresh(p))
@@ -688,7 +891,8 @@ if (root) {
             .on(RoomEvent.Disconnected, (reason) => {
                 if (leaving) return;
                 const removed = reason === DisconnectReason.PARTICIPANT_REMOVED;
-                alert(removed ? 'أخرجك المنظّم من الغرفة.' : 'انقطع الاتصال بالغرفة.');
+                const ended = reason === DisconnectReason.ROOM_DELETED;
+                alert(removed ? 'أخرجك المنظّم من الغرفة.' : (ended ? 'أنهى المنظّم الاجتماع.' : 'انقطع الاتصال بالغرفة.'));
                 window.location.href = root.dataset.exit;
             });
 
@@ -727,7 +931,10 @@ if (root) {
         setupPeople();
         setupHand();
         setupReactions();
+        setupControlHandlers();
+        setupPopMenus();
         root.classList.toggle('is-manager', canManage);
+        if (forcedMute) toast('دخلت بميكروفون مكتوم بطلب من المنظّم. يمكنك تشغيله متى شئت.');
 
         try { if (wantMic) await room.localParticipant.setMicrophoneEnabled(true); } catch (e) { alert('تعذّر الوصول إلى الميكروفون.'); }
         try { if (wantCam) await room.localParticipant.setCameraEnabled(true); } catch (e) { alert('تعذّر الوصول إلى الكاميرا.'); }
@@ -843,6 +1050,11 @@ if (root) {
                 await api(root.dataset.lobbyUrl, 'POST', { enabled: toggle.checked });
                 poll();
             });
+            document.getElementById('muteJoinToggle').addEventListener('change', async (e) => {
+                const r = await api(root.dataset.mutejoinUrl, 'POST', { enabled: e.target.checked });
+                root.dataset.muteJoin = e.target.checked ? '1' : '0';
+                toast(r.ok ? (e.target.checked ? 'سيدخل المشاركون الجدد بميكروفونات مكتومة.' : 'أُلغي كتم الدخول.') : 'تعذّر الحفظ.');
+            });
             document.getElementById('linkToggle').addEventListener('change', async (e) => {
                 const r = await api(root.dataset.linkUrl, 'POST', { enabled: e.target.checked });
                 toast(r.ok ? (e.target.checked ? 'فُعّل الدخول بالرابط.' : 'أُوقف الدخول بالرابط.') : 'تعذّر الحفظ.');
@@ -858,7 +1070,14 @@ if (root) {
         setInterval(poll, 4000);
     }
 
+    setupPrejoin();
+    if (root.dataset.muteJoin === '1' && !canManage) {
+        document.getElementById('preMic').checked = false;
+        document.getElementById('muteJoinNote').classList.remove('d-none');
+    }
+
     document.getElementById('roomJoin').addEventListener('click', () => {
+        stopPreview();
         if (isOwner) join(root.dataset.token, root.dataset.url);
         else requestEntry();
     });

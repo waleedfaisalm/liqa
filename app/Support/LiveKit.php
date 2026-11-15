@@ -55,6 +55,12 @@ class LiveKit
         return self::call($room, 'MutePublishedTrack', ['room' => $room, 'identity' => $identity, 'track_sid' => $trackSid, 'muted' => true]);
     }
 
+    /** إنهاء الغرفة وفصل الجميع */
+    public static function deleteRoom(string $room): bool
+    {
+        return self::call($room, 'DeleteRoom', ['room' => $room]);
+    }
+
     /** تحديث البيانات الوصفية لمشارك متصل (مثلاً ترقيته إلى منظّم مساعد فورًا) */
     public static function updateMetadata(string $room, string $identity, array $metadata): bool
     {

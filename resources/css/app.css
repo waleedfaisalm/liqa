@@ -1729,3 +1729,25 @@ html.room-lock, html.room-lock body { overflow: hidden; }
   .room.in-call .room-btn__dot { top: -.25rem; inset-inline-end: -.25rem; }
   .room.in-call .room-head h1 { max-width: 11rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 }
+
+/* ===== اختيار الأجهزة، قوائم منبثقة، أدوات المنظّم ===== */
+.pre-devices__box { max-width: 26rem; margin: .8rem auto 0; }
+.pre-view { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; border-radius: .85rem; background: #0a0814; border: 1px solid var(--liqa-border); transform: scaleX(-1); }
+.pre-view.d-none { display: none; }
+.pre-level { height: .4rem; border-radius: 99px; background: rgba(255, 255, 255, .1); overflow: hidden; margin-top: .5rem; }
+.pre-level > span { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #22c55e, #a855f7); transition: width .08s linear; }
+
+.room-btn-group { position: relative; display: inline-flex; flex: 0 0 auto; }
+.room-caret { position: absolute; top: .25rem; inset-inline-end: .25rem; width: 1.15rem; height: 1.15rem; border: 0; border-radius: 50%; display: grid; place-items: center; font-size: .65rem; line-height: 1; color: #fff; background: rgba(255, 255, 255, .14); padding: 0; }
+.room-caret:hover { background: rgba(168, 85, 247, .5); }
+@media (max-width: 575.98px) { .room-caret { display: none; } }
+
+.room-pop { position: fixed; bottom: 5.8rem; z-index: 1045; min-width: 13rem; max-width: min(22rem, calc(100vw - 1rem)); max-height: 50dvh; overflow: auto; padding: .4rem; border-radius: .9rem; background: rgba(16, 13, 34, .98); border: 1px solid var(--liqa-border); box-shadow: 0 16px 44px rgba(0, 0, 0, .55); }
+.room-pop.d-none { display: none; }
+.room-pop__title { font-size: .72rem; color: #c4b5fd; padding: .35rem .6rem .15rem; }
+.room-pop__empty { font-size: .8rem; color: #94a3b8; padding: .3rem .6rem; }
+.room-pop__item { display: block; width: 100%; text-align: start; border: 0; background: transparent; color: #fff; padding: .5rem .6rem; border-radius: .6rem; font-size: .85rem; }
+.room-pop__item:hover { background: rgba(168, 85, 247, .18); }
+.room-pop__item.is-active { color: #f0abfc; font-weight: 700; }
+.room-pop__item.is-active::before { content: '✓ '; }
+.room-pop__item.is-danger { color: #fca5a5; }
