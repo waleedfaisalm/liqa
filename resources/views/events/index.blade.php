@@ -70,5 +70,14 @@
 
         <div class="mt-4 d-flex justify-content-center">{{ $events->links() }}</div>
     @endif
+
+    <div class="mt-5">
+        <h2 class="h6 text-white mb-2">تصفّح بحسب المجال</h2>
+        <div class="d-flex flex-wrap gap-2">
+            @foreach (\App\Support\Catalog::eventTypes() as $typeKey => $typeLabel)
+                <a class="liqa-chip text-decoration-none" href="{{ route('events.type', $typeKey) }}">{{ $typeLabel }}</a>
+            @endforeach
+        </div>
+    </div>
 </div>
 @endsection

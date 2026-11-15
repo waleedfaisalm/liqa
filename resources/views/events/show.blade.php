@@ -2,6 +2,29 @@
 
 @section('title', $event->title)
 
+@push('head')
+    @php
+        $isOnlineEvent = $event->mode === 'online';
+        $ld = [
+            '@context' => 'https://schema.org',
+            '@type' => 'Event',
+            'name' => $event->title,
+            'description' => \Illuminate\Support\Str::limit(trim(preg_replace('/\s+/u', ' ', (string) $event->description)), 300),
+            'startDate' => $event->starts_at->toAtomString(),
+            'endDate' => $event->endsAt()->toAtomString(),
+            'eventStatus' => $event->isCancelled() ? 'https://schema.org/EventCancelled' : 'https://schema.org/EventScheduled',
+            'eventAttendanceMode' => $isOnlineEvent ? 'https://schema.org/OnlineEventAttendanceMode' : 'https://schema.org/OfflineEventAttendanceMode',
+            'location' => $isOnlineEvent
+                ? ['@type' => 'VirtualLocation', 'url' => route('events.show', $event)]
+                : ['@type' => 'Place', 'name' => $event->location ?: ($event->city ?: 'لقاء حضوري'), 'address' => ['@type' => 'PostalAddress', 'addressLocality' => $event->city, 'addressCountry' => $event->country]],
+            'organizer' => ['@type' => 'Person', 'name' => $event->host->name ?? 'لقاء'],
+            'isAccessibleForFree' => true,
+            'url' => route('events.show', $event),
+        ];
+    @endphp
+    <script type="application/ld+json">{!! json_encode($ld, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG) !!}</script>
+@endpush
+
 @section('content')
 <div @guest class="container py-4 py-lg-5" @endguest>
     @php

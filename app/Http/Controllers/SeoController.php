@@ -19,6 +19,26 @@ class SeoController extends Controller
             [route('terms'), null, '0.3'],
         ]);
 
+        $groups = Event::upcoming()->selectRaw('country, city, type, count(*) as total')->groupBy('country', 'city', 'type')->get();
+        $places = \App\Support\Catalog::places();
+        $types = \App\Support\Catalog::eventTypes(false);
+
+        foreach ($groups->pluck('country')->filter()->unique() as $country) {
+            if (isset($places[$country])) {
+                $urls->push([route('events.country', $country), null, '0.6']);
+            }
+        }
+        foreach ($groups->filter(fn ($g) => $g->country && $g->city)->unique(fn ($g) => $g->country.'|'.$g->city) as $g) {
+            if (in_array($g->city, $places[$g->country] ?? [], true)) {
+                $urls->push([route('events.city', [$g->country, $g->city]), null, '0.6']);
+            }
+        }
+        foreach ($groups->pluck('type')->filter()->unique() as $type) {
+            if (isset($types[$type])) {
+                $urls->push([route('events.type', $type), null, '0.6']);
+            }
+        }
+
         Event::upcoming()->orderBy('starts_at')->limit(500)->get(['id', 'updated_at'])
             ->each(fn ($e) => $urls->push([route('events.show', $e), $e->updated_at?->toAtomString(), '0.7']));
 

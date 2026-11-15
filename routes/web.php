@@ -55,6 +55,9 @@ Route::get('/terms', [LegalPageController::class, 'show'])->defaults('type', 'te
 // ---------- الأحداث: متاحة للزائر والعضو (للعرض فقط للزائر) ----------
 Route::middleware('onboarded')->group(function () {
     Route::get('/events', [EventController::class, 'index'])->name('events.index');
+    Route::get('/events/in/{country}', [\App\Http\Controllers\DiscoverController::class, 'country'])->name('events.country');
+    Route::get('/events/in/{country}/{city}', [\App\Http\Controllers\DiscoverController::class, 'city'])->name('events.city');
+    Route::get('/events/type/{type}', [\App\Http\Controllers\DiscoverController::class, 'type'])->name('events.type');
     Route::get('/events/{event}', [EventController::class, 'show'])->whereNumber('event')->name('events.show');
 });
 
