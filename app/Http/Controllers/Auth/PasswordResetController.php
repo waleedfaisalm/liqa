@@ -27,7 +27,7 @@ class PasswordResetController extends Controller
         Password::sendResetLink($request->only('email'));
 
         // نفس الرد دايماً، عشان محدش يعرف مين مسجّل عندنا ومين لأ
-        return back()->with('status', 'إذا كان البريد الإلكتروني مسجّلًا لدينا، فسيصلك رابط الاستعادة خلال دقائق. إن لم تجده فتفقد مجلد الرسائل غير المرغوب فيها (Spam).');
+        return back()->with('status', __('إذا كان البريد الإلكتروني مسجّلًا لدينا، فسيصلك رابط الاستعادة خلال دقائق. إن لم تجده فتفقد مجلد الرسائل غير المرغوب فيها (Spam).'));
     }
 
     /** شاشة تعيين كلمة سر جديدة (من الرابط) */
@@ -68,7 +68,7 @@ class PasswordResetController extends Controller
         );
 
         if ($status === 'passwords.reset') {
-            return redirect()->route('login')->with('status', 'تم تغيير كلمة السر. يمكنك تسجيل الدخول بكلمة السر الجديدة.');
+            return redirect()->route('login')->with('status', __('تم تغيير كلمة السر. يمكنك تسجيل الدخول بكلمة السر الجديدة.'));
         }
 
         return back()

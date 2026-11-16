@@ -16,15 +16,15 @@ class EventCommentController extends Controller
         $back = redirect()->to(route('events.show', $event).'#comments');
 
         if ($event->isCancelled() || $event->hasEnded()) {
-            return $back->with('error', 'التعليقات مغلقة على هذا الحدث.');
+            return $back->with('error', __('التعليقات مغلقة على هذا الحدث.'));
         }
 
         $data = $request->validate([
             'body' => ['required', 'string', 'min:2', 'max:500'],
         ], [
-            'body.required' => 'اكتب تعليقك أولًا.',
-            'body.min' => 'التعليق قصير جدًا.',
-            'body.max' => 'التعليق طويل جدًا (الحد الأقصى 500 حرف).',
+            'body.required' => __('اكتب تعليقك أولًا.'),
+            'body.min' => __('التعليق قصير جدًا.'),
+            'body.max' => __('التعليق طويل جدًا (الحد الأقصى 500 حرف).'),
         ]);
 
         $user = $request->user();
@@ -54,7 +54,7 @@ class EventCommentController extends Controller
             );
         }
 
-        return $back->with('success', 'تمت إضافة تعليقك.');
+        return $back->with('success', __('تمت إضافة تعليقك.'));
     }
 
     /** حذف تعليق: لصاحبه أو لمنظّم الحدث */
@@ -63,10 +63,10 @@ class EventCommentController extends Controller
         abort_unless($comment->event_id === $event->id, 404);
 
         $user = $request->user();
-        abort_unless($comment->user_id === $user->id || $event->isHostedBy($user), 403, 'لا تملك صلاحية حذف هذا التعليق.');
+        abort_unless($comment->user_id === $user->id || $event->isHostedBy($user), 403, __('لا تملك صلاحية حذف هذا التعليق.'));
 
         $comment->delete();
 
-        return redirect()->to(route('events.show', $event).'#comments')->with('success', 'تم حذف التعليق.');
+        return redirect()->to(route('events.show', $event).'#comments')->with('success', __('تم حذف التعليق.'));
     }
 }

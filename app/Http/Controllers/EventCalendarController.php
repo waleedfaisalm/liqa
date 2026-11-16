@@ -11,7 +11,7 @@ class EventCalendarController extends Controller
     /** تنزيل ملف تقويم (ICS) للحدث — للمنظّم والمشاركين المقبولين فقط */
     public function ics(Request $request, Event $event): Response
     {
-        abort_unless($event->isParticipant($request->user()), 403, 'متاح للمشاركين المقبولين فقط.');
+        abort_unless($event->isParticipant($request->user()), 403, __('متاح للمشاركين المقبولين فقط.'));
         abort_if($event->isCancelled(), 404);
 
         $lines = [
@@ -26,7 +26,7 @@ class EventCalendarController extends Controller
             'DTSTART:'.$event->starts_at->copy()->utc()->format('Ymd\THis\Z'),
             'DTEND:'.$event->endsAt()->utc()->format('Ymd\THis\Z'),
             'SUMMARY:'.$this->escape($event->title),
-            'DESCRIPTION:'.$this->escape($event->description."\n\n".route('events.show', $event).(\App\Support\LiveKit::configured() ? "\n".'الغرفة المباشرة: '.route('events.room', $event) : '')),
+            'DESCRIPTION:'.$this->escape($event->description."\n\n".route('events.show', $event).(\App\Support\LiveKit::configured() ? "\n".__('الغرفة المباشرة: ').route('events.room', $event) : '')),
             'LOCATION:'.$this->escape($event->placeLabel()),
             'URL:'.route('events.show', $event),
             'BEGIN:VALARM',

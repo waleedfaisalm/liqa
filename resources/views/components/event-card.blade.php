@@ -1,5 +1,4 @@
 @props(['event', 'user' => null])
-
 @php
     $myRequest = $user ? $event->requestOf($user) : null;
     $isHost = $event->isHostedBy($user);
@@ -12,7 +11,7 @@
     @php $saved = $user->hasSaved($event); @endphp
     <form method="POST" action="{{ route('events.save', $event) }}" class="save-form js-save-form">
         @csrf
-        <button type="submit" class="save-btn {{ $saved ? 'is-saved' : '' }}" aria-label="{{ $saved ? 'إزالة من المحفوظات' : 'حفظ الحدث' }}" title="{{ $saved ? 'إزالة من المحفوظات' : 'حفظ الحدث' }}">
+        <button type="submit" class="save-btn {{ $saved ? 'is-saved' : '' }}" aria-label="{{ $saved ? __('إزالة من المحفوظات') : __('حفظ الحدث') }}" title="{{ $saved ? __('إزالة من المحفوظات') : __('حفظ الحدث') }}">
             <x-icon name="bookmark" :size="18" />
         </button>
     </form>
@@ -22,17 +21,17 @@
         <span class="liqa-badge {{ $event->typeBadgeClass() }}">{{ $event->typeLabel() }}</span>
         <span class="liqa-badge liqa-badge--green">{{ $event->modeLabel() }}</span>
         @if ($event->isCancelled())
-            <span class="liqa-badge liqa-badge--red">ملغي</span>
+            <span class="liqa-badge liqa-badge--red">{{ __('ملغي') }}</span>
         @elseif ($isHost)
-            <span class="liqa-badge">أنت المنظّم</span>
+            <span class="liqa-badge">{{ __('أنت المنظّم') }}</span>
         @elseif ($myRequest?->status === 'accepted')
-            <span class="liqa-badge liqa-badge--green">مقبول</span>
+            <span class="liqa-badge liqa-badge--green">{{ __('مقبول') }}</span>
         @elseif ($myRequest?->status === 'pending')
-            <span class="liqa-badge liqa-badge--pink">طلبك قيد المراجعة</span>
+            <span class="liqa-badge liqa-badge--pink">{{ __('طلبك قيد المراجعة') }}</span>
         @elseif ($myRequest?->status === 'waitlisted')
-            <span class="liqa-badge liqa-badge--sky">في قائمة الانتظار</span>
+            <span class="liqa-badge liqa-badge--sky">{{ __('في قائمة الانتظار') }}</span>
         @elseif ($myRequest?->status === 'rejected')
-            <span class="liqa-badge liqa-badge--red">مرفوض</span>
+            <span class="liqa-badge liqa-badge--red">{{ __('مرفوض') }}</span>
         @endif
     </div>
 
@@ -44,7 +43,7 @@
 
     <div class="mt-auto">
         <div class="d-flex justify-content-between small mb-1">
-            <span class="text-secondary">الأماكن</span>
+            <span class="text-secondary">{{ __('الأماكن') }}</span>
             <span class="fw-bold text-white"><bdi dir="ltr">{{ $taken }} / {{ $event->capacity }}</bdi></span>
         </div>
         <div class="seat-meter mb-3"><span style="width: {{ $percent }}%"></span></div>

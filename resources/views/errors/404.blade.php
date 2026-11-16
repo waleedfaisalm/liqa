@@ -1,5 +1,5 @@
 @extends('errors.layout')
-@section('title', 'الصفحة غير موجودة')
+@section('title', __('الصفحة غير موجودة'))
 @section('code', '404')
-@section('heading', 'الصفحة غير موجودة')
-@section('message', 'الرابط الذي طلبته غير موجود أو نُقل إلى مكان آخر.')
+@section('heading', __('الصفحة غير موجودة'))
+@section('message', __('الرابط الذي طلبته غير موجود أو نُقل إلى مكان آخر.'))

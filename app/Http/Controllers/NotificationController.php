@@ -48,6 +48,6 @@ class NotificationController extends Controller
     {
         $request->user()->userNotifications()->whereNull('read_at')->update(['read_at' => now()]);
 
-        return redirect()->route('notifications')->with('success', 'تم تعليم جميع الإشعارات كمقروءة.');
+        return redirect()->route('notifications')->with('success', __('تم تعليم جميع الإشعارات كمقروءة.'));
     }
 }

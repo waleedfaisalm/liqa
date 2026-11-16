@@ -17,7 +17,7 @@ class RegisterController extends Controller
     public function create(): View|RedirectResponse
     {
         if (! Setting::enabled('registration_enabled')) {
-            return redirect()->route('login')->with('error', 'التسجيل في المنصة مغلق مؤقتًا. يرجى المحاولة لاحقًا.');
+            return redirect()->route('login')->with('error', __('التسجيل في المنصة مغلق مؤقتًا. يرجى المحاولة لاحقًا.'));
         }
 
         return view('auth.register');
@@ -26,7 +26,7 @@ class RegisterController extends Controller
     public function store(Request $request): RedirectResponse
     {
         if (! Setting::enabled('registration_enabled')) {
-            return redirect()->route('login')->with('error', 'التسجيل في المنصة مغلق مؤقتًا. يرجى المحاولة لاحقًا.');
+            return redirect()->route('login')->with('error', __('التسجيل في المنصة مغلق مؤقتًا. يرجى المحاولة لاحقًا.'));
         }
 
         $request->merge(['email' => Str::lower(trim((string) $request->input('email')))]);
@@ -45,7 +45,7 @@ class RegisterController extends Controller
             Auth::login($user);
             $request->session()->regenerate();
 
-            return redirect()->route('home')->with('success', 'مرحبًا '.$user->name.'، تم إنشاء حسابك.');
+            return redirect()->route('home')->with('success', __('مرحبًا :v1، تم إنشاء حسابك.', ['v1' => $user->name]));
         }
 
         event(new Registered($user));
@@ -54,6 +54,6 @@ class RegisterController extends Controller
         $request->session()->regenerate();
 
         return redirect()->route('verification.notice')
-            ->with('success', 'مرحبًا '.$user->name.'، تم إنشاء حسابك. أرسلنا إليك رابط تفعيل على بريدك الإلكتروني.');
+            ->with('success', __('مرحبًا :v1، تم إنشاء حسابك. أرسلنا إليك رابط تفعيل على بريدك الإلكتروني.', ['v1' => $user->name]));
     }
 }

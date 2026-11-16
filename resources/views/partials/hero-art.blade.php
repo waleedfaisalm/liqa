@@ -1,6 +1,6 @@
 {{-- رسم توضيحي أصلي: مستقلون حول طاولة لقاء --}}
 @php $u = 'ha'.substr(md5(uniqid('', true)), 0, 6); @endphp
-<svg viewBox="0 0 520 440" class="hero-art__svg" role="img" aria-label="رسم توضيحي لمستقلين يلتقون حول طاولة" xmlns="http://www.w3.org/2000/svg">
+<svg viewBox="0 0 520 440" class="hero-art__svg" role="img" aria-label="{{ __('رسم توضيحي لمستقلين يلتقون حول طاولة') }}" xmlns="http://www.w3.org/2000/svg">
     <defs>
         <radialGradient id="{{ $u }}glow" cx="50%" cy="50%" r="50%">
             <stop offset="0" stop-color="#9333ea" stop-opacity=".38"/>

@@ -1,5 +1,5 @@
 @extends('errors.layout')
-@section('title', 'غير مصرّح لك بالدخول')
+@section('title', __('غير مصرّح لك بالدخول'))
 @section('code', '403')
-@section('heading', 'غير مصرّح لك بالدخول')
-@section('message', 'ليست لديك صلاحية الوصول إلى هذه الصفحة.')
+@section('heading', __('غير مصرّح لك بالدخول'))
+@section('message', __('ليست لديك صلاحية الوصول إلى هذه الصفحة.'))

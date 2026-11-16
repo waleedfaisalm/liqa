@@ -1,31 +1,29 @@
 @extends('layouts.app')
-
-@section('title', 'لوحة التحكم')
-
+@section('title', __('لوحة التحكم'))
 @section('content')
     @php
         $user = auth()->user();
-        $since = $user->created_at->locale('ar')->translatedFormat('j F Y');
+        $since = $user->created_at->translatedFormat('j F Y');
     @endphp
 
     {{-- ============ كارت الترحيب ============ --}}
     <section class="dash-hero mb-4">
         <div class="row align-items-center g-4">
             <div class="col-lg-8">
-                <span class="eyebrow mb-3">لوحة التحكم</span>
+                <span class="eyebrow mb-3">{{ __('لوحة التحكم') }}</span>
                 <h1 class="display-6 liqa-title mb-2">
-                    أهلاً، <span class="text-gradient">{{ $user->name }}</span>
+                    {{ __('أهلاً،') }} <span class="text-gradient">{{ $user->name }}</span>
                 </h1>
-                <p class="text-secondary mb-4">تصفّح الأحداث القادمة، أو انشر لقاءك وابدأ بالتعرّف على متخصصين من مجالك.</p>
+                <p class="text-secondary mb-4">{{ __('تصفّح الأحداث القادمة، أو انشر لقاءك وابدأ بالتعرّف على متخصصين من مجالك.') }}</p>
                 <div class="d-flex flex-wrap gap-2">
                     <a href="{{ route('events.index') }}" class="btn btn-liqa px-4">
-                        تصفّح الأحداث
+                        {{ __('تصفّح الأحداث') }}
                     </a>
-                    <a href="{{ route('events.create') }}" class="btn btn-liqa-outline px-4 d-flex align-items-center">+ انشر حدث</a>
+                    <a href="{{ route('events.create') }}" class="btn btn-liqa-outline px-4 d-flex align-items-center">{{ __('+ انشر حدث') }}</a>
                     <a href="{{ route('profile') }}" class="btn btn-liqa-outline px-4 d-flex align-items-center gap-2">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-6 8-6s8 2 8 6"/></svg>
-                        أكمل ملفك الشخصي
+                        {{ __('أكمل ملفك الشخصي') }}
                     </a>
                 </div>
             </div>
@@ -50,16 +48,16 @@
         <section class="start-panel mb-4" id="startPanel" data-key="liqa-start-{{ $user->id }}">
             <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
                 <div>
-                    <h2 class="h4 liqa-title mb-1">ابدأ هنا</h2>
-                    <p class="text-secondary small mb-0">خطوات قصيرة تساعدك على الاستفادة من المنصة منذ يومك الأول.</p>
+                    <h2 class="h4 liqa-title mb-1">{{ __('ابدأ هنا') }}</h2>
+                    <p class="text-secondary small mb-0">{{ __('خطوات قصيرة تساعدك على الاستفادة من المنصة منذ يومك الأول.') }}</p>
                 </div>
-                <button type="button" class="btn btn-sm btn-liqa-outline flex-shrink-0" id="startDismiss">إخفاء</button>
+                <button type="button" class="btn btn-sm btn-liqa-outline flex-shrink-0" id="startDismiss">{{ __('إخفاء') }}</button>
             </div>
             <div class="d-flex align-items-center gap-3 mb-3">
                 <div class="progress flex-grow-1 start-progress" role="progressbar" aria-valuenow="{{ $pct }}" aria-valuemin="0" aria-valuemax="100">
                     <div class="progress-bar" style="width: {{ $pct }}%"></div>
                 </div>
-                <span class="small fw-bold text-nowrap">{{ $doneCount }} من {{ $total }}</span>
+                <span class="small fw-bold text-nowrap">{{ __(':v1 من :v2', ['v1' => $doneCount, 'v2' => $total]) }}</span>
             </div>
             <ul class="start-steps list-unstyled mb-0">
                 @foreach ($steps as $i => $st)
@@ -92,19 +90,19 @@
     <section class="row g-3 mb-4">
         <div class="col-md-4">
             <a href="{{ route('events.mine') }}" class="liqa-card h-100 d-block text-decoration-none">
-                <div class="small text-secondary mb-1">أحداث قادمة تنظّمها</div>
+                <div class="small text-secondary mb-1">{{ __('أحداث قادمة تنظّمها') }}</div>
                 <div class="display-6 fw-bold text-white">{{ $myHosted }}</div>
             </a>
         </div>
         <div class="col-md-4">
             <a href="{{ route('events.mine') }}" class="liqa-card h-100 d-block text-decoration-none">
-                <div class="small text-secondary mb-1">أحداث قادمة تم قبولك فيها</div>
+                <div class="small text-secondary mb-1">{{ __('أحداث قادمة تم قبولك فيها') }}</div>
                 <div class="display-6 fw-bold text-white">{{ $myJoined }}</div>
             </a>
         </div>
         <div class="col-md-4">
             <a href="{{ route('events.mine') }}" class="liqa-card h-100 d-block text-decoration-none">
-                <div class="small text-secondary mb-1">طلبات انضمام بانتظار ردّك</div>
+                <div class="small text-secondary mb-1">{{ __('طلبات انضمام بانتظار ردّك') }}</div>
                 <div class="display-6 fw-bold text-white">{{ $pending }}</div>
             </a>
         </div>
@@ -113,13 +111,13 @@
     {{-- ============ أحداث قريبة ============ --}}
     <section>
         <div class="d-flex justify-content-between align-items-center mb-3">
-            <h2 class="h4 liqa-title mb-0">أحداث قريبة</h2>
-            <a href="{{ route('events.index') }}" class="small">عرض الكل</a>
+            <h2 class="h4 liqa-title mb-0">{{ __('أحداث قريبة') }}</h2>
+            <a href="{{ route('events.index') }}" class="small">{{ __('عرض الكل') }}</a>
         </div>
         @if ($upcoming->isEmpty())
             <div class="liqa-card text-center py-4">
-                <p class="text-secondary mb-3">لا توجد أحداث قادمة من منظّمين آخرين حاليًا.</p>
-                <a href="{{ route('events.create') }}" class="btn btn-liqa px-4">انشر حدث</a>
+                <p class="text-secondary mb-3">{{ __('لا توجد أحداث قادمة من منظّمين آخرين حاليًا.') }}</p>
+                <a href="{{ route('events.create') }}" class="btn btn-liqa px-4">{{ __('انشر حدث') }}</a>
             </div>
         @else
             <div class="row g-3">

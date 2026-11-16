@@ -35,9 +35,9 @@ class ReportController extends Controller
             'reason' => ['required', Rule::in(array_keys(Report::REASONS))],
             'details' => [Rule::requiredIf($request->input('reason') === 'other'), 'nullable', 'string', 'max:500'],
         ], [
-            'reason.required' => 'يرجى اختيار سبب البلاغ.',
-            'details.required' => 'يرجى كتابة التفاصيل عند اختيار "سبب آخر".',
-            'details.max' => 'التفاصيل طويلة جدًا (الحد الأقصى 500 حرف).',
+            'reason.required' => __('يرجى اختيار سبب البلاغ.'),
+            'details.required' => __('يرجى كتابة التفاصيل عند اختيار "سبب آخر".'),
+            'details.max' => __('التفاصيل طويلة جدًا (الحد الأقصى 500 حرف).'),
         ]);
 
         [$target, $error] = $this->resolve($request, $input['type'], (int) $input['id']);
@@ -55,7 +55,7 @@ class ReportController extends Controller
             ->exists();
 
         if ($exists) {
-            return redirect()->to($back)->with('error', 'سبق أن أرسلت بلاغًا عن هذا الطرف، وهو قيد المراجعة.');
+            return redirect()->to($back)->with('error', __('سبق أن أرسلت بلاغًا عن هذا الطرف، وهو قيد المراجعة.'));
         }
 
         $report = Report::create([
@@ -69,7 +69,7 @@ class ReportController extends Controller
 
         $this->alertOwner($report, $input['type'], $target);
 
-        return redirect()->to($back)->with('success', 'تم استلام بلاغك وسيُراجَع من إدارة المنصة. شكرًا لمساهمتك في الحفاظ على المجتمع.');
+        return redirect()->to($back)->with('success', __('تم استلام بلاغك وسيُراجَع من إدارة المنصة. شكرًا لمساهمتك في الحفاظ على المجتمع.'));
     }
 
     /** تنبيه بريدي للمالك عند ورود بلاغ؛ لا يوقف العملية إن فشل الإرسال */
@@ -82,15 +82,15 @@ class ReportController extends Controller
             }
             $name = $type === 'user' ? $target->name : $target->title;
             \Illuminate\Support\Facades\Mail::send('emails.action', [
-                'heading' => 'بلاغ جديد في لقاء',
+                'heading' => __('بلاغ جديد في لقاء'),
                 'lines' => [
-                    'السبب: '.(Report::REASONS[$report->reason] ?? $report->reason),
-                    ($type === 'user' ? 'المستخدم: ' : 'الحدث: ').$name,
+                    __('السبب: ').(Report::REASONS[$report->reason] ?? $report->reason),
+                    ($type === 'user' ? __('المستخدم: ') : __('الحدث: ')).$name,
                 ],
-                'button' => 'مراجعة البلاغ',
+                'button' => __('مراجعة البلاغ'),
                 'url' => route('admin.reports'),
-                'footnote' => 'وصلك هذا التنبيه لأنك مالك المنصة.',
-            ], fn ($m) => $m->to($owner->email)->subject('بلاغ جديد — لقاء'));
+                'footnote' => __('وصلك هذا التنبيه لأنك مالك المنصة.'),
+            ], fn ($m) => $m->to($owner->email)->subject(__('بلاغ جديد — لقاء')));
         } catch (\Throwable $e) {
             report($e);
         }
@@ -105,10 +105,10 @@ class ReportController extends Controller
             $user = User::find($id);
 
             if (! $user) {
-                return [null, 'المستخدم غير موجود.'];
+                return [null, __('المستخدم غير موجود.')];
             }
             if ($user->is($me)) {
-                return [null, 'لا يمكنك الإبلاغ عن نفسك.'];
+                return [null, __('لا يمكنك الإبلاغ عن نفسك.')];
             }
 
             return [$user, null];
@@ -118,15 +118,15 @@ class ReportController extends Controller
             $event = Event::with('host')->find($id);
 
             if (! $event) {
-                return [null, 'الحدث غير موجود.'];
+                return [null, __('الحدث غير موجود.')];
             }
             if ($event->isHostedBy($me)) {
-                return [null, 'لا يمكنك الإبلاغ عن حدثك.'];
+                return [null, __('لا يمكنك الإبلاغ عن حدثك.')];
             }
 
             return [$event, null];
         }
 
-        return [null, 'نوع البلاغ غير صحيح.'];
+        return [null, __('نوع البلاغ غير صحيح.')];
     }
 }

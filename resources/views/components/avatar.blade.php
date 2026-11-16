@@ -1,5 +1,4 @@
 @props(['user', 'size' => 40])
-
 @if ($user->avatarUrl())
     <img src="{{ $user->avatarUrl() }}" alt="{{ $user->name }}" class="liqa-avatar liqa-avatar--img"
          style="width: {{ $size }}px; height: {{ $size }}px">

@@ -32,13 +32,13 @@ class SavedEventController extends Controller
         $user = $request->user();
 
         if ($event->isHostedBy($user)) {
-            return $this->respond($request, false, 'لا حاجة لحفظ حدثك الخاص.', 422);
+            return $this->respond($request, false, __('لا حاجة لحفظ حدثك الخاص.'), 422);
         }
 
         $changes = $user->savedEvents()->toggle($event->id);
         $saved = count($changes['attached']) > 0;
 
-        return $this->respond($request, $saved, $saved ? 'تمت إضافة الحدث إلى المحفوظات.' : 'تمت إزالة الحدث من المحفوظات.');
+        return $this->respond($request, $saved, $saved ? __('تمت إضافة الحدث إلى المحفوظات.') : __('تمت إزالة الحدث من المحفوظات.'));
     }
 
     private function respond(Request $request, bool $saved, string $message, int $status = 200): JsonResponse|RedirectResponse

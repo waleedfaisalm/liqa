@@ -1,19 +1,17 @@
 @extends('layouts.app')
-
-@section('title', 'تقييم '.$ratee->name)
-
+@section('title', __('تقييم ').$ratee->name)
 @section('content')
     <div class="mx-auto" style="max-width: 640px">
         <div class="form-card">
             <div class="text-center">
-                <span class="eyebrow mb-3"><span class="dot"></span>تقييم الحدث</span>
-                <h1 class="h2 liqa-title mb-3">قيّم تجربتك مع</h1>
+                <span class="eyebrow mb-3"><span class="dot"></span>{{ __('تقييم الحدث') }}</span>
+                <h1 class="h2 liqa-title mb-3">{{ __('قيّم تجربتك مع') }}</h1>
 
                 <div class="d-inline-flex align-items-center gap-3 mb-2">
                     <x-avatar :user="$ratee" :size="56" />
                     <div class="text-start">
                         <div class="fw-bold fs-5 text-white">{{ $ratee->name }}</div>
-                        <div class="small text-secondary">{{ $ratee->id === $event->user_id ? 'المنظّم' : $ratee->specialty }}</div>
+                        <div class="small text-secondary">{{ $ratee->id === $event->user_id ? __('المنظّم') : $ratee->specialty }}</div>
                     </div>
                 </div>
 
@@ -26,23 +24,23 @@
                 @csrf
 
                 <div class="text-center">
-                    <div class="liqa-label">كم نجمة تمنح؟ <span class="req">*</span></div>
-                    <div class="star-input star-input--lg" role="radiogroup" aria-label="التقييم من 1 إلى 5">
+                    <div class="liqa-label">{{ __('كم نجمة تمنح؟') }} <span class="req">*</span></div>
+                    <div class="star-input star-input--lg" role="radiogroup" aria-label="{{ __('التقييم من 1 إلى 5') }}">
                         @for ($i = 5; $i >= 1; $i--)
                             <input type="radio" name="stars" id="star-{{ $i }}" value="{{ $i }}" @checked((int) old('stars') === $i)>
-                            <label for="star-{{ $i }}" title="{{ $i }} من 5">★</label>
+                            <label for="star-{{ $i }}" title="{{ __(':v من 5', ['v' => $i]) }}">★</label>
                         @endfor
                     </div>
                     @error('stars') <div class="text-danger small mt-2">{{ $message }}</div> @enderror
                 </div>
 
                 <div>
-                    <div class="liqa-label">ماذا تصف هذا الشخص؟ <span class="small text-secondary fw-normal">(اختياري، بحد أقصى 5)</span></div>
+                    <div class="liqa-label">{{ __('ماذا تصف هذا الشخص؟') }} <span class="small text-secondary fw-normal">{{ __('(اختياري، بحد أقصى 5)') }}</span></div>
                     <div class="d-flex flex-wrap gap-2" id="tag-list">
                         @foreach (\App\Models\Rating::TAGS as $i => $tag)
                             <div>
                                 <input type="checkbox" class="btn-check js-tag" name="tags[]" id="tag-{{ $i }}" value="{{ $tag }}" @checked(in_array($tag, old('tags', [])))>
-                                <label class="liqa-chip" for="tag-{{ $i }}">{{ $tag }}</label>
+                                <label class="liqa-chip" for="tag-{{ $i }}">{{ __($tag) }}</label>
                             </div>
                         @endforeach
                     </div>
@@ -50,18 +48,18 @@
                 </div>
 
                 <div>
-                    <label class="liqa-label d-block" for="comment">تعليق <span class="small text-secondary fw-normal">(اختياري)</span></label>
+                    <label class="liqa-label d-block" for="comment">{{ __('تعليق') }} <span class="small text-secondary fw-normal">{{ __('(اختياري)') }}</span></label>
                     <textarea id="comment" name="comment" rows="3" maxlength="300"
                               class="form-control @error('comment') is-invalid @enderror"
-                              placeholder="ما أبرز ما لاحظته في اللقاء؟ اكتب ملاحظاتك بإيجاز ومهنية.">{{ old('comment') }}</textarea>
+                              placeholder="{{ __('ما أبرز ما لاحظته في اللقاء؟ اكتب ملاحظاتك بإيجاز ومهنية.') }}">{{ old('comment') }}</textarea>
                     @error('comment') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>
 
                 <div class="d-flex flex-wrap gap-2">
                     <button type="submit" class="btn btn-liqa flex-grow-1 d-flex align-items-center justify-content-center gap-2">
-                        إرسال التقييم <x-icon name="send" :size="18" />
+                        {{ __('إرسال التقييم') }} <x-icon name="send" :size="18" />
                     </button>
-                    <a href="{{ route('events.show', $event) }}#ratings" class="btn btn-liqa-outline px-4 d-flex align-items-center">إلغاء</a>
+                    <a href="{{ route('events.show', $event) }}#ratings" class="btn btn-liqa-outline px-4 d-flex align-items-center">{{ __('إلغاء') }}</a>
                 </div>
             </form>
         </div>

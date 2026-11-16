@@ -1,5 +1,4 @@
 @props(['event', 'manage' => false, 'badgeText' => null, 'badgeClass' => ''])
-
 @php
     $ended = $event->hasEnded();
 @endphp
@@ -10,11 +9,11 @@
         <span class="d-flex flex-wrap gap-2">
             @if ($badgeText) <span class="liqa-badge {{ $badgeClass }}">{{ $badgeText }}</span> @endif
             @if ($event->isCancelled())
-                <span class="liqa-badge liqa-badge--red">ملغي</span>
+                <span class="liqa-badge liqa-badge--red">{{ __('ملغي') }}</span>
             @elseif ($ended)
-                <span class="liqa-badge">انتهى</span>
+                <span class="liqa-badge">{{ __('انتهى') }}</span>
             @else
-                <span class="liqa-badge liqa-badge--green">قادم</span>
+                <span class="liqa-badge liqa-badge--green">{{ __('قادم') }}</span>
             @endif
         </span>
     </div>
@@ -24,17 +23,17 @@
     <ul class="meta-list mb-3">
         <li><x-icon name="calendar" :size="16" /> {{ $event->whenLabel() }}</li>
         <li><x-icon name="pin" :size="16" /> <span class="text-truncate">{{ $event->cardPlaceLabel() }}</span></li>
-        <li class="text-success-emphasis"><x-icon name="check" :size="16" /> <bdi dir="ltr">{{ $event->seatsTaken() }} / {{ $event->capacity }}</bdi> مشاركين مقبولين</li>
+        <li class="text-success-emphasis"><x-icon name="check" :size="16" /> <bdi dir="ltr">{{ $event->seatsTaken() }} / {{ $event->capacity }}</bdi> {{ __('مشاركين مقبولين') }}</li>
     </ul>
 
     <div class="d-flex gap-2 mt-auto">
         @if ($manage && ! $event->isCancelled() && ! $ended)
-            <a href="{{ route('events.edit', $event) }}" class="btn btn-liqa-outline icon-only" aria-label="تعديل الحدث" title="تعديل">
+            <a href="{{ route('events.edit', $event) }}" class="btn btn-liqa-outline icon-only" aria-label="{{ __('تعديل الحدث') }}" title="{{ __('تعديل') }}">
                 <x-icon name="edit" :size="18" />
             </a>
         @endif
         <a href="{{ route('events.show', $event) }}" class="btn btn-liqa flex-grow-1 d-flex align-items-center justify-content-center gap-2">
-            {{ $manage ? 'إدارة' : 'عرض' }} <x-icon name="eye" :size="18" />
+            {{ $manage ? __('إدارة') : __('عرض') }} <x-icon name="eye" :size="18" />
         </a>
     </div>
 </div>

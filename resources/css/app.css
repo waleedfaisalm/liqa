@@ -1,4 +1,3 @@
-@import 'bootstrap/dist/css/bootstrap.rtl.min.css';
 
 /* ============================================================
    لقاء — Design tokens (مستوحاة من اتجاه سينتاكس أكاديمي)
@@ -1761,3 +1760,8 @@ html.room-lock, html.room-lock body { overflow: hidden; }
 .badge-pill { display: inline-flex; align-items: center; gap: .25rem; padding: .2rem .65rem; border-radius: 99px; font-size: .75rem; font-weight: 600; color: #e9d5ff; background: rgba(168, 85, 247, .14); border: 1px solid rgba(168, 85, 247, .35); }
 .badge-pill--t2 { color: #fbcfe8; background: rgba(236, 72, 153, .14); border-color: rgba(236, 72, 153, .4); }
 .badge-pill--t3 { color: #fde68a; background: rgba(250, 204, 21, .12); border-color: rgba(250, 204, 21, .45); }
+
+/* ---------- تبديل اللغة ---------- */
+.lang-switch { display: inline-flex; align-items: center; justify-content: center; min-height: 2.25rem; padding: 0 .85rem; border: 1px solid rgba(255,255,255,.2); border-radius: 999px; color: #fff; font-weight: 700; font-size: .85rem; text-decoration: none; }
+.lang-switch:hover { background: rgba(255,255,255,.08); color: #fff; }
+html[dir="ltr"] body { font-family: 'Cairo', system-ui, sans-serif; }

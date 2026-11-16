@@ -1,11 +1,11 @@
 @php
-    $seoTitle = trim($__env->yieldContent('title', 'لقاء'));
-    $seoDesc = trim($__env->yieldContent('description', 'لقاء: منصة لقاءات الفريلانسر المهنية — تعارف، لقاء، ونموّ مشترك.'));
+    $seoTitle = trim($__env->yieldContent('title', __('لقاء')));
+    $seoDesc = trim($__env->yieldContent('description', __('لقاء: منصة لقاءات الفريلانسر المهنية — تعارف، لقاء، ونموّ مشترك.')));
     $seoImage = asset('brand/og-image.png');
 @endphp
 <link rel="canonical" href="{{ url()->current() }}">
 <meta property="og:type" content="website">
-<meta property="og:locale" content="ar_AR">
+<meta property="og:locale" content="{{ app()->getLocale() === 'ar' ? 'ar_AR' : 'en_US' }}">
 <meta property="og:site_name" content="{{ \App\Models\Setting::site('name') }}">
 <meta property="og:title" content="{{ $seoTitle }}">
 <meta property="og:description" content="{{ $seoDesc }}">

@@ -27,7 +27,7 @@ class EmailVerificationController extends Controller
             $request->fulfill();
         }
 
-        return redirect()->route('home')->with('success', 'تم تفعيل بريدك الإلكتروني بنجاح. أهلًا بك في لقاء.');
+        return redirect()->route('home')->with('success', __('تم تفعيل بريدك الإلكتروني بنجاح. أهلًا بك في لقاء.'));
     }
 
     /** إعادة إرسال رابط التفعيل */
@@ -39,6 +39,6 @@ class EmailVerificationController extends Controller
 
         $request->user()->sendEmailVerificationNotification();
 
-        return back()->with('status', 'أُرسل رابط تفعيل جديد إلى بريدك الإلكتروني.');
+        return back()->with('status', __('أُرسل رابط تفعيل جديد إلى بريدك الإلكتروني.'));
     }
 }

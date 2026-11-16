@@ -41,7 +41,7 @@ class LoginController extends Controller
             $request->session()->regenerate();
 
             return redirect()->intended(route('landing'))
-                ->with('success', 'مرحبًا بعودتك، تم تسجيل دخولك.');
+                ->with('success', __('مرحبًا بعودتك، تم تسجيل دخولك.'));
         }
 
         return back()
@@ -60,6 +60,6 @@ class LoginController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('landing')->with('status', 'تم تسجيل الخروج.');
+        return redirect()->route('landing')->with('status', __('تم تسجيل الخروج.'));
     }
 }

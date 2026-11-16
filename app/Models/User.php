@@ -120,14 +120,14 @@ class User extends Authenticatable implements MustVerifyEmail
     /** رسالة تُعرض للمستخدم الموقوف عند محاولة الدخول */
     public function suspensionMessage(): string
     {
-        $text = 'تم إيقاف هذا الحساب من قِبل إدارة المنصة';
+        $text = __('تم إيقاف هذا الحساب من قِبل إدارة المنصة');
 
         if ($this->suspension_reason) {
-            $text .= ' — السبب: '.$this->suspension_reason;
+            $text .= __(' — السبب: :r', ['r' => $this->suspension_reason]);
         }
 
         if ($this->suspended_until) {
-            $text .= ' — ينتهي الإيقاف في '.$this->suspended_until->translatedFormat('j F Y');
+            $text .= __(' — ينتهي الإيقاف في :d', ['d' => $this->suspended_until->translatedFormat('j F Y')]);
         }
 
         return $text.'.';

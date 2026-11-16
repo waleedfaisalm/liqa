@@ -1,7 +1,6 @@
 @props(['size' => 56])
-
 @php $gid = 'lg'.substr(md5(uniqid('', true)), 0, 6); @endphp
-<svg class="liqa-logo" width="{{ $size }}" height="{{ $size }}" viewBox="0 0 64 64" role="img" aria-label="شعار لقاء" xmlns="http://www.w3.org/2000/svg">
+<svg class="liqa-logo" width="{{ $size }}" height="{{ $size }}" viewBox="0 0 64 64" role="img" aria-label="{{ __('شعار لقاء') }}" xmlns="http://www.w3.org/2000/svg">
     <defs>
         <linearGradient id="{{ $gid }}" x1="6" y1="4" x2="58" y2="60" gradientUnits="userSpaceOnUse">
             <stop offset="0" stop-color="#9333ea"/><stop offset="1" stop-color="#db2777"/>

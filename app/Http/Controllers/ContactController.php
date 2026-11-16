@@ -28,7 +28,7 @@ class ContactController extends Controller
     {
         // حقل مخفي: إن عُبّئ فالمرسل برنامج آلي
         if ($request->filled('website')) {
-            return redirect()->route('contact')->with('success', 'تم إرسال رسالتك. شكرًا لتواصلك.');
+            return redirect()->route('contact')->with('success', __('تم إرسال رسالتك. شكرًا لتواصلك.'));
         }
 
         $data = $request->validate([
@@ -37,13 +37,13 @@ class ContactController extends Controller
             'subject' => ['required', 'in:'.implode(',', array_keys(self::SUBJECTS))],
             'body' => ['required', 'string', 'min:10', 'max:2000'],
         ], [
-            'name.required' => 'يرجى كتابة اسمك.',
-            'email.required' => 'يرجى كتابة بريدك الإلكتروني.',
-            'email.email' => 'صيغة البريد الإلكتروني غير صحيحة.',
-            'subject.required' => 'يرجى اختيار موضوع الرسالة.',
-            'body.required' => 'يرجى كتابة رسالتك.',
-            'body.min' => 'الرسالة قصيرة جدًا.',
-            'body.max' => 'الرسالة طويلة (الحد الأقصى 2000 حرف).',
+            'name.required' => __('يرجى كتابة اسمك.'),
+            'email.required' => __('يرجى كتابة بريدك الإلكتروني.'),
+            'email.email' => __('صيغة البريد الإلكتروني غير صحيحة.'),
+            'subject.required' => __('يرجى اختيار موضوع الرسالة.'),
+            'body.required' => __('يرجى كتابة رسالتك.'),
+            'body.min' => __('الرسالة قصيرة جدًا.'),
+            'body.max' => __('الرسالة طويلة (الحد الأقصى 2000 حرف).'),
         ]);
 
         $message = ContactMessage::create([
@@ -59,17 +59,17 @@ class ContactController extends Controller
             $owner = User::where('is_super_admin', true)->first();
             if ($owner) {
                 Mail::send('emails.action', [
-                    'heading' => 'رسالة تواصل جديدة',
-                    'lines' => ['الموضوع: '.$message->subject, 'من: '.$message->name.' ('.$message->email.')'],
-                    'button' => 'قراءة الرسالة',
+                    'heading' => __('رسالة تواصل جديدة'),
+                    'lines' => [__('الموضوع: :v1', ['v1' => $message->subject]), __('من: :v1 (:v2)', ['v1' => $message->name, 'v2' => $message->email])],
+                    'button' => __('قراءة الرسالة'),
                     'url' => route('admin.messages'),
-                    'footnote' => 'وصلك هذا التنبيه لأنك مالك المنصة.',
-                ], fn ($m) => $m->to($owner->email)->replyTo($message->email, $message->name)->subject('رسالة تواصل جديدة — لقاء'));
+                    'footnote' => __('وصلك هذا التنبيه لأنك مالك المنصة.'),
+                ], fn ($m) => $m->to($owner->email)->replyTo($message->email, $message->name)->subject(__('رسالة تواصل جديدة — لقاء')));
             }
         } catch (\Throwable $e) {
             report($e);
         }
 
-        return redirect()->route('contact')->with('success', 'تم إرسال رسالتك، وسنرد عليك على بريدك الإلكتروني في أقرب وقت.');
+        return redirect()->route('contact')->with('success', __('تم إرسال رسالتك، وسنرد عليك على بريدك الإلكتروني في أقرب وقت.'));
     }
 }

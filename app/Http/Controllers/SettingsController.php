@@ -46,7 +46,7 @@ class SettingsController extends Controller
 
         $user->save();
 
-        return redirect()->route('settings')->with('success', 'تم حفظ التغييرات.');
+        return redirect()->route('settings')->with('success', __('تم حفظ التغييرات.'));
     }
 
     public function password(Request $request): RedirectResponse
@@ -58,7 +58,7 @@ class SettingsController extends Controller
 
         $request->user()->update(['password' => $request->input('password')]);
 
-        return redirect()->route('settings')->with('success', 'تم تغيير كلمة السر.');
+        return redirect()->route('settings')->with('success', __('تم تغيير كلمة السر.'));
     }
 
     /** حذف الحساب نهائيًا بعد تأكيد كلمة السر */
@@ -67,14 +67,14 @@ class SettingsController extends Controller
         $user = $request->user();
 
         if ($user->is_admin) {
-            return back()->with('error', 'حسابات الإدارة لا تُحذف من هنا. تواصل مع مالك المنصة.');
+            return back()->with('error', __('حسابات الإدارة لا تُحذف من هنا. تواصل مع مالك المنصة.'));
         }
 
         $request->validateWithBag('delete', [
             'delete_password' => ['required', 'current_password'],
         ], [
-            'delete_password.required' => 'أدخل كلمة السر لتأكيد الحذف.',
-            'delete_password.current_password' => 'كلمة السر غير صحيحة.',
+            'delete_password.required' => __('أدخل كلمة السر لتأكيد الحذف.'),
+            'delete_password.current_password' => __('كلمة السر غير صحيحة.'),
         ]);
 
         DB::transaction(function () use ($user) {
@@ -95,7 +95,7 @@ class SettingsController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('landing')->with('success', 'تم حذف حسابك وبياناته نهائيًا.');
+        return redirect()->route('landing')->with('success', __('تم حذف حسابك وبياناته نهائيًا.'));
     }
 
     private function deleteAvatar(User $user): void

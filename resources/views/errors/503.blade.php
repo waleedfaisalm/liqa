@@ -1,5 +1,5 @@
 @extends('errors.layout')
-@section('title', 'المنصة تحت الصيانة')
+@section('title', __('المنصة تحت الصيانة'))
 @section('code', '503')
-@section('heading', 'المنصة تحت الصيانة')
-@section('message', 'نجري بعض التحديثات حاليًا، وسنعود قريبًا. شكرًا لصبرك.')
+@section('heading', __('المنصة تحت الصيانة'))
+@section('message', __('نجري بعض التحديثات حاليًا، وسنعود قريبًا. شكرًا لصبرك.'))

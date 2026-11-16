@@ -38,8 +38,8 @@ class RatingController extends Controller
             'tags.*' => ['string', Rule::in(Rating::TAGS)],
             'comment' => ['nullable', 'string', 'max:300'],
         ], [
-            'stars.required' => 'يرجى اختيار عدد النجوم.',
-            'tags.max' => 'يمكنك اختيار 5 صفات كحد أقصى.',
+            'stars.required' => __('يرجى اختيار عدد النجوم.'),
+            'tags.max' => __('يمكنك اختيار 5 صفات كحد أقصى.'),
         ]);
 
         Rating::create([
@@ -59,25 +59,25 @@ class RatingController extends Controller
         );
 
         return redirect()->to(route('events.show', $event).'#ratings')
-            ->with('success', 'تم حفظ تقييمك لـ '.$user->name.'. شكرًا لمساهمتك.');
+            ->with('success', __('تم حفظ تقييمك لـ :v1. شكرًا لمساهمتك.', ['v1' => $user->name]));
     }
 
     private function blockedReason(User $rater, Event $event, User $ratee): ?string
     {
         if ($rater->is($ratee)) {
-            return 'لا يمكنك تقييم نفسك.';
+            return __('لا يمكنك تقييم نفسك.');
         }
 
         if ($event->isCancelled() || ! $event->hasEnded()) {
-            return 'يمكن التقييم بعد انتهاء الحدث فقط.';
+            return __('يمكن التقييم بعد انتهاء الحدث فقط.');
         }
 
         if (! $event->isParticipant($rater) || ! $event->isParticipant($ratee)) {
-            return 'التقييم متاح بين المشاركين في الحدث فقط.';
+            return __('التقييم متاح بين المشاركين في الحدث فقط.');
         }
 
         if (! $event->canRate($rater, $ratee)) {
-            return 'لقد قيّمت هذا المشارك في هذا الحدث مسبقًا.';
+            return __('لقد قيّمت هذا المشارك في هذا الحدث مسبقًا.');
         }
 
         return null;

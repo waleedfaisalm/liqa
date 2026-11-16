@@ -16,9 +16,9 @@ class DiscoverController extends Controller
         abort_unless(array_key_exists($country, Catalog::places()), 404);
 
         return $this->page($request, ['country' => $country], [
-            'heading' => 'لقاءات الفريلانسرز في '.$country,
-            'subject' => 'في '.$country,
-            'crumbs' => [[$country, null]],
+            'heading' => __('لقاءات الفريلانسرز في :p', ['p' => __($country)]),
+            'subject' => __('في :p', ['p' => __($country)]),
+            'crumbs' => [[__($country), null]],
         ]);
     }
 
@@ -27,9 +27,9 @@ class DiscoverController extends Controller
         abort_unless(in_array($city, Catalog::places()[$country] ?? [], true), 404);
 
         return $this->page($request, ['country' => $country, 'city' => $city], [
-            'heading' => 'لقاءات الفريلانسرز في '.$city,
-            'subject' => 'في '.$city.'، '.$country,
-            'crumbs' => [[$country, route('events.country', $country)], [$city, null]],
+            'heading' => __('لقاءات الفريلانسرز في :p', ['p' => __($city)]),
+            'subject' => __('في :p', ['p' => __($city).__('،').' '.__($country)]),
+            'crumbs' => [[__($country), route('events.country', $country)], [__($city), null]],
         ]);
     }
 
@@ -39,9 +39,9 @@ class DiscoverController extends Controller
         abort_unless(array_key_exists($type, $types), 404);
 
         return $this->page($request, ['type' => $type], [
-            'heading' => 'لقاءات '.$types[$type].' للفريلانسرز',
-            'subject' => 'في مجال «'.$types[$type].'»',
-            'crumbs' => [[$types[$type], null]],
+            'heading' => __('لقاءات :p للفريلانسرز', ['p' => __($types[$type])]),
+            'subject' => __('في مجال «:p»', ['p' => __($types[$type])]),
+            'crumbs' => [[__($types[$type]), null]],
         ]);
     }
 

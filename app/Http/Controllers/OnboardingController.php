@@ -39,6 +39,6 @@ class OnboardingController extends Controller
         $user->save();
 
         return redirect()->route('landing')
-            ->with('success', 'تم إعداد ملفك الشخصي بنجاح. يمكنك الآن تصفّح الأحداث ونشر أول لقاء.');
+            ->with('success', __('تم إعداد ملفك الشخصي بنجاح. يمكنك الآن تصفّح الأحداث ونشر أول لقاء.'));
     }
 }

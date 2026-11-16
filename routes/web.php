@@ -42,6 +42,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 // ---------- الصفحة الرئيسية (للزائر والعضو) ----------
+Route::get('/lang/{locale}', [\App\Http\Controllers\LocaleController::class, 'set'])->name('lang');
 Route::get('/', [\App\Http\Controllers\LandingController::class, 'index'])->name('landing');
 Route::get('/sitemap.xml', [\App\Http\Controllers\SeoController::class, 'sitemap']);
 // تشغيل التذكيرات من خدمة خارجية (cron-job.org مثلًا): /cron/reminders?key=CRON_SECRET

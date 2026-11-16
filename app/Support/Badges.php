@@ -34,30 +34,30 @@ class Badges
     {
         $out = [];
 
-        $host = self::tier($s['hosted'] ?? 0, [[15, 'منظّم رائد', 3], [5, 'منظّم نشط', 2], [1, 'منظّم لقاءات', 1]]);
+        $host = self::tier($s['hosted'] ?? 0, [[15, __('منظّم رائد'), 3], [5, __('منظّم نشط'), 2], [1, __('منظّم لقاءات'), 1]]);
         if ($host) {
-            $out[] = ['key' => 'host', 'icon' => '🎤', 'label' => $host[0], 'tier' => $host[1], 'desc' => 'نشر '.$s['hosted'].' من اللقاءات التي أُقيمت.'];
+            $out[] = ['key' => 'host', 'icon' => '🎤', 'label' => $host[0], 'tier' => $host[1], 'desc' => __('نشر :v1 من اللقاءات التي أُقيمت.', ['v1' => $s['hosted']])];
         }
 
-        $guest = self::tier($s['attended'] ?? 0, [[15, 'مشارك دائم', 3], [5, 'مشارك متفاعل', 2], [1, 'مشارك', 1]]);
+        $guest = self::tier($s['attended'] ?? 0, [[15, __('مشارك دائم'), 3], [5, __('مشارك متفاعل'), 2], [1, __('مشارك'), 1]]);
         if ($guest) {
-            $out[] = ['key' => 'guest', 'icon' => '🤝', 'label' => $guest[0], 'tier' => $guest[1], 'desc' => 'حضر '.$s['attended'].' من اللقاءات.'];
+            $out[] = ['key' => 'guest', 'icon' => '🤝', 'label' => $guest[0], 'tier' => $guest[1], 'desc' => __('حضر :v1 من اللقاءات.', ['v1' => $s['attended']])];
         }
 
         $avg = (float) ($s['avg'] ?? 0);
         $count = (int) ($s['ratings'] ?? 0);
         if ($count >= 3 && $avg >= 4.5) {
-            $out[] = ['key' => 'rated', 'icon' => '⭐', 'label' => 'تقييم ممتاز', 'tier' => 3, 'desc' => 'متوسط تقييم '.round($avg, 1).' من '.$count.' تقييمات.'];
+            $out[] = ['key' => 'rated', 'icon' => '⭐', 'label' => __('تقييم ممتاز'), 'tier' => 3, 'desc' => __('متوسط تقييم :a من :v1 تقييمات.', ['a' => round($avg, 1), 'v1' => $count])];
         } elseif ($count >= 3 && $avg >= 4.0) {
-            $out[] = ['key' => 'rated', 'icon' => '⭐', 'label' => 'محبوب بين الأعضاء', 'tier' => 2, 'desc' => 'متوسط تقييم '.round($avg, 1).' من '.$count.' تقييمات.'];
+            $out[] = ['key' => 'rated', 'icon' => '⭐', 'label' => __('محبوب بين الأعضاء'), 'tier' => 2, 'desc' => __('متوسط تقييم :a من :v1 تقييمات.', ['a' => round($avg, 1), 'v1' => $count])];
         }
 
         if (! empty($s['complete'])) {
-            $out[] = ['key' => 'complete', 'icon' => '✅', 'label' => 'ملف مكتمل', 'tier' => 1, 'desc' => 'أضاف صورة ونبذة وتخصصًا.'];
+            $out[] = ['key' => 'complete', 'icon' => '✅', 'label' => __('ملف مكتمل'), 'tier' => 1, 'desc' => __('أضاف صورة ونبذة وتخصصًا.')];
         }
 
         if (isset($s['user_id']) && $s['user_id'] <= self::founderCutoff()) {
-            $out[] = ['key' => 'founder', 'icon' => '🏅', 'label' => 'عضو مؤسس', 'tier' => 3, 'desc' => 'من أوائل الأعضاء الذين انضموا إلى المنصة.'];
+            $out[] = ['key' => 'founder', 'icon' => '🏅', 'label' => __('عضو مؤسس'), 'tier' => 3, 'desc' => __('من أوائل الأعضاء الذين انضموا إلى المنصة.')];
         }
 
         return $out;

@@ -34,11 +34,11 @@ class EventController extends Controller
 
         $hasBio = filled($user->bio) && filled($user->avatar_path);
         $steps = [
-            ['done' => $hasBio, 'title' => 'أكمل ملفك الشخصي', 'text' => 'أضف صورتك ونبذة مختصرة ليتعرّف عليك المنظّمون.', 'url' => route('settings'), 'cta' => 'إكمال الملف'],
-            ['done' => $user->hasVerifiedEmail(), 'title' => 'وثّق بريدك الإلكتروني', 'text' => 'يضمن وصول إشعارات الطلبات والتذكيرات إليك.', 'url' => route('verification.notice'), 'cta' => 'توثيق البريد'],
-            ['done' => $user->savedEvents()->exists(), 'title' => 'احفظ لقاءً يهمّك', 'text' => 'تصفّح اللقاءات واحفظ ما يناسب تخصصك للرجوع إليه.', 'url' => route('events.index'), 'cta' => 'تصفّح اللقاءات'],
-            ['done' => $user->eventRequests()->exists(), 'title' => 'قدّم طلب انضمام', 'text' => 'اختر لقاءً قريبًا منك وأرسل طلبك إلى المنظّم.', 'url' => route('events.index'), 'cta' => 'اختر لقاءً'],
-            ['done' => $user->hostedEvents()->exists(), 'title' => 'انشر لقاءك الأول', 'text' => 'حدّد الموعد والمكان وعدد المقاعد، ودع المجتمع يأتي إليك.', 'url' => route('events.create'), 'cta' => 'انشر لقاءً'],
+            ['done' => $hasBio, 'title' => __('أكمل ملفك الشخصي'), 'text' => __('أضف صورتك ونبذة مختصرة ليتعرّف عليك المنظّمون.'), 'url' => route('settings'), 'cta' => __('إكمال الملف')],
+            ['done' => $user->hasVerifiedEmail(), 'title' => __('وثّق بريدك الإلكتروني'), 'text' => __('يضمن وصول إشعارات الطلبات والتذكيرات إليك.'), 'url' => route('verification.notice'), 'cta' => __('توثيق البريد')],
+            ['done' => $user->savedEvents()->exists(), 'title' => __('احفظ لقاءً يهمّك'), 'text' => __('تصفّح اللقاءات واحفظ ما يناسب تخصصك للرجوع إليه.'), 'url' => route('events.index'), 'cta' => __('تصفّح اللقاءات')],
+            ['done' => $user->eventRequests()->exists(), 'title' => __('قدّم طلب انضمام'), 'text' => __('اختر لقاءً قريبًا منك وأرسل طلبك إلى المنظّم.'), 'url' => route('events.index'), 'cta' => __('اختر لقاءً')],
+            ['done' => $user->hostedEvents()->exists(), 'title' => __('انشر لقاءك الأول'), 'text' => __('حدّد الموعد والمكان وعدد المقاعد، ودع المجتمع يأتي إليك.'), 'url' => route('events.create'), 'cta' => __('انشر لقاءً')],
         ];
 
         return view('dashboard', compact('upcoming', 'myHosted', 'myJoined', 'pending', 'steps'));
@@ -104,7 +104,7 @@ class EventController extends Controller
     public function create(): View|RedirectResponse
     {
         if (! \App\Models\Setting::enabled('event_creation_enabled')) {
-            return redirect()->route('events.index')->with('error', 'إنشاء الأحداث الجديدة متوقف مؤقتًا من إدارة المنصة.');
+            return redirect()->route('events.index')->with('error', __('إنشاء الأحداث الجديدة متوقف مؤقتًا من إدارة المنصة.'));
         }
 
         return view('events.form', ['event' => null]);
@@ -113,7 +113,7 @@ class EventController extends Controller
     public function store(Request $request): RedirectResponse
     {
         if (! \App\Models\Setting::enabled('event_creation_enabled')) {
-            return redirect()->route('events.index')->with('error', 'إنشاء الأحداث الجديدة متوقف مؤقتًا من إدارة المنصة.');
+            return redirect()->route('events.index')->with('error', __('إنشاء الأحداث الجديدة متوقف مؤقتًا من إدارة المنصة.'));
         }
 
         $validated = $request->validate($this->rules() + [
@@ -135,7 +135,7 @@ class EventController extends Controller
             ->first();
 
         if ($duplicate) {
-            return redirect()->route('events.show', $duplicate)->with('success', 'تم نشر الحدث. يمكن للأعضاء الآن تقديم طلبات الانضمام.');
+            return redirect()->route('events.show', $duplicate)->with('success', __('تم نشر الحدث. يمكن للأعضاء الآن تقديم طلبات الانضمام.'));
         }
 
         $seriesId = $occurrences > 1 ? (string) \Illuminate\Support\Str::uuid() : null;
@@ -158,8 +158,8 @@ class EventController extends Controller
         }
 
         $message = $occurrences > 1
-            ? 'تم نشر '.$occurrences.' لقاءات متكررة. يمكن للأعضاء الانضمام إلى كل لقاء على حدة.'
-            : 'تم نشر الحدث. يمكن للأعضاء الآن تقديم طلبات الانضمام.';
+            ? __('تم نشر :v1 لقاءات متكررة. يمكن للأعضاء الانضمام إلى كل لقاء على حدة.', ['v1' => $occurrences])
+            : __('تم نشر الحدث. يمكن للأعضاء الآن تقديم طلبات الانضمام.');
 
         return redirect()->route('events.show', $first)->with('success', $message);
     }
@@ -247,7 +247,7 @@ class EventController extends Controller
             route('events.show', $event),
         ));
 
-        return redirect()->route('events.show', $event)->with('success', 'تم حفظ التعديلات.');
+        return redirect()->route('events.show', $event)->with('success', __('تم حفظ التعديلات.'));
     }
 
     /**
@@ -260,11 +260,11 @@ class EventController extends Controller
         $this->authorizeHost($request, $event);
 
         if ($event->isCancelled()) {
-            return redirect()->route('events.mine')->with('error', 'هذا الحدث ملغى بالفعل.');
+            return redirect()->route('events.mine')->with('error', __('هذا الحدث ملغى بالفعل.'));
         }
 
         if ($event->starts_at->isPast()) {
-            return redirect()->route('events.show', $event)->with('error', 'لا يمكن حذف حدث بدأ أو انتهى، حفاظًا على التقييمات.');
+            return redirect()->route('events.show', $event)->with('error', __('لا يمكن حذف حدث بدأ أو انتهى، حفاظًا على التقييمات.'));
         }
 
         $affected = $event->requests()->whereIn('status', [EventRequest::PENDING, EventRequest::ACCEPTED, EventRequest::WAITLISTED])->with('user')->get();
@@ -272,7 +272,7 @@ class EventController extends Controller
         if ($event->requests()->doesntExist()) {
             $event->delete();
 
-            return redirect()->route('events.mine')->with('success', 'تم حذف الحدث.');
+            return redirect()->route('events.mine')->with('success', __('تم حذف الحدث.'));
         }
 
         $event->status = Event::CANCELLED;
@@ -285,7 +285,7 @@ class EventController extends Controller
             route('events.show', $event),
         ));
 
-        return redirect()->route('events.mine')->with('success', 'تم إلغاء الحدث وإشعار مقدّمي طلبات الانضمام.');
+        return redirect()->route('events.mine')->with('success', __('تم إلغاء الحدث وإشعار مقدّمي طلبات الانضمام.'));
     }
 
     // ---------------------------------------------------------
@@ -316,7 +316,7 @@ class EventController extends Controller
         } elseif (($data['city'] ?? null) === '__other') {
             $data['city'] = trim((string) ($data['city_other'] ?? ''));
         } elseif (! in_array($data['city'], (\App\Support\Catalog::places()[$data['country']] ?? []), true)) {
-            throw ValidationException::withMessages(['city' => 'يرجى اختيار مدينة من القائمة.']);
+            throw ValidationException::withMessages(['city' => __('يرجى اختيار مدينة من القائمة.')]);
         }
 
         unset($data['city_other']);
@@ -326,18 +326,18 @@ class EventController extends Controller
 
     private function authorizeHost(Request $request, Event $event): void
     {
-        abort_unless($event->isHostedBy($request->user()), 403, 'ليس لديك صلاحية على هذا الحدث.');
+        abort_unless($event->isHostedBy($request->user()), 403, __('ليس لديك صلاحية على هذا الحدث.'));
     }
 
     /** سبب منع التعديل (أو null لو مسموح) */
     private function lockedReason(Event $event): ?string
     {
         if ($event->isCancelled()) {
-            return 'هذا الحدث ملغى ولا يمكن تعديله.';
+            return __('هذا الحدث ملغى ولا يمكن تعديله.');
         }
 
         if ($event->starts_at->isPast()) {
-            return 'بدأ الحدث أو انتهى، ولا يمكن تعديله.';
+            return __('بدأ الحدث أو انتهى، ولا يمكن تعديله.');
         }
 
         return null;

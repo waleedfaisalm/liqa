@@ -239,7 +239,7 @@ class Event extends Model
     /** المدينة والمكان في سطر واحد */
     public function placeLabel(): string
     {
-        $area = implode('، ', array_filter([$this->city, $this->country]));
+        $area = implode(__('، '), array_filter([$this->city ? __($this->city) : null, $this->country ? __($this->country) : null]));
 
         return $area !== '' ? $area.' · '.$this->location : $this->location;
     }
@@ -248,9 +248,9 @@ class Event extends Model
     public function cardPlaceLabel(): string
     {
         if ($this->mode === 'online') {
-            $area = implode('، ', array_filter([$this->city, $this->country]));
+            $area = implode(__('، '), array_filter([$this->city ? __($this->city) : null, $this->country ? __($this->country) : null]));
 
-            return $area !== '' ? 'عن بُعد · '.$area : 'لقاء عن بُعد';
+            return $area !== '' ? __('عن بُعد').' · '.$area : __('لقاء عن بُعد');
         }
 
         return $this->placeLabel();
@@ -258,12 +258,12 @@ class Event extends Model
 
     public function typeLabel(): string
     {
-        return \App\Support\Catalog::eventTypeLabel($this->type);
+        return __(\App\Support\Catalog::eventTypeLabel($this->type));
     }
 
     public function modeLabel(): string
     {
-        return self::MODES[$this->mode] ?? $this->mode;
+        return __(self::MODES[$this->mode] ?? $this->mode);
     }
 
     public function typeBadgeClass(): string
@@ -283,6 +283,6 @@ class Event extends Model
 
     public function durationLabel(): string
     {
-        return self::DURATIONS[$this->duration_minutes] ?? $this->duration_minutes.' دقيقة';
+        return isset(self::DURATIONS[$this->duration_minutes]) ? __(self::DURATIONS[$this->duration_minutes]) : __(':n دقيقة', ['n' => $this->duration_minutes]);
     }
 }

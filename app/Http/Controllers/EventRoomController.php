@@ -27,7 +27,7 @@ class EventRoomController extends Controller
 
         $entry = $isHost ? null : $event->roomEntries()->where('user_id', $user->id)->first();
         if ($entry && $entry->status === EventRoomEntry::REMOVED) {
-            return $back->with('error', 'أخرجك المنظّم من الغرفة المباشرة لهذا الحدث.');
+            return $back->with('error', __('أخرجك المنظّم من الغرفة المباشرة لهذا الحدث.'));
         }
 
         return view('events.room', [
@@ -89,14 +89,14 @@ class EventRoomController extends Controller
         $user = $request->user();
 
         if ($this->gate($event, $user)) {
-            return response()->json(['message' => 'غير مسموح.'], 403);
+            return response()->json(['message' => __('غير مسموح.')], 403);
         }
 
         if (! $event->isHostedBy($user)) {
             $entry = $event->roomEntries()->where('user_id', $user->id)->first();
 
             if (! $entry || $this->effectiveStatus($event, $entry) !== EventRoomEntry::ADMITTED) {
-                return response()->json(['message' => 'لم يُقبل دخولك بعد.'], 403);
+                return response()->json(['message' => __('لم يُقبل دخولك بعد.')], 403);
             }
         }
 
@@ -193,12 +193,12 @@ class EventRoomController extends Controller
 
         $target = User::find((int) $data['identity']);
         if (! $target || $event->isHostedBy($target)) {
-            return response()->json(['ok' => false, 'message' => 'لا يمكن تعديل هذا العضو.'], 422);
+            return response()->json(['ok' => false, 'message' => __('لا يمكن تعديل هذا العضو.')], 422);
         }
 
         $entry = $event->roomEntries()->where('user_id', $target->id)->first();
         if (! $entry || $entry->status !== EventRoomEntry::ADMITTED) {
-            return response()->json(['ok' => false, 'message' => 'يجب أن يكون العضو داخل الغرفة.'], 422);
+            return response()->json(['ok' => false, 'message' => __('يجب أن يكون العضو داخل الغرفة.')], 422);
         }
 
         $on = (bool) $data['on'];
@@ -253,15 +253,15 @@ class EventRoomController extends Controller
         $id = (int) $data['identity'];
 
         if ($id === $user->id) {
-            return response()->json(['ok' => false, 'message' => 'لا يمكنك إخراج نفسك.'], 422);
+            return response()->json(['ok' => false, 'message' => __('لا يمكنك إخراج نفسك.')], 422);
         }
 
         if ($id === $event->user_id) {
-            return response()->json(['ok' => false, 'message' => 'لا يمكن إخراج المنظّم.'], 422);
+            return response()->json(['ok' => false, 'message' => __('لا يمكن إخراج المنظّم.')], 422);
         }
 
         if (! $event->isHostedBy($user) && $this->isCohost($event, User::find($id))) {
-            return response()->json(['ok' => false, 'message' => 'وحده المنظّم يخرج منظّمًا مساعدًا.'], 422);
+            return response()->json(['ok' => false, 'message' => __('وحده المنظّم يخرج منظّمًا مساعدًا.')], 422);
         }
 
         $event->roomEntries()->updateOrCreate(['user_id' => $id], ['status' => EventRoomEntry::REMOVED, 'is_cohost' => false]);
@@ -277,25 +277,25 @@ class EventRoomController extends Controller
     private function gate(Event $event, ?User $user): ?string
     {
         if (! $user) {
-            return 'سجّل الدخول للانضمام إلى الغرفة.';
+            return __('سجّل الدخول للانضمام إلى الغرفة.');
         }
 
         if (! $event->isParticipant($user) && ! $event->room_link) {
-            return 'الدخول إلى هذه الغرفة متاح للمشاركين المقبولين فقط.';
+            return __('الدخول إلى هذه الغرفة متاح للمشاركين المقبولين فقط.');
         }
 
         if ($event->isCancelled()) {
-            return 'هذا الحدث ملغى.';
+            return __('هذا الحدث ملغى.');
         }
 
         if (! LiveKit::configured()) {
-            return 'الغرفة المباشرة غير مفعّلة بعد من إدارة المنصة.';
+            return __('الغرفة المباشرة غير مفعّلة بعد من إدارة المنصة.');
         }
 
         if (! $event->roomIsOpen()) {
             return $event->hasEnded()
-                ? 'انتهى وقت الغرفة المباشرة لهذا الحدث.'
-                : 'تفتح الغرفة قبل الموعد بـ '.Event::ROOM_OPENS_BEFORE_MINUTES.' دقيقة، أي في '.$event->roomOpensAt()->translatedFormat('l j F، g:i a').'.';
+                ? __('انتهى وقت الغرفة المباشرة لهذا الحدث.')
+                : __('تفتح الغرفة قبل الموعد بـ ').Event::ROOM_OPENS_BEFORE_MINUTES.__(' دقيقة، أي في :v1.', ['v1' => $event->roomOpensAt()->translatedFormat('l j F، g:i a')]);
         }
 
         return null;

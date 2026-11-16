@@ -1,7 +1,5 @@
 @extends(auth()->check() ? 'layouts.app' : 'layouts.site')
-
 @section('title', $event->title)
-
 @push('head')
     @php
         $isOnlineEvent = $event->mode === 'online';
@@ -16,8 +14,8 @@
             'eventAttendanceMode' => $isOnlineEvent ? 'https://schema.org/OnlineEventAttendanceMode' : 'https://schema.org/OfflineEventAttendanceMode',
             'location' => $isOnlineEvent
                 ? ['@type' => 'VirtualLocation', 'url' => route('events.show', $event)]
-                : ['@type' => 'Place', 'name' => $event->location ?: ($event->city ?: 'لقاء حضوري'), 'address' => ['@type' => 'PostalAddress', 'addressLocality' => $event->city, 'addressCountry' => $event->country]],
-            'organizer' => ['@type' => 'Person', 'name' => $event->host->name ?? 'لقاء'],
+                : ['@type' => 'Place', 'name' => $event->location ?: ($event->city ?: __('لقاء حضوري')), 'address' => ['@type' => 'PostalAddress', 'addressLocality' => $event->city, 'addressCountry' => $event->country]],
+            'organizer' => ['@type' => 'Person', 'name' => $event->host->name ?? __('لقاء')],
             'isAccessibleForFree' => true,
             'url' => route('events.show', $event),
         ];
@@ -32,14 +30,14 @@
         $started = $event->starts_at->isPast();
         $ended = $event->hasEnded();
         $open = ! $event->isCancelled() && ! $started;
-        $statusLabels = ['pending' => 'قيد المراجعة', 'accepted' => 'مقبول', 'rejected' => 'مرفوض', 'waitlisted' => 'قائمة الانتظار'];
+        $statusLabels = ['pending' => __('قيد المراجعة'), 'accepted' => __('مقبول'), 'rejected' => __('مرفوض'), 'waitlisted' => __('قائمة الانتظار')];
         $statusClasses = ['pending' => 'liqa-badge--pink', 'accepted' => 'liqa-badge--green', 'rejected' => 'liqa-badge--red', 'waitlisted' => 'liqa-badge--sky'];
         $taken = $event->accepted_requests_count;
         $left = max(0, $event->capacity - $taken);
         $percent = $event->capacity ? min(100, round($taken / $event->capacity * 100)) : 0;
     @endphp
 
-    <a href="{{ route('events.index') }}" class="small text-secondary text-decoration-none">← كل الأحداث</a>
+    <a href="{{ route('events.index') }}" class="small text-secondary text-decoration-none">{{ __('← كل الأحداث') }}</a>
 
     <div class="row g-4 mt-1">
         {{-- ============ الجزء الرئيسي ============ --}}
@@ -49,11 +47,11 @@
                     <span class="liqa-badge {{ $event->typeBadgeClass() }}">{{ $event->typeLabel() }}</span>
                     <span class="liqa-badge liqa-badge--green">{{ $event->modeLabel() }}</span>
                     @if ($event->isCancelled())
-                        <span class="liqa-badge liqa-badge--red">ملغي</span>
+                        <span class="liqa-badge liqa-badge--red">{{ __('ملغي') }}</span>
                     @elseif ($ended)
-                        <span class="liqa-badge">انتهى</span>
+                        <span class="liqa-badge">{{ __('انتهى') }}</span>
                     @else
-                        <span class="liqa-badge liqa-badge--pink">قادم</span>
+                        <span class="liqa-badge liqa-badge--pink">{{ __('قادم') }}</span>
                     @endif
                 </div>
 
@@ -66,10 +64,10 @@
                 </ul>
 
                 @if ($event->isCancelled())
-                    <div class="liqa-alert liqa-alert--err mb-4" role="alert">تم إلغاء هذا الحدث من قِبل المنظّم.</div>
+                    <div class="liqa-alert liqa-alert--err mb-4" role="alert">{{ __('تم إلغاء هذا الحدث من قِبل المنظّم.') }}</div>
                 @endif
 
-                <div class="fw-bold text-white mb-2">عن اللقاء</div>
+                <div class="fw-bold text-white mb-2">{{ __('عن اللقاء') }}</div>
                 <p class="text-secondary mb-4" style="white-space: pre-line">{{ $event->description }}</p>
 
                 <div class="row g-3">
@@ -77,7 +75,7 @@
                         <div class="info-tile">
                             <span class="info-tile__icon"><x-icon name="pin" :size="20" /></span>
                             <span class="min-w-0">
-                                <span class="d-block small text-secondary">{{ $event->mode === 'online' ? 'الرابط أو المنصة' : 'المكان' }}</span>
+                                <span class="d-block small text-secondary">{{ $event->mode === 'online' ? __('الرابط أو المنصة') : __('المكان') }}</span>
                                 <span class="d-block fw-bold text-white text-break">
                                     @if ($event->mode === 'online' && \Illuminate\Support\Str::startsWith($event->location, ['http://', 'https://']))
                                         <a href="{{ $event->location }}" target="_blank" rel="noopener noreferrer nofollow">{{ $event->location }}</a>
@@ -85,7 +83,7 @@
                                         {{ $event->location }}
                                     @endif
                                 </span>
-                                @if ($event->city || $event->country) <span class="d-block small hint">{{ implode('، ', array_filter([$event->city, $event->country])) }}</span> @endif
+                                @if ($event->city || $event->country) <span class="d-block small hint">{{ implode(__('، '), array_filter([$event->city, $event->country])) }}</span> @endif
                             </span>
                         </div>
                     </div>
@@ -93,9 +91,9 @@
                         <div class="info-tile">
                             <span class="info-tile__icon"><x-icon name="users" :size="20" /></span>
                             <span>
-                                <span class="d-block small text-secondary">المشاركون</span>
+                                <span class="d-block small text-secondary">{{ __('المشاركون') }}</span>
                                 <span class="d-block fw-bold text-white"><bdi dir="ltr">{{ $taken }} / {{ $event->capacity }}</bdi></span>
-                                <span class="d-block small hint">{{ $left > 0 ? $left.' مقاعد متاحة' : 'اكتمل العدد' }}</span>
+                                <span class="d-block small hint">{{ $left > 0 ? $left.__(' مقاعد متاحة') : __('اكتمل العدد') }}</span>
                             </span>
                         </div>
                     </div>
@@ -109,10 +107,10 @@
 
             {{-- ============ التعليقات والأسئلة ============ --}}
             <div class="liqa-card p-3 p-md-4 mt-3" id="comments">
-                <h2 class="h5 liqa-title mb-3 d-flex align-items-center gap-2"><x-icon name="chat" :size="20" /> الأسئلة والتعليقات ({{ $comments->count() }})</h2>
+                <h2 class="h5 liqa-title mb-3 d-flex align-items-center gap-2"><x-icon name="chat" :size="20" /> {{ __('الأسئلة والتعليقات (:v1)', ['v1' => $comments->count()]) }}</h2>
 
                 @if ($comments->isEmpty())
-                    <p class="text-secondary mb-3">لا توجد تعليقات بعد. اطرح سؤالك للمنظّم قبل أن تقدّم طلبك.</p>
+                    <p class="text-secondary mb-3">{{ __('لا توجد تعليقات بعد. اطرح سؤالك للمنظّم قبل أن تقدّم طلبك.') }}</p>
                 @else
                     <div class="d-grid gap-2 mb-3">
                         @foreach ($comments as $comment)
@@ -122,16 +120,16 @@
                                     <div class="flex-grow-1 min-w-0">
                                         <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
                                             <a href="{{ auth()->check() ? route('users.show', $comment->user) : route('login') }}" class="fw-bold text-white text-decoration-none">{{ $comment->user->name }}</a>
-                                            @if ($comment->user_id === $event->user_id) <span class="liqa-badge">المنظّم</span> @endif
+                                            @if ($comment->user_id === $event->user_id) <span class="liqa-badge">{{ __('المنظّم') }}</span> @endif
                                             <span class="small hint">{{ $comment->created_at->diffForHumans() }}</span>
                                         </div>
                                         <p class="mb-0 text-break" style="white-space: pre-line">{{ $comment->body }}</p>
                                     </div>
                                     @if (auth()->check() && (auth()->id() === $comment->user_id || $isHost))
-                                        <form method="POST" action="{{ route('events.comments.destroy', [$event, $comment]) }}" onsubmit="return confirm('هل تريد حذف هذا التعليق؟')">
+                                        <form method="POST" action="{{ route('events.comments.destroy', [$event, $comment]) }}" onsubmit="return confirm('{{ addslashes(__('هل تريد حذف هذا التعليق؟')) }}')">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="btn btn-sm text-danger p-1" aria-label="حذف التعليق" title="حذف">✕</button>
+                                            <button type="submit" class="btn btn-sm text-danger p-1" aria-label="{{ __('حذف التعليق') }}" title="{{ __('حذف') }}">✕</button>
                                         </form>
                                     @endif
                                 </div>
@@ -141,28 +139,28 @@
                 @endif
 
                 @if ($event->isCancelled() || $ended)
-                    <p class="small hint mb-0">التعليقات مغلقة على هذا الحدث.</p>
+                    <p class="small hint mb-0">{{ __('التعليقات مغلقة على هذا الحدث.') }}</p>
                 @elseif (auth()->check())
                     <form method="POST" action="{{ route('events.comments.store', $event) }}" novalidate class="d-grid gap-2">
                         @csrf
                         <textarea name="body" rows="2" maxlength="500" required
                                   class="form-control @error('body') is-invalid @enderror"
-                                  placeholder="{{ $isHost ? 'اكتب ردًا على الأسئلة...' : 'اكتب سؤالك أو تعليقك...' }}">{{ old('body') }}</textarea>
+                                  placeholder="{{ $isHost ? __('اكتب ردًا على الأسئلة...') : __('اكتب سؤالك أو تعليقك...') }}">{{ old('body') }}</textarea>
                         @error('body') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
-                        <div><button type="submit" class="btn btn-liqa px-4">إرسال</button></div>
+                        <div><button type="submit" class="btn btn-liqa px-4">{{ __('إرسال') }}</button></div>
                     </form>
                 @else
-                    <a href="{{ route('login') }}" class="btn btn-liqa-outline px-4">سجّل دخولك لإضافة تعليق</a>
+                    <a href="{{ route('login') }}" class="btn btn-liqa-outline px-4">{{ __('سجّل دخولك لإضافة تعليق') }}</a>
                 @endif
             </div>
 
             {{-- ============ طلبات الانضمام (المنظّم فقط) ============ --}}
             @if ($isHost)
                 <div class="liqa-card p-3 p-md-4 mt-3" id="requests">
-                    <h2 class="h5 liqa-title mb-3 d-flex align-items-center gap-2"><x-icon name="users" :size="20" /> طلبات الانضمام ({{ $requests->count() }})</h2>
+                    <h2 class="h5 liqa-title mb-3 d-flex align-items-center gap-2"><x-icon name="users" :size="20" /> {{ __('طلبات الانضمام (:v1)', ['v1' => $requests->count()]) }}</h2>
 
                     @if ($requests->isEmpty())
-                        <p class="text-secondary mb-0">لا توجد طلبات حتى الآن.</p>
+                        <p class="text-secondary mb-0">{{ __('لا توجد طلبات حتى الآن.') }}</p>
                     @else
                         <div class="d-grid gap-2">
                             @foreach ($requests as $req)
@@ -171,7 +169,7 @@
                                         <x-avatar :user="$req->user" :size="40" />
                                         <span>
                                             <span class="d-block fw-bold text-white">{{ $req->user->name }}</span>
-                                            <span class="d-block small text-secondary">{{ $req->user->specialty }}</span>
+                                            <span class="d-block small text-secondary">{{ __($req->user->specialty) }}</span>
                                         </span>
                                     </a>
 
@@ -182,10 +180,10 @@
                                             @csrf
                                             @method('PATCH')
                                             @if ($req->status !== 'accepted' && $req->status !== 'waitlisted')
-                                                <button name="decision" value="accept" class="btn btn-liqa btn-sm px-3" style="min-height:2.25rem">قبول</button>
+                                                <button name="decision" value="accept" class="btn btn-liqa btn-sm px-3" style="min-height:2.25rem">{{ __('قبول') }}</button>
                                             @endif
                                             @if ($req->status !== 'rejected')
-                                                <button name="decision" value="reject" class="btn btn-liqa-outline btn-sm px-3" style="min-height:2.25rem">رفض</button>
+                                                <button name="decision" value="reject" class="btn btn-liqa-outline btn-sm px-3" style="min-height:2.25rem">{{ __('رفض') }}</button>
                                             @endif
                                         </form>
                                     @endif
@@ -199,8 +197,8 @@
             {{-- ============ قيّم المشاركين (بعد انتهاء الحدث) ============ --}}
             @if ($ratable->isNotEmpty())
                 <div class="liqa-card p-3 p-md-4 mt-3" id="ratings">
-                    <h2 class="h5 liqa-title mb-1 d-flex align-items-center gap-2"><span class="text-warning">★</span> قيّم المشاركين</h2>
-                    <p class="small hint mb-3">انتهى الحدث. قيّم من التقيت بهم لتساعد المجتمع.</p>
+                    <h2 class="h5 liqa-title mb-1 d-flex align-items-center gap-2"><span class="text-warning">★</span> {{ __('قيّم المشاركين') }}</h2>
+                    <p class="small hint mb-3">{{ __('انتهى الحدث. قيّم من التقيت بهم لتساعد المجتمع.') }}</p>
 
                     <div class="d-grid gap-2">
                         @foreach ($ratable as $person)
@@ -210,16 +208,16 @@
                                     <x-avatar :user="$person" :size="40" />
                                     <span>
                                         <span class="d-block fw-bold text-white">{{ $person->name }}</span>
-                                        <span class="d-block small text-secondary">{{ $person->id === $event->user_id ? 'المنظّم' : $person->specialty }}</span>
+                                        <span class="d-block small text-secondary">{{ $person->id === $event->user_id ? __('المنظّم') : $person->specialty }}</span>
                                     </span>
                                 </a>
 
                                 @if ($given)
                                     <x-stars :value="$given->stars" :size="18" />
-                                    <span class="liqa-badge liqa-badge--green">تم التقييم</span>
+                                    <span class="liqa-badge liqa-badge--green">{{ __('تم التقييم') }}</span>
                                 @else
                                     <a href="{{ route('events.rate.create', [$event, $person]) }}" class="btn btn-liqa btn-sm px-3 d-flex align-items-center gap-1" style="min-height:2.25rem">
-                                        قيّم <x-icon name="star" :size="15" />
+                                        {{ __('قيّم') }} <x-icon name="star" :size="15" />
                                     </a>
                                 @endif
                             </div>
@@ -231,21 +229,21 @@
             {{-- ============ تقييمات الحدث ============ --}}
             @if ($eventRatings->isNotEmpty())
                 <div class="liqa-card p-3 p-md-4 mt-3" @if ($ratable->isEmpty()) id="ratings" @endif>
-                    <h2 class="h5 liqa-title mb-3 d-flex align-items-center gap-2"><x-icon name="chat" :size="20" /> تقييمات الحدث ({{ $eventRatings->count() }})</h2>
+                    <h2 class="h5 liqa-title mb-3 d-flex align-items-center gap-2"><x-icon name="chat" :size="20" /> {{ __('تقييمات الحدث (:v1)', ['v1' => $eventRatings->count()]) }}</h2>
                     <div class="d-grid gap-2">
                         @foreach ($eventRatings as $rating)
                             <div class="request-row d-block">
                                 <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-1">
                                     <span class="small">
                                         <a href="{{ route('users.show', $rating->rater) }}" class="fw-bold text-white text-decoration-none">{{ $rating->rater->name }}</a>
-                                        <span class="text-secondary">قيّم</span>
+                                        <span class="text-secondary">{{ __('قيّم') }}</span>
                                         <a href="{{ route('users.show', $rating->ratee) }}" class="fw-bold text-decoration-none">{{ $rating->ratee->name }}</a>
                                     </span>
                                     <x-stars :value="$rating->stars" :size="16" />
                                 </div>
                                 @if ($rating->tags)
                                     <div class="d-flex flex-wrap gap-1 mb-1">
-                                        @foreach ($rating->tags as $tag) <span class="liqa-badge">{{ $tag }}</span> @endforeach
+                                        @foreach ($rating->tags as $tag) <span class="liqa-badge">{{ __($tag) }}</span> @endforeach
                                     </div>
                                 @endif
                                 @if ($rating->comment)
@@ -270,7 +268,7 @@
                         'action' => 'TEMPLATE',
                         'text' => $event->title,
                         'dates' => $event->starts_at->copy()->utc()->format('Ymd\THis\Z').'/'.$event->endsAt()->utc()->format('Ymd\THis\Z'),
-                        'details' => $event->description."\n\n".route('events.show', $event).(\App\Support\LiveKit::configured() ? "\n".'الغرفة المباشرة: '.route('events.room', $event) : ''),
+                        'details' => $event->description."\n\n".route('events.show', $event).(\App\Support\LiveKit::configured() ? "\n".__('الغرفة المباشرة: ').route('events.room', $event) : ''),
                         'location' => $event->placeLabel(),
                     ]);
                     $outlook = 'https://outlook.live.com/calendar/0/deeplink/compose?'.http_build_query([
@@ -284,19 +282,19 @@
                     ]);
                 @endphp
                 <div class="liqa-card p-3 mb-3">
-                    <div class="fw-bold text-white mb-2 d-flex align-items-center gap-2"><x-icon name="calendar" :size="18" /> أضف إلى تقويمك</div>
+                    <div class="fw-bold text-white mb-2 d-flex align-items-center gap-2"><x-icon name="calendar" :size="18" /> {{ __('أضف إلى تقويمك') }}</div>
                     <div class="d-grid gap-2">
-                        <a href="{{ $gcal }}" target="_blank" rel="noopener" class="btn btn-liqa-outline">تقويم Google</a>
+                        <a href="{{ $gcal }}" target="_blank" rel="noopener" class="btn btn-liqa-outline">{{ __('تقويم Google') }}</a>
                         <a href="{{ $outlook }}" target="_blank" rel="noopener" class="btn btn-liqa-outline">Outlook</a>
-                        <a href="{{ route('events.calendar', $event) }}" class="btn btn-liqa-outline">تنزيل ملف (Apple / Outlook)</a>
+                        <a href="{{ route('events.calendar', $event) }}" class="btn btn-liqa-outline">{{ __('تنزيل ملف (Apple / Outlook)') }}</a>
                     </div>
                 </div>
             @endif
 
             @if ($series->isNotEmpty())
                 <div class="liqa-card p-3 mb-3">
-                    <div class="fw-bold text-white mb-2 d-flex align-items-center gap-2"><x-icon name="calendar" :size="18" /> لقاءات متكررة</div>
-                    <p class="small text-secondary mb-2">هذا اللقاء جزء من سلسلة. مواعيد بقية اللقاءات:</p>
+                    <div class="fw-bold text-white mb-2 d-flex align-items-center gap-2"><x-icon name="calendar" :size="18" /> {{ __('لقاءات متكررة') }}</div>
+                    <p class="small text-secondary mb-2">{{ __('هذا اللقاء جزء من سلسلة. مواعيد بقية اللقاءات:') }}</p>
                     <div class="d-grid gap-1">
                         @foreach ($series as $s)
                             <a href="{{ route('events.show', $s) }}" class="small text-decoration-none d-flex justify-content-between gap-2">
@@ -314,21 +312,21 @@
                     @csrf
                     <button type="submit" class="btn btn-liqa-outline w-100 d-flex align-items-center justify-content-center gap-2 save-btn-wide {{ $saved ? 'is-saved' : '' }}">
                         <x-icon name="bookmark" :size="18" />
-                        <span class="js-save-label">{{ $saved ? 'محفوظ — اضغط للإزالة' : 'حفظ الحدث' }}</span>
+                        <span class="js-save-label">{{ $saved ? __('محفوظ — اضغط للإزالة') : __('حفظ الحدث') }}</span>
                     </button>
                 </form>
             @endif
 
             @if (auth()->check() && ! $isHost)
                 <div class="text-center mb-3">
-                    <a href="{{ route('reports.create', ['type' => 'event', 'id' => $event->id]) }}" class="small text-secondary text-decoration-none">⚑ إبلاغ عن هذا الحدث</a>
+                    <a href="{{ route('reports.create', ['type' => 'event', 'id' => $event->id]) }}" class="small text-secondary text-decoration-none">{{ __('⚑ إبلاغ عن هذا الحدث') }}</a>
                 </div>
             @endif
 
             <div class="liqa-card p-3 p-md-4">
-                <h2 class="h6 liqa-title mb-3 d-flex align-items-center gap-2"><x-icon name="users" :size="18" /> المشاركون المؤكَّدون</h2>
+                <h2 class="h6 liqa-title mb-3 d-flex align-items-center gap-2"><x-icon name="users" :size="18" /> {{ __('المشاركون المؤكَّدون') }}</h2>
                 @if ($accepted->isEmpty())
-                    <p class="small text-secondary mb-0">لم يتم قبول أي مشارك بعد.</p>
+                    <p class="small text-secondary mb-0">{{ __('لم يتم قبول أي مشارك بعد.') }}</p>
                 @else
                     <div class="d-grid gap-2">
                         @foreach ($accepted as $req)
