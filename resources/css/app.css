@@ -1505,7 +1505,7 @@ h1, h2, h3, .liqa-title { overflow-wrap: anywhere; }
 .hero-art__chip { box-shadow: 0 14px 32px rgba(0, 0, 0, .45); animation: heroFloat 6s ease-in-out infinite; }
 @keyframes heroFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
 @media (prefers-reduced-motion: reduce) { .hero-art__chip { animation: none; } }
-@media (max-width: 575.98px) { .hero-art__chips { display: none; } .hero-art { max-width: 22rem; } }
+@media (max-width: 575.98px) { .hero-art { max-width: 22rem; } }
 
 /* ===== لوحة «ابدأ هنا» ===== */
 .start-panel { padding: 1.4rem; border-radius: 1.25rem; border: 1px solid rgba(168, 85, 247, .35);
@@ -1776,11 +1776,12 @@ html[dir="ltr"] body { font-family: 'Cairo', system-ui, sans-serif; }
     background-image: linear-gradient(rgba(255, 255, 255, .045) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, .045) 1px, transparent 1px);
     background-size: 56px 56px; -webkit-mask-image: radial-gradient(ellipse at 50% 40%, #000 25%, transparent 75%); mask-image: radial-gradient(ellipse at 50% 40%, #000 25%, transparent 75%); }
 .hero-full__inner { max-width: 1320px; }
-.hero-full__title { font-size: clamp(2.3rem, 5.4vw, 4.4rem); line-height: 1.22; font-weight: 800; }
+.hero-full__title { font-size: clamp(2.1rem, 4.4vw, 3.7rem); line-height: 1.25; text-wrap: balance; font-weight: 800; }
 .hero-full__lead { font-size: clamp(1.02rem, 1.5vw, 1.25rem); line-height: 2; max-width: 40rem; }
 .hero-full .hero-actions .btn { min-height: 3.2rem; }
 .hero-full .hero-art { max-width: 44rem; }
-.hero-full .hero-art__chips { position: absolute; inset-inline-start: 0; bottom: 1.5rem; margin: 0; width: min(17rem, 60%); }
+.hero-full .hero-art__chips { position: relative; width: min(18rem, 92%); margin: .75rem auto 0; }
+.hero-full .hero-art__chips .float-card { margin: 0; }
 @media (min-width: 992px) { .hero-full { min-height: min(86vh, 46rem); display: flex; align-items: center; padding: 3rem 0; } .hero-full__inner { width: 100%; } }
-@media (max-width: 991.98px) { .hero-full { padding: 1.5rem 0 2rem; } .hero-full .hero-art__chips { position: relative; inset: auto; width: min(18rem, 90%); margin: -.5rem auto 0; } }
-@media (max-width: 575.98px) { .hero-full .hero-art__chips { display: none; } }
+@media (max-width: 991.98px) { .hero-full { padding: 1.25rem 0 2rem; } .hero-full .hero-art { max-width: 26rem; } }
+@media (max-width: 575.98px) { .hero-full { padding: 1rem 0 1.75rem; } .hero-full .hero-art { max-width: 20rem; } .hero-full .hero-art__chips { display: block; width: min(17rem, 100%); } .hero-full__title { font-size: 2.05rem; } }
