@@ -1765,3 +1765,22 @@ html.room-lock, html.room-lock body { overflow: hidden; }
 .lang-switch { display: inline-flex; align-items: center; justify-content: center; min-height: 2.25rem; padding: 0 .85rem; border: 1px solid rgba(255,255,255,.2); border-radius: 999px; color: #fff; font-weight: 700; font-size: .85rem; text-decoration: none; }
 .lang-switch:hover { background: rgba(255,255,255,.08); color: #fff; }
 html[dir="ltr"] body { font-family: 'Cairo', system-ui, sans-serif; }
+
+/* ---------- الواجهة الرئيسية بعرض الشاشة ---------- */
+.hero-full { position: relative; overflow: hidden; isolation: isolate; padding: 2.5rem 0 3rem; border-bottom: 1px solid rgba(255, 255, 255, .06);
+    background:
+        radial-gradient(60rem 38rem at 85% 0%, rgba(147, 51, 234, .30), transparent 60%),
+        radial-gradient(48rem 32rem at 5% 100%, rgba(219, 39, 119, .20), transparent 60%),
+        linear-gradient(180deg, #120d26 0%, var(--liqa-bg, #0b0a14) 100%); }
+.hero-full::before { content: ''; position: absolute; inset: 0; z-index: -1; opacity: .5;
+    background-image: linear-gradient(rgba(255, 255, 255, .045) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, .045) 1px, transparent 1px);
+    background-size: 56px 56px; -webkit-mask-image: radial-gradient(ellipse at 50% 40%, #000 25%, transparent 75%); mask-image: radial-gradient(ellipse at 50% 40%, #000 25%, transparent 75%); }
+.hero-full__inner { max-width: 1320px; }
+.hero-full__title { font-size: clamp(2.3rem, 5.4vw, 4.4rem); line-height: 1.22; font-weight: 800; }
+.hero-full__lead { font-size: clamp(1.02rem, 1.5vw, 1.25rem); line-height: 2; max-width: 40rem; }
+.hero-full .hero-actions .btn { min-height: 3.2rem; }
+.hero-full .hero-art { max-width: 44rem; }
+.hero-full .hero-art__chips { position: absolute; inset-inline-start: 0; bottom: 1.5rem; margin: 0; width: min(17rem, 60%); }
+@media (min-width: 992px) { .hero-full { min-height: min(86vh, 46rem); display: flex; align-items: center; padding: 3rem 0; } .hero-full__inner { width: 100%; } }
+@media (max-width: 991.98px) { .hero-full { padding: 1.5rem 0 2rem; } .hero-full .hero-art__chips { position: relative; inset: auto; width: min(18rem, 90%); margin: -.5rem auto 0; } }
+@media (max-width: 575.98px) { .hero-full .hero-art__chips { display: none; } }

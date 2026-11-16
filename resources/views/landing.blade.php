@@ -5,25 +5,25 @@
     @php $member = auth()->check(); $L = \App\Support\Catalog::landing(); @endphp
 
     {{-- ============ الواجهة الرئيسية ============ --}}
-    <section class="container pt-4 pt-lg-5">
-        <div class="form-card hero-card">
-            <div class="row align-items-center g-4">
-                <div class="col-lg-6">
+    <section class="hero-full">
+        <div class="container-xxl hero-full__inner">
+            <div class="row align-items-center g-4 g-xl-5">
+                <div class="col-lg-6 hero-full__copy">
                     <span class="eyebrow mb-3"><span class="dot"></span>{{ __($L['hero']['eyebrow']) }}</span>
-                    <h1 class="display-5 liqa-title mb-3">
+                    <h1 class="hero-full__title liqa-title mb-3">
                         {{ __($L['hero']['title']) }}<br>
                         <span class="text-gradient">{{ __($L['hero']['title_accent']) }}</span>
                     </h1>
-                    <p class="lead text-secondary mb-4">
+                    <p class="hero-full__lead text-secondary mb-4">
                         {{ __($L['hero']['lead']) }}
                     </p>
                     <div class="hero-actions d-flex flex-wrap gap-2 mb-3">
                         @if ($member)
-                            <a href="{{ route('events.index') }}" class="btn btn-liqa px-4 d-flex align-items-center gap-2">{{ __('تصفّح الأحداث') }} <x-icon name="calendar" :size="18" /></a>
-                            <a href="{{ route('events.create') }}" class="btn btn-liqa-outline px-4 d-flex align-items-center gap-2"><x-icon name="plus" :size="18" /> {{ __('انشر حدثًا') }}</a>
+                            <a href="{{ route('events.index') }}" class="btn btn-liqa btn-lg px-4 d-flex align-items-center gap-2">{{ __('تصفّح الأحداث') }} <x-icon name="calendar" :size="18" /></a>
+                            <a href="{{ route('events.create') }}" class="btn btn-liqa-outline btn-lg px-4 d-flex align-items-center gap-2"><x-icon name="plus" :size="18" /> {{ __('انشر حدثًا') }}</a>
                         @else
-                            <a href="{{ route('register') }}" class="btn btn-liqa px-4 d-flex align-items-center gap-2">{{ __('ابدأ مجانًا') }} <x-icon name="rocket" :size="18" /></a>
-                            <a href="#how" class="btn btn-liqa-outline px-4 d-flex align-items-center gap-2"><x-icon name="play" :size="18" /> {{ __('كيف تعمل المنصة؟') }}</a>
+                            <a href="{{ route('register') }}" class="btn btn-liqa btn-lg px-4 d-flex align-items-center gap-2">{{ __('ابدأ مجانًا') }} <x-icon name="rocket" :size="18" /></a>
+                            <a href="#how" class="btn btn-liqa-outline btn-lg px-4 d-flex align-items-center gap-2"><x-icon name="play" :size="18" /> {{ __('كيف تعمل المنصة؟') }}</a>
                         @endif
                     </div>
                     <div class="d-flex flex-wrap gap-3 small hint">
@@ -242,10 +242,10 @@
             <div class="d-flex flex-wrap justify-content-center gap-2">
                 @if ($member)
                     <a href="{{ route('events.index') }}" class="btn btn-liqa px-4">{{ __('تصفّح الأحداث') }}</a>
-                    <a href="{{ route('events.create') }}" class="btn btn-liqa-outline px-4 d-flex align-items-center">{{ __('انشر حدثًا') }}</a>
+                    <a href="{{ route('events.create') }}" class="btn btn-liqa-outline btn-lg px-4 d-flex align-items-center">{{ __('انشر حدثًا') }}</a>
                 @else
                     <a href="{{ route('register') }}" class="btn btn-liqa px-4 d-flex align-items-center gap-2">{{ __('أنشئ حسابك مجانًا') }} <x-icon name="user-plus" :size="18" /></a>
-                    <a href="{{ route('login') }}" class="btn btn-liqa-outline px-4 d-flex align-items-center">{{ __('لديك حساب؟ سجّل دخولك') }}</a>
+                    <a href="{{ route('login') }}" class="btn btn-liqa-outline btn-lg px-4 d-flex align-items-center">{{ __('لديك حساب؟ سجّل دخولك') }}</a>
                 @endif
             </div>
         </div>
