@@ -1739,7 +1739,7 @@ html.room-lock, html.room-lock body { overflow: hidden; }
 .room-btn-group { position: relative; display: inline-flex; flex: 0 0 auto; }
 .room-caret { position: absolute; top: .25rem; inset-inline-end: .25rem; width: 1.15rem; height: 1.15rem; border: 0; border-radius: 50%; display: grid; place-items: center; font-size: .65rem; line-height: 1; color: #fff; background: rgba(255, 255, 255, .14); padding: 0; }
 .room-caret:hover { background: rgba(168, 85, 247, .5); }
-@media (max-width: 575.98px) { .room-caret { display: none; } }
+@media (max-width: 575.98px) { .room-caret { width: 1.35rem; height: 1.35rem; font-size: .75rem; top: -.35rem; background: rgba(168, 85, 247, .85); color: #fff; z-index: 2; } }
 
 .room-pop { position: fixed; bottom: 5.8rem; z-index: 1045; min-width: 13rem; max-width: min(22rem, calc(100vw - 1rem)); max-height: 50dvh; overflow: auto; padding: .4rem; border-radius: .9rem; background: rgba(16, 13, 34, .98); border: 1px solid var(--liqa-border); box-shadow: 0 16px 44px rgba(0, 0, 0, .55); }
 .room-pop.d-none { display: none; }
