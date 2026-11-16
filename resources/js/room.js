@@ -332,9 +332,6 @@ if (root) {
         });
 
         room.on(RoomEvent.LocalTrackPublished, sync);
-        room.on(RoomEvent.LocalTrackPublished, (pub) => {
-            if (pub.source === Track.Source.Camera && bgMode !== 'none') applyBackground(bgMode);
-        });
         room.on(RoomEvent.LocalTrackUnpublished, sync);
         syncControls = sync;
         sync();
@@ -711,52 +708,6 @@ if (root) {
         pop.style.left = left + 'px';
     }
 
-    // ---- خلفيات الكاميرا (تمويه أو صورة): تُعالَج داخل متصفح العضو ولا تُرسل لأي خادم ----
-    const BG_OPTIONS = [
-        ['none', tr('بدون')], ['blur-light', tr('تمويه خفيف')], ['blur', tr('تمويه قوي')],
-        ['liqa', tr('بنفسجي لقاء')], ['night', tr('ليلي')], ['soft', tr('فاتح')], ['green', tr('أخضر')],
-    ];
-    let bgMode = 'none';
-    try { bgMode = localStorage.getItem('liqa_bg') || 'none'; } catch (e) { /* بلا تخزين */ }
-    if (!BG_OPTIONS.some((o) => o[0] === bgMode)) bgMode = 'none';
-    let tpLib = null;
-
-    function cameraTrack() {
-        const pub = room.localParticipant.getTrackPublication(Track.Source.Camera);
-        return pub && pub.videoTrack ? pub.videoTrack : null;
-    }
-
-    async function applyBackground(mode) {
-        const track = cameraTrack();
-        if (!track) return true; // الكاميرا مطفأة: تُطبَّق عند تشغيلها
-        try {
-            if (mode === 'none') { await track.stopProcessor(); return true; }
-            if (!tpLib) tpLib = await import('@livekit/track-processors');
-            if (!tpLib.supportsBackgroundProcessors()) return false;
-            const proc = mode === 'blur-light' ? tpLib.BackgroundBlur(6)
-                : (mode === 'blur' ? tpLib.BackgroundBlur(18)
-                    : tpLib.VirtualBackground(window.location.origin + '/brand/bg/' + mode + '.jpg'));
-            await track.setProcessor(proc);
-            return true;
-        } catch (e) {
-            return false;
-        }
-    }
-
-    async function chooseBackground(mode) {
-        const prev = bgMode;
-        bgMode = mode;
-        toast(tr('جارٍ تطبيق الخلفية…'));
-        const ok = await applyBackground(mode);
-        if (!ok) {
-            bgMode = prev;
-            toast(tr('الخلفية غير مدعومة في هذا المتصفح أو الجهاز.'));
-            return;
-        }
-        try { localStorage.setItem('liqa_bg', mode); } catch (e) { /* بلا تخزين */ }
-        toast(cameraTrack() || mode === 'none' ? tr('تم تغيير الخلفية.') : tr('ستُطبَّق الخلفية عند تشغيل الكاميرا.'));
-    }
-
     function setupPopMenus() {
         const devMenu = document.getElementById('devMenu');
         const leaveMenu = document.getElementById('leaveMenu');
@@ -784,15 +735,6 @@ if (root) {
                         try { await room.switchActiveDevice(k, d.deviceId); toast(tr('تم تغيير الجهاز.')); } catch (e) { toast(tr('تعذّر تغيير الجهاز.')); }
                         closeAll();
                     });
-                    devMenu.appendChild(b);
-                });
-            }
-            if (kind === 'videoinput') {
-                devMenu.appendChild(el('div', 'room-pop__title', tr('خلفية الكاميرا')));
-                BG_OPTIONS.forEach(([val, label]) => {
-                    const b = el('button', 'room-pop__item' + (val === bgMode ? ' is-active' : ''), label);
-                    b.type = 'button';
-                    b.addEventListener('click', () => { closeAll(); chooseBackground(val); });
                     devMenu.appendChild(b);
                 });
             }
