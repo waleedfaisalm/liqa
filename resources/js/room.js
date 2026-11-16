@@ -2,7 +2,7 @@ import { Room, RoomEvent, Track, DisconnectReason } from 'livekit-client';
 
 const root = document.getElementById('room');
 const DICT = window.LIQA_T || {};
-const t = (key, params) => {
+const tr = (key, params) => {
     let out = DICT[key] || key;
     if (params) for (const k in params) out = out.split(':' + k).join(params[k]);
     return out;
@@ -168,7 +168,7 @@ if (root) {
         label.className = 'room-tile__label';
         const nameEl = document.createElement('span');
         nameEl.className = 'room-tile__name';
-        nameEl.textContent = (p.name || t('عضو')) + (p.isLocal ? t(' (أنت)') : '');
+        nameEl.textContent = (p.name || tr('عضو')) + (p.isLocal ? tr(' (أنت)') : '');
         const micEl = document.createElement('span');
         micEl.className = 'room-tile__mic';
         const badge = document.createElement('span');
@@ -184,7 +184,7 @@ if (root) {
         const pinBtn = document.createElement('button');
         pinBtn.type = 'button';
         pinBtn.className = 'room-tile__pin';
-        pinBtn.title = t('تثبيت / إلغاء التثبيت');
+        pinBtn.title = tr('تثبيت / إلغاء التثبيت');
         pinBtn.innerHTML = ICONS.pin;
         pinBtn.addEventListener('click', () => togglePin(p.identity));
         el.appendChild(pinBtn);
@@ -194,7 +194,7 @@ if (root) {
             const kick = document.createElement('button');
             kick.type = 'button';
             kick.className = 'room-tile__kick';
-            kick.title = t('إخراج من الغرفة');
+            kick.title = tr('إخراج من الغرفة');
             kick.innerHTML = ICONS.kick;
             kick.addEventListener('click', () => removeParticipant(p, kick));
             el.appendChild(kick);
@@ -240,7 +240,7 @@ if (root) {
         const m = meta(p);
         t.el.classList.toggle('is-host-tile', !!m.host);
         t.el.classList.toggle('is-cohost-tile', !!m.cohost);
-        t.badge.textContent = m.host ? t('المنظّم') : t('منظّم مساعد');
+        t.badge.textContent = m.host ? tr('المنظّم') : tr('منظّم مساعد');
         t.badge.classList.toggle('d-none', !(m.host || m.cohost));
 
         const up = handAt(p) > 0;
@@ -273,17 +273,17 @@ if (root) {
     function updateLayout() {
         const n = tiles.size;
         grid.dataset.count = String(Math.min(n, 9));
-        countEl.textContent = t(':v1 في الغرفة', { v1: n });
+        countEl.textContent = tr(':v1 في الغرفة', { v1: n });
         countEl.classList.toggle('d-none', n === 0);
         schedulePeople();
         scheduleLayout();
     }
 
     async function removeParticipant(p, btn) {
-        if (!confirm(t('إخراج :v1 من الغرفة؟ لن يستطيع الدخول مجددًا.', { v1: (p.name || t('هذا العضو')) }))) return;
+        if (!confirm(tr('إخراج :v1 من الغرفة؟ لن يستطيع الدخول مجددًا.', { v1: (p.name || tr('هذا العضو')) }))) return;
         btn.disabled = true;
         const r = await api(root.dataset.removeUrl, 'POST', { identity: p.identity });
-        if (!r.ok) toast(r.data.message || t('تعذّر إخراج العضو.'));
+        if (!r.ok) toast(r.data.message || tr('تعذّر إخراج العضو.'));
         btn.disabled = false;
     }
 
@@ -309,11 +309,11 @@ if (root) {
 
         btnMic.addEventListener('click', async () => {
             selfMuteUntil = Date.now() + 1500;
-            try { await lp.setMicrophoneEnabled(!lp.isMicrophoneEnabled); } catch (e) { alert(t('تعذّر الوصول إلى الميكروفون. تأكد من منح الإذن للمتصفح.')); }
+            try { await lp.setMicrophoneEnabled(!lp.isMicrophoneEnabled); } catch (e) { alert(tr('تعذّر الوصول إلى الميكروفون. تأكد من منح الإذن للمتصفح.')); }
             sync();
         });
         btnCam.addEventListener('click', async () => {
-            try { await lp.setCameraEnabled(!lp.isCameraEnabled); } catch (e) { alert(t('تعذّر الوصول إلى الكاميرا. تأكد من منح الإذن للمتصفح.')); }
+            try { await lp.setCameraEnabled(!lp.isCameraEnabled); } catch (e) { alert(tr('تعذّر الوصول إلى الكاميرا. تأكد من منح الإذن للمتصفح.')); }
             sync();
         });
 
@@ -366,7 +366,7 @@ if (root) {
             const blocked = chatLocked && !canManage;
             input.disabled = blocked;
             document.getElementById('chatSend').disabled = blocked;
-            input.placeholder = blocked ? t('أوقف المنظّم الكتابة في المحادثة') : t('اكتب رسالة…');
+            input.placeholder = blocked ? tr('أوقف المنظّم الكتابة في المحادثة') : tr('اكتب رسالة…');
         };
 
         const addMessage = (name, text, mine, role) => {
@@ -375,7 +375,7 @@ if (root) {
             row.className = 'chat-msg' + (mine ? ' is-mine' : '');
             const head = document.createElement('div');
             head.className = 'chat-msg__head';
-            head.textContent = (mine ? t('أنت') : name) + (role ? ' · ' + role : '') + ' · ' + time();
+            head.textContent = (mine ? tr('أنت') : name) + (role ? ' · ' + role : '') + ' · ' + time();
             const body = document.createElement('div');
             body.className = 'chat-msg__body';
             body.textContent = text; // نص خام فقط، بدون HTML
@@ -403,9 +403,9 @@ if (root) {
             input.value = '';
             try {
                 await room.localParticipant.publishData(enc.encode(JSON.stringify({ t: text })), { reliable: true, topic: 'chat' });
-                addMessage(room.localParticipant.name, text, true, isOwner ? t('المنظّم') : (canManage ? t('منظّم مساعد') : ''));
+                addMessage(room.localParticipant.name, text, true, isOwner ? tr('المنظّم') : (canManage ? tr('منظّم مساعد') : ''));
             } catch (err) {
-                addMessage(t('النظام'), t('تعذّر إرسال الرسالة.'), false, '');
+                addMessage(tr('النظام'), tr('تعذّر إرسال الرسالة.'), false, '');
             }
         });
 
@@ -414,7 +414,7 @@ if (root) {
             let data;
             try { data = JSON.parse(dec.decode(payload)); } catch (e) { return; }
             const fromHost = hostLike(participant); // البيانات الوصفية من الخادم ولا يمكن تزويرها
-            const roleOf = (pp) => (meta(pp).host ? t('المنظّم') : (meta(pp).cohost ? t('منظّم مساعد') : ''));
+            const roleOf = (pp) => (meta(pp).host ? tr('المنظّم') : (meta(pp).cohost ? tr('منظّم مساعد') : ''));
 
             if (topic === 'control') {
                 if (fromHost && typeof data.chatLocked === 'boolean') { chatLocked = data.chatLocked; refreshLock(); }
@@ -423,7 +423,7 @@ if (root) {
             if (topic !== 'chat' || typeof data.t !== 'string') return;
             if (chatLocked && !fromHost) return;
 
-            addMessage(participant.name || t('عضو'), data.t.slice(0, 500), false, roleOf(participant));
+            addMessage(participant.name || tr('عضو'), data.t.slice(0, 500), false, roleOf(participant));
             if (!chatOpen) {
                 unread += 1;
                 dot.textContent = String(unread);
@@ -462,9 +462,9 @@ if (root) {
             .map((p) => ({ identity: p.identity, pub: micPub(p) }))
             .filter((x) => x.pub && x.pub.trackSid && !x.pub.isMuted)
             .map((x) => ({ identity: x.identity, sid: x.pub.trackSid }));
-        if (!targets.length) { toast(t('لا توجد ميكروفونات مفتوحة لكتمها.')); return; }
+        if (!targets.length) { toast(tr('لا توجد ميكروفونات مفتوحة لكتمها.')); return; }
         const r = await api(root.dataset.muteUrl, 'POST', { targets });
-        toast(r.ok ? t('تم كتم :v1 ميكروفون.', { v1: (r.data.muted || 0) }) : t('تعذّر الكتم. أعد المحاولة.'));
+        toast(r.ok ? tr('تم كتم :v1 ميكروفون.', { v1: (r.data.muted || 0) }) : tr('تعذّر الكتم. أعد المحاولة.'));
     }
 
     function sendControl(obj, dest) {
@@ -502,8 +502,8 @@ if (root) {
             if (m.avatar) { const im = document.createElement('img'); im.src = m.avatar; im.alt = ''; av.appendChild(im); } else { av.textContent = m.initial || (p.name || '?').charAt(0); }
 
             const info = el('div', 'people-row__info');
-            info.appendChild(el('div', 'people-row__name', (p.name || t('عضو')) + (p.isLocal ? t(' (أنت)') : '')));
-            const role = m.host ? t('المنظّم') : (m.cohost ? t('منظّم مساعد') : '');
+            info.appendChild(el('div', 'people-row__name', (p.name || tr('عضو')) + (p.isLocal ? tr(' (أنت)') : '')));
+            const role = m.host ? tr('المنظّم') : (m.cohost ? tr('منظّم مساعد') : '');
             if (role) info.appendChild(el('div', 'people-row__role', role));
 
             const state = el('span', 'people-row__state');
@@ -521,7 +521,7 @@ if (root) {
                 const small = (txt, fn) => { const b = el('button', 'btn btn-sm btn-liqa-outline', txt); b.type = 'button'; b.addEventListener('click', async () => { b.disabled = true; await fn(); b.disabled = false; }); return b; };
 
                 const spotted = hostSpot === p.identity;
-                acts.appendChild(small(spotted ? t('إلغاء التثبيت للجميع') : t('تثبيت للجميع'), () => setHostSpot(spotted ? null : p.identity)));
+                acts.appendChild(small(spotted ? tr('إلغاء التثبيت للجميع') : tr('تثبيت للجميع'), () => setHostSpot(spotted ? null : p.identity)));
                 row.appendChild(acts);
             }
 
@@ -529,16 +529,16 @@ if (root) {
                 const acts = row.querySelector('.people-row__acts') || el('div', 'people-row__acts');
                 const small = (txt, fn) => { const b = el('button', 'btn btn-sm btn-liqa-outline', txt); b.type = 'button'; b.addEventListener('click', async () => { b.disabled = true; await fn(); b.disabled = false; }); return b; };
 
-                if (handAt(p) > 0) acts.appendChild(small(t('إنزال اليد'), () => sendControl({ lower: p.identity }, [p.identity])));
-                if (micOn && (isOwner || !m.cohost)) acts.appendChild(small(t('كتم'), () => muteTargets([p])));
+                if (handAt(p) > 0) acts.appendChild(small(tr('إنزال اليد'), () => sendControl({ lower: p.identity }, [p.identity])));
+                if (micOn && (isOwner || !m.cohost)) acts.appendChild(small(tr('كتم'), () => muteTargets([p])));
                 if (isOwner) {
-                    acts.appendChild(small(m.cohost ? t('إلغاء المساعد') : t('منظّم مساعد'), async () => {
+                    acts.appendChild(small(m.cohost ? tr('إلغاء المساعد') : tr('منظّم مساعد'), async () => {
                         const r = await api(root.dataset.cohostUrl, 'POST', { identity: p.identity, on: !m.cohost });
-                        toast(r.ok ? (m.cohost ? t('أُلغيت صلاحية المساعد.') : t('أصبح :v1 منظّمًا مساعدًا.', { v1: (p.name || t('العضو')) })) : (r.data.message || t('تعذّر التعديل.')));
+                        toast(r.ok ? (m.cohost ? tr('أُلغيت صلاحية المساعد.') : tr('أصبح :v1 منظّمًا مساعدًا.', { v1: (p.name || tr('العضو')) })) : (r.data.message || tr('تعذّر التعديل.')));
                     }));
                 }
                 if (isOwner || !m.cohost) {
-                    const k = small(t('إخراج'), () => removeParticipant(p, k));
+                    const k = small(tr('إخراج'), () => removeParticipant(p, k));
                     k.classList.add('is-danger');
                     acts.appendChild(k);
                 }
@@ -563,12 +563,12 @@ if (root) {
 
         document.getElementById('btnManage').addEventListener('click', () => document.getElementById('roomLobbyBar').classList.toggle('is-open'));
         document.getElementById('muteAll').addEventListener('click', () => {
-            if (!confirm(t('كتم ميكروفونات جميع المشاركين؟ يستطيع كل منهم تشغيله من جديد.'))) return;
+            if (!confirm(tr('كتم ميكروفونات جميع المشاركين؟ يستطيع كل منهم تشغيله من جديد.'))) return;
             muteTargets([...room.remoteParticipants.values()].filter((p) => !hostLike(p) || isOwner).filter((p) => !meta(p).host));
         });
         document.getElementById('lowerAll').addEventListener('click', () => {
             sendControl({ lower: 'all' });
-            toast(t('أُنزلت الأيدي المرفوعة.'));
+            toast(tr('أُنزلت الأيدي المرفوعة.'));
         });
     }
 
@@ -579,7 +579,7 @@ if (root) {
             myHand = up ? Date.now() : 0;
             btn.classList.toggle('is-active', up);
             refresh(room.localParticipant);
-            try { await room.localParticipant.setAttributes({ hand: up ? String(myHand) : '' }); } catch (e) { toast(t('تعذّر تحديث رفع اليد.')); }
+            try { await room.localParticipant.setAttributes({ hand: up ? String(myHand) : '' }); } catch (e) { toast(tr('تعذّر تحديث رفع اليد.')); }
         };
         btn.addEventListener('click', () => apply(!myHand));
 
@@ -587,7 +587,7 @@ if (root) {
             if (p.isLocal) return;
             refresh(p);
             const up = handAt(p) > 0;
-            if (up && !prevHands.get(p.identity) && canManage) toast(t('✋ :v1 رفع يده', { v1: (p.name || t('عضو')) }));
+            if (up && !prevHands.get(p.identity) && canManage) toast(tr('✋ :v1 رفع يده', { v1: (p.name || tr('عضو')) }));
             prevHands.set(p.identity, up);
         });
 
@@ -596,7 +596,7 @@ if (root) {
             let d; try { d = JSON.parse(dec.decode(payload)); } catch (e) { return; }
             if (d && d.lower && myHand && (d.lower === 'all' || d.lower === room.localParticipant.identity)) {
                 apply(false);
-                toast(t('أنزل المنظّم يدك.'));
+                toast(tr('أنزل المنظّم يدك.'));
             }
         });
     }
@@ -626,7 +626,7 @@ if (root) {
             if (Date.now() - last < 300) return;
             last = Date.now();
             const emoji = b.dataset.emoji;
-            spawn(emoji, t('أنت'));
+            spawn(emoji, tr('أنت'));
             room.localParticipant.publishData(enc.encode(JSON.stringify({ e: emoji })), { reliable: false, topic: 'react' }).catch(() => {});
         }));
 
@@ -683,7 +683,7 @@ if (root) {
 
             if (d.ended === true) {
                 leaving = true;
-                toast(t('أنهى المنظّم الاجتماع.'));
+                toast(tr('أنهى المنظّم الاجتماع.'));
                 setTimeout(() => { try { room.disconnect(); } catch (e) { /* يُتجاهل */ } window.location.href = root.dataset.exit; }, 1800);
             }
         });
@@ -693,7 +693,7 @@ if (root) {
     }
 
     async function endForAll() {
-        if (!confirm(t('إنهاء الاجتماع للجميع؟ سيُفصل كل الحاضرين الآن.'))) return;
+        if (!confirm(tr('إنهاء الاجتماع للجميع؟ سيُفصل كل الحاضرين الآن.'))) return;
         await sendControl({ ended: true });
         await new Promise((r) => setTimeout(r, 600));
         await api(root.dataset.endUrl, 'POST', {});
@@ -713,8 +713,8 @@ if (root) {
 
     // ---- خلفيات الكاميرا (تمويه أو صورة): تُعالَج داخل متصفح العضو ولا تُرسل لأي خادم ----
     const BG_OPTIONS = [
-        ['none', t('بدون')], ['blur-light', t('تمويه خفيف')], ['blur', t('تمويه قوي')],
-        ['liqa', t('بنفسجي لقاء')], ['night', t('ليلي')], ['soft', t('فاتح')], ['green', t('أخضر')],
+        ['none', tr('بدون')], ['blur-light', tr('تمويه خفيف')], ['blur', tr('تمويه قوي')],
+        ['liqa', tr('بنفسجي لقاء')], ['night', tr('ليلي')], ['soft', tr('فاتح')], ['green', tr('أخضر')],
     ];
     let bgMode = 'none';
     try { bgMode = localStorage.getItem('liqa_bg') || 'none'; } catch (e) { /* بلا تخزين */ }
@@ -746,15 +746,15 @@ if (root) {
     async function chooseBackground(mode) {
         const prev = bgMode;
         bgMode = mode;
-        toast(t('جارٍ تطبيق الخلفية…'));
+        toast(tr('جارٍ تطبيق الخلفية…'));
         const ok = await applyBackground(mode);
         if (!ok) {
             bgMode = prev;
-            toast(t('الخلفية غير مدعومة في هذا المتصفح أو الجهاز.'));
+            toast(tr('الخلفية غير مدعومة في هذا المتصفح أو الجهاز.'));
             return;
         }
         try { localStorage.setItem('liqa_bg', mode); } catch (e) { /* بلا تخزين */ }
-        toast(cameraTrack() || mode === 'none' ? t('تم تغيير الخلفية.') : t('ستُطبَّق الخلفية عند تشغيل الكاميرا.'));
+        toast(cameraTrack() || mode === 'none' ? tr('تم تغيير الخلفية.') : tr('ستُطبَّق الخلفية عند تشغيل الكاميرا.'));
     }
 
     function setupPopMenus() {
@@ -768,27 +768,27 @@ if (root) {
             devMenu.dataset.kind = kind;
             devMenu.innerHTML = '';
             const sections = kind === 'audioinput'
-                ? [['audioinput', t('الميكروفون')], ['audiooutput', t('مخرج الصوت')]]
-                : [['videoinput', t('الكاميرا')]];
+                ? [['audioinput', tr('الميكروفون')], ['audiooutput', tr('مخرج الصوت')]]
+                : [['videoinput', tr('الكاميرا')]];
 
             for (const [k, title] of sections) {
                 let list = [];
                 try { list = await Room.getLocalDevices(k); } catch (e) { /* لا إذن */ }
                 devMenu.appendChild(el('div', 'room-pop__title', title));
-                if (!list.length) { devMenu.appendChild(el('div', 'room-pop__empty', k === 'audiooutput' ? t('غير مدعوم في هذا المتصفح') : t('لا توجد أجهزة'))); continue; }
+                if (!list.length) { devMenu.appendChild(el('div', 'room-pop__empty', k === 'audiooutput' ? tr('غير مدعوم في هذا المتصفح') : tr('لا توجد أجهزة'))); continue; }
                 const active = room.getActiveDevice(k);
                 list.forEach((d, i) => {
                     const b = el('button', 'room-pop__item' + (d.deviceId === active ? ' is-active' : ''), d.label || (title + ' ' + (i + 1)));
                     b.type = 'button';
                     b.addEventListener('click', async () => {
-                        try { await room.switchActiveDevice(k, d.deviceId); toast(t('تم تغيير الجهاز.')); } catch (e) { toast(t('تعذّر تغيير الجهاز.')); }
+                        try { await room.switchActiveDevice(k, d.deviceId); toast(tr('تم تغيير الجهاز.')); } catch (e) { toast(tr('تعذّر تغيير الجهاز.')); }
                         closeAll();
                     });
                     devMenu.appendChild(b);
                 });
             }
             if (kind === 'videoinput') {
-                devMenu.appendChild(el('div', 'room-pop__title', t('خلفية الكاميرا')));
+                devMenu.appendChild(el('div', 'room-pop__title', tr('خلفية الكاميرا')));
                 BG_OPTIONS.forEach(([val, label]) => {
                     const b = el('button', 'room-pop__item' + (val === bgMode ? ' is-active' : ''), label);
                     b.type = 'button';
@@ -857,7 +857,7 @@ if (root) {
                 if (d.deviceId === current) o.selected = true;
                 sel.appendChild(o);
             });
-            if (!list.length) { const o = document.createElement('option'); o.textContent = t('لا توجد أجهزة'); sel.appendChild(o); sel.disabled = true; } else { sel.disabled = false; }
+            if (!list.length) { const o = document.createElement('option'); o.textContent = tr('لا توجد أجهزة'); sel.appendChild(o); sel.disabled = true; } else { sel.disabled = false; }
         };
 
         async function start() {
@@ -868,7 +868,7 @@ if (root) {
                 previewStream = await navigator.mediaDevices.getUserMedia({ audio, video });
             } catch (e) {
                 try { previewStream = await navigator.mediaDevices.getUserMedia({ audio }); }
-                catch (e2) { showError(t('تعذّر الوصول إلى الميكروفون والكاميرا. تأكد من منح الإذن للمتصفح.')); return; }
+                catch (e2) { showError(tr('تعذّر الوصول إلى الميكروفون والكاميرا. تأكد من منح الإذن للمتصفح.')); return; }
             }
             box.classList.remove('d-none');
             view.srcObject = previewStream;
@@ -877,8 +877,8 @@ if (root) {
             const devices = await navigator.mediaDevices.enumerateDevices();
             const at = previewStream.getAudioTracks()[0];
             const vt = previewStream.getVideoTracks()[0];
-            fill(selMic, devices.filter((d) => d.kind === 'audioinput'), t('ميكروفون'), at && at.getSettings().deviceId);
-            fill(selCam, devices.filter((d) => d.kind === 'videoinput'), t('كاميرا'), vt && vt.getSettings().deviceId);
+            fill(selMic, devices.filter((d) => d.kind === 'audioinput'), tr('ميكروفون'), at && at.getSettings().deviceId);
+            fill(selCam, devices.filter((d) => d.kind === 'videoinput'), tr('كاميرا'), vt && vt.getSettings().deviceId);
 
             // مؤشر مستوى الصوت
             if (at && (window.AudioContext || window.webkitAudioContext)) {
@@ -934,7 +934,7 @@ if (root) {
                 refresh(p);
                 if (p.isLocal) {
                     syncControls();
-                    if (pub.source === Track.Source.Microphone && Date.now() > selfMuteUntil) toast(t('تم كتم ميكروفونك من قِبل المنظّم. يمكنك تشغيله متى شئت.'));
+                    if (pub.source === Track.Source.Microphone && Date.now() > selfMuteUntil) toast(tr('تم كتم ميكروفونك من قِبل المنظّم. يمكنك تشغيله متى شئت.'));
                 }
             })
             .on(RoomEvent.TrackUnmuted, (pub, p) => { refresh(p); if (p.isLocal) syncControls(); })
@@ -944,8 +944,8 @@ if (root) {
                 if (p.isLocal) {
                     const was = canManage;
                     setManager(isOwner || !!meta(p).cohost);
-                    if (!was && canManage) toast(t('أصبحت منظّمًا مساعدًا: يمكنك قبول المنتظرين وإدارة الغرفة.'));
-                    if (was && !canManage) toast(t('أُلغيت صلاحية المنظّم المساعد.'));
+                    if (!was && canManage) toast(tr('أصبحت منظّمًا مساعدًا: يمكنك قبول المنتظرين وإدارة الغرفة.'));
+                    if (was && !canManage) toast(tr('أُلغيت صلاحية المنظّم المساعد.'));
                 }
             })
             .on(RoomEvent.ActiveSpeakersChanged, (speakers) => {
@@ -956,7 +956,7 @@ if (root) {
                 if (leaving) return;
                 const removed = reason === DisconnectReason.PARTICIPANT_REMOVED;
                 const ended = reason === DisconnectReason.ROOM_DELETED;
-                alert(removed ? t('أخرجك المنظّم من الغرفة.') : (ended ? t('أنهى المنظّم الاجتماع.') : t('انقطع الاتصال بالغرفة.')));
+                alert(removed ? tr('أخرجك المنظّم من الغرفة.') : (ended ? tr('أنهى المنظّم الاجتماع.') : tr('انقطع الاتصال بالغرفة.')));
                 window.location.href = root.dataset.exit;
             });
 
@@ -967,7 +967,7 @@ if (root) {
             joinBtn.disabled = false;
             document.getElementById('roomWait').classList.add('d-none');
             prejoin.classList.remove('d-none');
-            showError(t('تعذّر الاتصال بالغرفة. تحقق من اتصالك وأعد المحاولة.'));
+            showError(tr('تعذّر الاتصال بالغرفة. تحقق من اتصالك وأعد المحاولة.'));
             return;
         }
 
@@ -998,10 +998,10 @@ if (root) {
         setupControlHandlers();
         setupPopMenus();
         root.classList.toggle('is-manager', canManage);
-        if (forcedMute) toast(t('دخلت بميكروفون مكتوم بطلب من المنظّم. يمكنك تشغيله متى شئت.'));
+        if (forcedMute) toast(tr('دخلت بميكروفون مكتوم بطلب من المنظّم. يمكنك تشغيله متى شئت.'));
 
-        try { if (wantMic) await room.localParticipant.setMicrophoneEnabled(true); } catch (e) { alert(t('تعذّر الوصول إلى الميكروفون.')); }
-        try { if (wantCam) await room.localParticipant.setCameraEnabled(true); } catch (e) { alert(t('تعذّر الوصول إلى الكاميرا.')); }
+        try { if (wantMic) await room.localParticipant.setMicrophoneEnabled(true); } catch (e) { alert(tr('تعذّر الوصول إلى الميكروفون.')); }
+        try { if (wantCam) await room.localParticipant.setCameraEnabled(true); } catch (e) { alert(tr('تعذّر الوصول إلى الكاميرا.')); }
         sync();
     }
 
@@ -1022,17 +1022,17 @@ if (root) {
     async function enterWithToken() {
         const r = await api(root.dataset.tokenUrl, 'POST');
         if (!r.ok) {
-            showWait(t('تعذّر الدخول'), r.data.message || t('لم يُقبل دخولك.'), true);
+            showWait(tr('تعذّر الدخول'), r.data.message || tr('لم يُقبل دخولك.'), true);
             return;
         }
-        showWait(t('جارٍ الدخول إلى الغرفة…'), t('لحظات ويتم الاتصال.'));
+        showWait(tr('جارٍ الدخول إلى الغرفة…'), tr('لحظات ويتم الاتصال.'));
         await join(r.data.token, r.data.url);
     }
 
     function handleStatus(status) {
         if (status === 'admitted') { stopPoll(); enterWithToken(); return true; }
-        if (status === 'denied') { stopPoll(); showWait(t('رفض المنظّم دخولك'), t('لم يُسمح لك بدخول هذه الغرفة.'), true); return true; }
-        if (status === 'removed') { stopPoll(); showWait(t('أخرجك المنظّم'), t('لا يمكنك دخول هذه الغرفة مجددًا.'), true); return true; }
+        if (status === 'denied') { stopPoll(); showWait(tr('رفض المنظّم دخولك'), tr('لم يُسمح لك بدخول هذه الغرفة.'), true); return true; }
+        if (status === 'removed') { stopPoll(); showWait(tr('أخرجك المنظّم'), tr('لا يمكنك دخول هذه الغرفة مجددًا.'), true); return true; }
         return false;
     }
 
@@ -1044,12 +1044,12 @@ if (root) {
         const r = await api(root.dataset.knockUrl, 'POST');
         if (!r.ok) {
             joinBtn.disabled = false;
-            showError(r.data.message || t('تعذّر إرسال الطلب. أعد المحاولة.'));
+            showError(r.data.message || tr('تعذّر إرسال الطلب. أعد المحاولة.'));
             return;
         }
         if (handleStatus(r.data.status)) return;
 
-        showWait(t('بانتظار موافقة المنظّم…'), t('أُرسل طلبك، وستدخل الغرفة تلقائيًا بمجرد قبوله. أبقِ هذه الصفحة مفتوحة.'));
+        showWait(tr('بانتظار موافقة المنظّم…'), tr('أُرسل طلبك، وستدخل الغرفة تلقائيًا بمجرد قبوله. أبقِ هذه الصفحة مفتوحة.'));
         pollTimer = setInterval(async () => {
             const s = await api(root.dataset.statusUrl);
             if (s.ok) handleStatus(s.data.status);
@@ -1077,12 +1077,12 @@ if (root) {
                 if (u.avatar) { const im = document.createElement('img'); im.src = u.avatar; im.alt = ''; av.appendChild(im); } else { av.textContent = u.initial; }
                 const nm = document.createElement('span');
                 nm.className = 'wait-row__name';
-                nm.textContent = u.name + (u.link ? t(' · عبر الرابط') : '');
+                nm.textContent = u.name + (u.link ? tr(' · عبر الرابط') : '');
                 const ok = document.createElement('button');
-                ok.type = 'button'; ok.className = 'btn btn-sm btn-liqa'; ok.textContent = t('قبول');
+                ok.type = 'button'; ok.className = 'btn btn-sm btn-liqa'; ok.textContent = tr('قبول');
                 ok.addEventListener('click', async () => { ok.disabled = true; await api(root.dataset.decideUrl, 'POST', { action: 'admit', user_id: u.id }); poll(); });
                 const no = document.createElement('button');
-                no.type = 'button'; no.className = 'btn btn-sm btn-liqa-outline'; no.textContent = t('رفض');
+                no.type = 'button'; no.className = 'btn btn-sm btn-liqa-outline'; no.textContent = tr('رفض');
                 no.addEventListener('click', async () => { no.disabled = true; await api(root.dataset.decideUrl, 'POST', { action: 'deny', user_id: u.id }); poll(); });
                 row.append(av, nm, ok, no);
                 list.appendChild(row);
@@ -1091,8 +1091,8 @@ if (root) {
             panel.classList.toggle('d-none', items.length === 0);
             bar.classList.toggle('has-waiting', items.length > 0); // تفتح لوحة الإدارة تلقائيًا عند وجود منتظرين
             if (items.length > lastCount) {
-                toast(t('🔔 :v1 بانتظار الدخول', { v1: items.length }));
-                try { document.title = t('🔔 :v1 بانتظار الدخول — :v2', { v1: items.length, v2: document.title.replace(/^🔔 \d+ [^—]*— /, '') }); } catch (e) { /* يُتجاهل */ }
+                toast(tr('🔔 :v1 بانتظار الدخول', { v1: items.length }));
+                try { document.title = tr('🔔 :v1 بانتظار الدخول — :v2', { v1: items.length, v2: document.title.replace(/^🔔 \d+ [^—]*— /, '') }); } catch (e) { /* يُتجاهل */ }
             }
             if (items.length === 0) document.title = document.title.replace(/^🔔 \d+ [^—]*— /, '');
             lastCount = items.length;
@@ -1117,16 +1117,16 @@ if (root) {
             document.getElementById('muteJoinToggle').addEventListener('change', async (e) => {
                 const r = await api(root.dataset.mutejoinUrl, 'POST', { enabled: e.target.checked });
                 root.dataset.muteJoin = e.target.checked ? '1' : '0';
-                toast(r.ok ? (e.target.checked ? t('سيدخل المشاركون الجدد بميكروفونات مكتومة.') : t('أُلغي كتم الدخول.')) : t('تعذّر الحفظ.'));
+                toast(r.ok ? (e.target.checked ? tr('سيدخل المشاركون الجدد بميكروفونات مكتومة.') : tr('أُلغي كتم الدخول.')) : tr('تعذّر الحفظ.'));
             });
             document.getElementById('linkToggle').addEventListener('change', async (e) => {
                 const r = await api(root.dataset.linkUrl, 'POST', { enabled: e.target.checked });
-                toast(r.ok ? (e.target.checked ? t('فُعّل الدخول بالرابط.') : t('أُوقف الدخول بالرابط.')) : t('تعذّر الحفظ.'));
+                toast(r.ok ? (e.target.checked ? tr('فُعّل الدخول بالرابط.') : tr('أُوقف الدخول بالرابط.')) : tr('تعذّر الحفظ.'));
             });
             document.getElementById('copyLink').addEventListener('click', async () => {
                 const url = root.dataset.roomLink;
-                try { await navigator.clipboard.writeText(url); toast(t('تم نسخ رابط الغرفة.')); }
-                catch (e) { window.prompt(t('انسخ الرابط:'), url); }
+                try { await navigator.clipboard.writeText(url); toast(tr('تم نسخ رابط الغرفة.')); }
+                catch (e) { window.prompt(tr('انسخ الرابط:'), url); }
             });
         }
 
