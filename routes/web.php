@@ -68,6 +68,8 @@ Route::middleware('guest')->group(function () {
     Route::post('/register', [RegisterController::class, 'store'])->middleware('throttle:10,1');
 
     Route::get('/login', [LoginController::class, 'create'])->name('login');
+    Route::get('/auth/google', [\App\Http\Controllers\Auth\GoogleController::class, 'redirect'])->name('google.redirect');
+    Route::get('/auth/google/callback', [\App\Http\Controllers\Auth\GoogleController::class, 'callback'])->name('google.callback');
     Route::post('/login', [LoginController::class, 'store'])->middleware('throttle:6,1');
 
     Route::get('/forgot-password', [PasswordResetController::class, 'request'])->name('password.request');

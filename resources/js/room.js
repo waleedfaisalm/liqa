@@ -309,11 +309,11 @@ if (root) {
 
         btnMic.addEventListener('click', async () => {
             selfMuteUntil = Date.now() + 1500;
-            try { await lp.setMicrophoneEnabled(!lp.isMicrophoneEnabled); } catch (e) { alert('تعذّر الوصول إلى الميكروفون. تأكد من منح الإذن للمتصفح.'); }
+            try { await lp.setMicrophoneEnabled(!lp.isMicrophoneEnabled); } catch (e) { alert(t('تعذّر الوصول إلى الميكروفون. تأكد من منح الإذن للمتصفح.')); }
             sync();
         });
         btnCam.addEventListener('click', async () => {
-            try { await lp.setCameraEnabled(!lp.isCameraEnabled); } catch (e) { alert('تعذّر الوصول إلى الكاميرا. تأكد من منح الإذن للمتصفح.'); }
+            try { await lp.setCameraEnabled(!lp.isCameraEnabled); } catch (e) { alert(t('تعذّر الوصول إلى الكاميرا. تأكد من منح الإذن للمتصفح.')); }
             sync();
         });
 
@@ -332,6 +332,9 @@ if (root) {
         });
 
         room.on(RoomEvent.LocalTrackPublished, sync);
+        room.on(RoomEvent.LocalTrackPublished, (pub) => {
+            if (pub.source === Track.Source.Camera && bgMode !== 'none') applyBackground(bgMode);
+        });
         room.on(RoomEvent.LocalTrackUnpublished, sync);
         syncControls = sync;
         sync();
@@ -459,7 +462,7 @@ if (root) {
             .map((p) => ({ identity: p.identity, pub: micPub(p) }))
             .filter((x) => x.pub && x.pub.trackSid && !x.pub.isMuted)
             .map((x) => ({ identity: x.identity, sid: x.pub.trackSid }));
-        if (!targets.length) { toast('لا توجد ميكروفونات مفتوحة لكتمها.'); return; }
+        if (!targets.length) { toast(t('لا توجد ميكروفونات مفتوحة لكتمها.')); return; }
         const r = await api(root.dataset.muteUrl, 'POST', { targets });
         toast(r.ok ? t('تم كتم :v1 ميكروفون.', { v1: (r.data.muted || 0) }) : t('تعذّر الكتم. أعد المحاولة.'));
     }
@@ -565,7 +568,7 @@ if (root) {
         });
         document.getElementById('lowerAll').addEventListener('click', () => {
             sendControl({ lower: 'all' });
-            toast('أُنزلت الأيدي المرفوعة.');
+            toast(t('أُنزلت الأيدي المرفوعة.'));
         });
     }
 
@@ -576,7 +579,7 @@ if (root) {
             myHand = up ? Date.now() : 0;
             btn.classList.toggle('is-active', up);
             refresh(room.localParticipant);
-            try { await room.localParticipant.setAttributes({ hand: up ? String(myHand) : '' }); } catch (e) { toast('تعذّر تحديث رفع اليد.'); }
+            try { await room.localParticipant.setAttributes({ hand: up ? String(myHand) : '' }); } catch (e) { toast(t('تعذّر تحديث رفع اليد.')); }
         };
         btn.addEventListener('click', () => apply(!myHand));
 
@@ -584,7 +587,7 @@ if (root) {
             if (p.isLocal) return;
             refresh(p);
             const up = handAt(p) > 0;
-            if (up && !prevHands.get(p.identity) && canManage) toast(t('✋ :v1 رفع يده', { v1: (p.name || 'عضو') }));
+            if (up && !prevHands.get(p.identity) && canManage) toast(t('✋ :v1 رفع يده', { v1: (p.name || t('عضو')) }));
             prevHands.set(p.identity, up);
         });
 
@@ -593,7 +596,7 @@ if (root) {
             let d; try { d = JSON.parse(dec.decode(payload)); } catch (e) { return; }
             if (d && d.lower && myHand && (d.lower === 'all' || d.lower === room.localParticipant.identity)) {
                 apply(false);
-                toast('أنزل المنظّم يدك.');
+                toast(t('أنزل المنظّم يدك.'));
             }
         });
     }
@@ -680,7 +683,7 @@ if (root) {
 
             if (d.ended === true) {
                 leaving = true;
-                toast('أنهى المنظّم الاجتماع.');
+                toast(t('أنهى المنظّم الاجتماع.'));
                 setTimeout(() => { try { room.disconnect(); } catch (e) { /* يُتجاهل */ } window.location.href = root.dataset.exit; }, 1800);
             }
         });
@@ -708,6 +711,52 @@ if (root) {
         pop.style.left = left + 'px';
     }
 
+    // ---- خلفيات الكاميرا (تمويه أو صورة): تُعالَج داخل متصفح العضو ولا تُرسل لأي خادم ----
+    const BG_OPTIONS = [
+        ['none', t('بدون')], ['blur-light', t('تمويه خفيف')], ['blur', t('تمويه قوي')],
+        ['liqa', t('بنفسجي لقاء')], ['night', t('ليلي')], ['soft', t('فاتح')], ['green', t('أخضر')],
+    ];
+    let bgMode = 'none';
+    try { bgMode = localStorage.getItem('liqa_bg') || 'none'; } catch (e) { /* بلا تخزين */ }
+    if (!BG_OPTIONS.some((o) => o[0] === bgMode)) bgMode = 'none';
+    let tpLib = null;
+
+    function cameraTrack() {
+        const pub = room.localParticipant.getTrackPublication(Track.Source.Camera);
+        return pub && pub.videoTrack ? pub.videoTrack : null;
+    }
+
+    async function applyBackground(mode) {
+        const track = cameraTrack();
+        if (!track) return true; // الكاميرا مطفأة: تُطبَّق عند تشغيلها
+        try {
+            if (mode === 'none') { await track.stopProcessor(); return true; }
+            if (!tpLib) tpLib = await import('@livekit/track-processors');
+            if (!tpLib.supportsBackgroundProcessors()) return false;
+            const proc = mode === 'blur-light' ? tpLib.BackgroundBlur(6)
+                : (mode === 'blur' ? tpLib.BackgroundBlur(18)
+                    : tpLib.VirtualBackground(window.location.origin + '/brand/bg/' + mode + '.jpg'));
+            await track.setProcessor(proc);
+            return true;
+        } catch (e) {
+            return false;
+        }
+    }
+
+    async function chooseBackground(mode) {
+        const prev = bgMode;
+        bgMode = mode;
+        toast(t('جارٍ تطبيق الخلفية…'));
+        const ok = await applyBackground(mode);
+        if (!ok) {
+            bgMode = prev;
+            toast(t('الخلفية غير مدعومة في هذا المتصفح أو الجهاز.'));
+            return;
+        }
+        try { localStorage.setItem('liqa_bg', mode); } catch (e) { /* بلا تخزين */ }
+        toast(cameraTrack() || mode === 'none' ? t('تم تغيير الخلفية.') : t('ستُطبَّق الخلفية عند تشغيل الكاميرا.'));
+    }
+
     function setupPopMenus() {
         const devMenu = document.getElementById('devMenu');
         const leaveMenu = document.getElementById('leaveMenu');
@@ -732,9 +781,18 @@ if (root) {
                     const b = el('button', 'room-pop__item' + (d.deviceId === active ? ' is-active' : ''), d.label || (title + ' ' + (i + 1)));
                     b.type = 'button';
                     b.addEventListener('click', async () => {
-                        try { await room.switchActiveDevice(k, d.deviceId); toast('تم تغيير الجهاز.'); } catch (e) { toast('تعذّر تغيير الجهاز.'); }
+                        try { await room.switchActiveDevice(k, d.deviceId); toast(t('تم تغيير الجهاز.')); } catch (e) { toast(t('تعذّر تغيير الجهاز.')); }
                         closeAll();
                     });
+                    devMenu.appendChild(b);
+                });
+            }
+            if (kind === 'videoinput') {
+                devMenu.appendChild(el('div', 'room-pop__title', t('خلفية الكاميرا')));
+                BG_OPTIONS.forEach(([val, label]) => {
+                    const b = el('button', 'room-pop__item' + (val === bgMode ? ' is-active' : ''), label);
+                    b.type = 'button';
+                    b.addEventListener('click', () => { closeAll(); chooseBackground(val); });
                     devMenu.appendChild(b);
                 });
             }
@@ -876,7 +934,7 @@ if (root) {
                 refresh(p);
                 if (p.isLocal) {
                     syncControls();
-                    if (pub.source === Track.Source.Microphone && Date.now() > selfMuteUntil) toast('تم كتم ميكروفونك من قِبل المنظّم. يمكنك تشغيله متى شئت.');
+                    if (pub.source === Track.Source.Microphone && Date.now() > selfMuteUntil) toast(t('تم كتم ميكروفونك من قِبل المنظّم. يمكنك تشغيله متى شئت.'));
                 }
             })
             .on(RoomEvent.TrackUnmuted, (pub, p) => { refresh(p); if (p.isLocal) syncControls(); })
@@ -886,8 +944,8 @@ if (root) {
                 if (p.isLocal) {
                     const was = canManage;
                     setManager(isOwner || !!meta(p).cohost);
-                    if (!was && canManage) toast('أصبحت منظّمًا مساعدًا: يمكنك قبول المنتظرين وإدارة الغرفة.');
-                    if (was && !canManage) toast('أُلغيت صلاحية المنظّم المساعد.');
+                    if (!was && canManage) toast(t('أصبحت منظّمًا مساعدًا: يمكنك قبول المنتظرين وإدارة الغرفة.'));
+                    if (was && !canManage) toast(t('أُلغيت صلاحية المنظّم المساعد.'));
                 }
             })
             .on(RoomEvent.ActiveSpeakersChanged, (speakers) => {
@@ -940,10 +998,10 @@ if (root) {
         setupControlHandlers();
         setupPopMenus();
         root.classList.toggle('is-manager', canManage);
-        if (forcedMute) toast('دخلت بميكروفون مكتوم بطلب من المنظّم. يمكنك تشغيله متى شئت.');
+        if (forcedMute) toast(t('دخلت بميكروفون مكتوم بطلب من المنظّم. يمكنك تشغيله متى شئت.'));
 
-        try { if (wantMic) await room.localParticipant.setMicrophoneEnabled(true); } catch (e) { alert('تعذّر الوصول إلى الميكروفون.'); }
-        try { if (wantCam) await room.localParticipant.setCameraEnabled(true); } catch (e) { alert('تعذّر الوصول إلى الكاميرا.'); }
+        try { if (wantMic) await room.localParticipant.setMicrophoneEnabled(true); } catch (e) { alert(t('تعذّر الوصول إلى الميكروفون.')); }
+        try { if (wantCam) await room.localParticipant.setCameraEnabled(true); } catch (e) { alert(t('تعذّر الوصول إلى الكاميرا.')); }
         sync();
     }
 
@@ -1067,7 +1125,7 @@ if (root) {
             });
             document.getElementById('copyLink').addEventListener('click', async () => {
                 const url = root.dataset.roomLink;
-                try { await navigator.clipboard.writeText(url); toast('تم نسخ رابط الغرفة.'); }
+                try { await navigator.clipboard.writeText(url); toast(t('تم نسخ رابط الغرفة.')); }
                 catch (e) { window.prompt(t('انسخ الرابط:'), url); }
             });
         }
