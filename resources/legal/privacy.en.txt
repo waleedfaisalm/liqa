@@ -1,0 +1,40 @@
+# 1. Introduction
+This policy explains how the "Liqa" platform collects, uses and protects your data. By using the platform or creating an account, you confirm that you have read this policy.
+
+# 2. Data we collect
+Account data: name, email and password (stored encrypted; nobody can read it).
+
+Profile data: specialty, bio and profile photo. These are optional and you can edit or delete them at any time.
+
+Activity data: events you host or request to join, saved events, comments, ratings, reports, and messages you send through the contact form.
+
+Technical data: your last seen time on the platform, and a necessary cookie that keeps your login session and protects forms from forged requests. We do not use advertising cookies or marketing tracking tools.
+
+# 3. How we use your data
+We use it to run the platform and enable members to meet and organise, to send verification and password-reset emails and notifications about your requests and events, to keep the community safe and handle reports, and to improve the service.
+
+# 4. What others can see
+Your name, specialty, bio, photo and ratings are visible to other members. When you request to join an event, its host can see your name and profile, and your name may appear in the list of accepted participants. Your email is not shown to other members.
+
+Links and details of online meetups appear only on the event page itself.
+
+# 5. Sharing data
+We do not sell your data or share it for advertising. We use technical service providers to run the platform, such as hosting, the database and email delivery, and they process data only as needed to perform their service. We may disclose data when there is a legal obligation or a request from a competent authority.
+
+# 6. Data retention
+We keep your data as long as your account exists. When you delete your account, your profile, photo and data linked to your account are deleted, although information we must keep for security or legal purposes may be retained for a limited period.
+
+# 7. Your rights
+From the settings page you can edit your data and photo, turn off notifications, and permanently delete your account. You may also ask to access, correct or delete your data by writing to us at the email below.
+
+# 8. Security
+We protect passwords with encryption, restrict access to the admin panel to dedicated accounts with optional two-step verification, and use an encrypted connection (HTTPS). Still, no system is completely secure, so we advise you to choose a strong password and not share it.
+
+# 9. Age requirement
+The platform is for people aged 18 and over, and we do not knowingly collect data from anyone younger. If you know of an account belonging to a minor, contact us so it can be deleted.
+
+# 10. Policy updates
+We may update this policy from time to time and will show the date of the last update at the top of the page. Continuing to use the platform after an update means you accept it.
+
+# 11. Contact
+For any privacy question or to exercise your rights, write to us at: {email}

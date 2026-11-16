@@ -17,7 +17,14 @@ class LegalPageController extends Controller
     {
         $custom = trim((string) Setting::get($type.'_content'));
 
-        return $custom !== '' ? $custom : trim((string) file_get_contents(resource_path("legal/{$type}.txt")));
+        if ($custom !== '') {
+            return $custom;
+        }
+
+        $en = resource_path("legal/{$type}.en.txt");
+        $file = app()->getLocale() === 'en' && is_file($en) ? $en : resource_path("legal/{$type}.txt");
+
+        return trim((string) file_get_contents($file));
     }
 
     public function show(string $type): View
@@ -47,7 +54,7 @@ class LegalPageController extends Controller
         }
 
         return view('pages.legal', [
-            'title' => self::PAGES[$type],
+            'title' => __(self::PAGES[$type]),
             'blocks' => $blocks,
             'updated' => Setting::updatedAt($type.'_content'),
         ]);

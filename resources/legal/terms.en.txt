@@ -1,0 +1,38 @@
+# 1. Acceptance of terms
+By using the "Liqa" platform or creating an account, you agree to these terms and to the privacy policy. If you do not agree, please do not use the platform.
+
+# 2. Eligibility
+You must be at least 18 years old and provide accurate, up-to-date information when registering.
+
+# 3. Purpose of the platform
+Liqa is a platform that helps independent professionals organise professional meetups, get to know each other and collaborate. The platform is only an intermediary for communication; it is not responsible for what happens at or outside meetups, and does not guarantee the results of any meetup or professional relationship that arises from it.
+
+# 4. Account responsibility
+You are responsible for keeping your password confidential and for all activity through your account, and you must tell us immediately if you suspect it has been compromised. Creating multiple accounts to deceive others or impersonating other people is prohibited.
+
+# 5. Acceptable conduct
+It is prohibited to post content that is abusive, misleading, unlawful or that violates the rights of others; to harass or discriminate; to post spam or promote services unrelated to the platform; or to try to harm the platform or access it without authorisation. The administration may remove violating content and suspend violating accounts temporarily or permanently without prior notice when needed.
+
+# 6. Events and meetups
+The host is responsible for the accuracy of their event details and for keeping to its time and place, and may accept or decline requests. Attendees must respect others and be punctual. The platform does not verify members' identities, so we advise taking the usual safety precautions when meeting new people, choosing public places, and not sharing sensitive information.
+
+# 7. Ratings and comments
+Ratings and comments express the opinions of their authors and must be honest and respectful. The administration may remove anything that violates these terms.
+
+# 8. Content you publish
+You keep ownership of your content, and you grant the platform a limited licence to display it within the platform for the purpose of running the service. You are responsible for what you publish and for your right to publish it.
+
+# 9. Reports
+You can report any user or event that violates these terms, and the administration reviews reports and takes the action it sees fit.
+
+# 10. Account suspension and deletion
+You may delete your account at any time from the settings page. The administration may suspend or delete an account that violates these terms.
+
+# 11. Disclaimer
+The platform is provided "as is" without warranties of any kind, and we do not guarantee that it will run without interruption or be free of errors. To the extent permitted by law, the platform accepts no liability for damages arising from your use of it or from the actions of members.
+
+# 12. Changes to the terms
+We may update these terms from time to time, and continuing to use the platform after an update means you accept it.
+
+# 13. Contact
+For any question, write to us at: {email}
