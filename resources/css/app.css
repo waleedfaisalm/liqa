@@ -1067,7 +1067,8 @@ body {
 }
 
 .float-card__foot .liqa-badge { flex: none; white-space: nowrap; }
-.float-card__foot > span:first-child { min-width: 0; }
+.float-card__foot > span:first-child { white-space: nowrap; font-size: .8rem; }
+.float-card__foot { flex-wrap: wrap; row-gap: .5rem; }
 
 .float-card__foot {
     display: flex;
