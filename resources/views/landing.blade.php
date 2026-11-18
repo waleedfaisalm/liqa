@@ -52,6 +52,13 @@
                                     ['title' => __('لقاء كتّاب المحتوى'), 'sub' => __('الأحد · عن بُعد'), 'count' => __('0 / 20 مشارك'), 'badge' => [__('لقاء جديد'), 'liqa-badge--sky']],
                                 ];
                             }
+
+                            // نصوص بطاقة الواجهة المعدّلة من لوحة الإدارة تتقدّم على القيم التلقائية
+                            $fc = $L['floatcard'] ?? [];
+                            foreach (['title', 'sub', 'count'] as $k) {
+                                if (filled($fc[$k] ?? null)) { $floats[0][$k] = $fc[$k]; }
+                            }
+                            if (filled($fc['badge'] ?? null)) { $floats[0]['badge'] = [$fc['badge'], $floats[0]['badge'][1] ?? '']; }
                         @endphp
                         @foreach (array_slice($floats, 0, 1) as $i => $f)
                             <div class="float-card hero-art__chip">
