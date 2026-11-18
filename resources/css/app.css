@@ -1052,9 +1052,12 @@ body {
     display: block;
     font-weight: 700;
     color: var(--liqa-ink);
-    white-space: nowrap;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
     overflow: hidden;
-    text-overflow: ellipsis;
 }
 
 .float-card__sub {
