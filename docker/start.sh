@@ -27,6 +27,11 @@ if [ "${LIQA_DEMO:-0}" = "1" ]; then
     php artisan liqa:demo-events || true
 fi
 
+# أحداث واقعية باسم المالك (مرة واحدة): اضبط LIQA_SHOWCASE=1 ثم احذف المتغير بعد أول تشغيل
+if [ "${LIQA_SHOWCASE:-0}" = "1" ]; then
+    php artisan liqa:showcase-events || true
+fi
+
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
