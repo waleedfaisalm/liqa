@@ -1066,8 +1066,12 @@ body {
     color: var(--liqa-hint);
 }
 
+.float-card__foot .liqa-badge { flex: none; white-space: nowrap; }
+.float-card__foot > span:first-child { min-width: 0; }
+
 .float-card__foot {
     display: flex;
+    gap: .75rem;
     justify-content: space-between;
     align-items: center;
 }

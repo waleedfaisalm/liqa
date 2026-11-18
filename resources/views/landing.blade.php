@@ -55,10 +55,13 @@
 
                             // نصوص بطاقة الواجهة المعدّلة من لوحة الإدارة تتقدّم على القيم التلقائية
                             $fc = $L['floatcard'] ?? [];
-                            foreach (['title', 'sub', 'count'] as $k) {
-                                if (filled($fc[$k] ?? null)) { $floats[0][$k] = $fc[$k]; }
+                            $isEn = app()->getLocale() !== 'ar';
+                            foreach (['title', 'sub', 'count', 'badge'] as $k) {
+                                $v = $isEn && filled($fc[$k.'_en'] ?? null) ? $fc[$k.'_en'] : ($fc[$k] ?? null);
+                                if (! filled($v)) { continue; }
+                                if ($k === 'badge') { $floats[0]['badge'] = [__($v), $floats[0]['badge'][1] ?? '']; }
+                                else { $floats[0][$k] = __($v); }
                             }
-                            if (filled($fc['badge'] ?? null)) { $floats[0]['badge'] = [$fc['badge'], $floats[0]['badge'][1] ?? '']; }
                         @endphp
                         @foreach (array_slice($floats, 0, 1) as $i => $f)
                             <div class="float-card hero-art__chip">
