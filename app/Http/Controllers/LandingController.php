@@ -18,7 +18,8 @@ class LandingController extends Controller
     {
         $stats = Cache::store('file')->remember('landing.stats', 600, function () {
             return [
-                'members' => User::where('is_admin', false)->whereNotNull('onboarded_at')->count(),
+                // نفس شروط ظهور العضو في دليل الأعضاء، فيتطابق الرقم مع ما يراه الزائر
+                'members' => User::where('is_admin', false)->whereNotNull('onboarded_at')->whereNull('suspended_at')->where('profile_public', true)->count(),
                 'events' => Event::where('status', Event::PUBLISHED)->count(),
                 'cities' => Event::where('status', Event::PUBLISHED)->whereNotNull('city')->distinct()->count('city'),
                 'joined' => EventRequest::where('status', EventRequest::ACCEPTED)->count(),
