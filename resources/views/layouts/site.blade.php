@@ -40,8 +40,7 @@
                         <li class="nav-item"><a href="{{ route('landing') }}" class="nav-link app-link {{ request()->routeIs('landing') ? 'is-active' : '' }}">{{ __('الرئيسية') }}</a></li>
                         <li class="nav-item"><a href="{{ route('events.index') }}" class="nav-link app-link {{ request()->routeIs('events.*') ? 'is-active' : '' }}">{{ __('الأحداث') }}</a></li>
                         <li class="nav-item"><a href="{{ route('contact') }}" class="nav-link app-link {{ request()->routeIs('contact') ? 'is-active' : '' }}">{{ __('تواصل معنا') }}</a></li>
-                        <li class="nav-item mt-2 mt-md-0 ms-md-2">@include('partials.lang-switch')</li>
-                        <li class="nav-item mt-2 mt-md-0 ms-md-1">@include('partials.theme-switch')</li>
+                        <li class="nav-item mt-2 mt-md-0 ms-md-2"><div class="nav-tools">@include('partials.lang-switch')@include('partials.theme-switch')</div></li>
                         <li class="nav-item mt-2 mt-md-0 ms-md-2"><a href="{{ route('login') }}" class="btn btn-liqa-outline px-3 d-flex align-items-center justify-content-center">{{ __('تسجيل الدخول') }}</a></li>
                         <li class="nav-item d-none d-md-block"><a href="{{ route('register') }}" class="btn btn-liqa px-3 d-flex align-items-center" style="min-height:2.75rem">{{ __('إنشاء حساب') }}</a></li>
                     </ul>

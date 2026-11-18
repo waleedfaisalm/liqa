@@ -18,7 +18,7 @@
 <body>
     @include('partials.announcement')
     {{-- شاشات الدخول والتسجيل: من غير شريط التنقل السفلي --}}
-    <div class="d-flex justify-content-end gap-2 px-4 pt-3">@include('partials.lang-switch') @include('partials.theme-switch')</div>
+    <div class="d-flex justify-content-end px-4 pt-3"><div class="nav-tools">@include('partials.lang-switch')@include('partials.theme-switch')</div></div>
     <main class="liqa-shell liqa-shell--guest px-4 pt-3">
         @include('partials.alerts')
         @yield('content')

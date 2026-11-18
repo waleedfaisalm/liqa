@@ -56,7 +56,7 @@
                         @endforeach
                     </ul>
 
-                    <div class="mt-2 mt-lg-0 d-flex gap-2">@include('partials.lang-switch') @include('partials.theme-switch')</div>
+                    <div class="mt-2 mt-lg-0"><div class="nav-tools">@include('partials.lang-switch')@include('partials.theme-switch')</div></div>
                     <div class="dropdown mt-2 mt-lg-0">
                         <button class="btn btn-liqa-outline d-flex align-items-center gap-2 px-3" type="button"
                                 data-bs-toggle="dropdown" aria-expanded="false">
