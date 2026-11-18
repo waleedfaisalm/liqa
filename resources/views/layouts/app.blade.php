@@ -2,8 +2,9 @@
 <html lang="{{ app()->getLocale() }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}" data-bs-theme="dark">
 <head>
     <meta charset="utf-8">
+    @include('partials.theme-init')
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>@yield('title', 'لقاء') — {{ \App\Models\Setting::site('name') }}</title>
+    <title>@yield('title', 'لقاء') — {{ __(\App\Models\Setting::site('name')) }}</title>
     <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
     <link rel="icon" href="{{ asset('favicon.ico') }}" sizes="any">
     <link rel="apple-touch-icon" href="{{ asset('brand/liqa-apple-touch-icon.png') }}">
@@ -35,7 +36,7 @@
             <div class="container">
                 <a class="navbar-brand d-flex align-items-center gap-2 m-0" href="{{ route('landing') }}">
                     <x-logo :size="40" />
-                    <span class="fs-4 fw-bold text-white">{{ \App\Models\Setting::site('name') }}</span>
+                    <span class="fs-4 fw-bold text-white">{{ __(\App\Models\Setting::site('name')) }}</span>
                 </a>
 
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"
@@ -55,7 +56,7 @@
                         @endforeach
                     </ul>
 
-                    <div class="mt-2 mt-lg-0">@include('partials.lang-switch')</div>
+                    <div class="mt-2 mt-lg-0 d-flex gap-2">@include('partials.lang-switch') @include('partials.theme-switch')</div>
                     <div class="dropdown mt-2 mt-lg-0">
                         <button class="btn btn-liqa-outline d-flex align-items-center gap-2 px-3" type="button"
                                 data-bs-toggle="dropdown" aria-expanded="false">
@@ -107,7 +108,7 @@
 
     <footer class="site-footer">
         <div class="container py-4 d-flex flex-column flex-md-row gap-2 justify-content-between align-items-center">
-            <span class="d-flex align-items-center gap-2 fw-bold"><x-logo :size="28" /> {{ \App\Models\Setting::site('name') }}</span>
+            <span class="d-flex align-items-center gap-2 fw-bold"><x-logo :size="28" /> {{ __(\App\Models\Setting::site('name')) }}</span>
             <span class="small">
                 <a href="{{ route('contact') }}" class="text-secondary text-decoration-none">{{ __('تواصل معنا') }}</a> ·
                 @if (\App\Models\Setting::enabled('privacy_enabled')) <a href="{{ route('privacy') }}" class="text-secondary text-decoration-none">{{ __('سياسة الخصوصية') }}</a> @endif

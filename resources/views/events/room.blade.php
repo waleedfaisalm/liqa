@@ -1,7 +1,7 @@
 @extends('layouts.app')
 @section('title', __('الغرفة المباشرة — ').$event->title)
 @section('content')
-    <div class="room{{ $isHost ? ' is-owner is-manager' : ($isCohost ? ' is-manager' : '') }}" id="room"
+    <div data-bs-theme="dark" class="room{{ $isHost ? ' is-owner is-manager' : ($isCohost ? ' is-manager' : '') }}" id="room"
          data-url="{{ $serverUrl }}"
          data-token="{{ $token }}"
          data-host="{{ $isHost ? '1' : '0' }}"

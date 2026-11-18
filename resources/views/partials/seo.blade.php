@@ -6,7 +6,7 @@
 <link rel="canonical" href="{{ url()->current() }}">
 <meta property="og:type" content="website">
 <meta property="og:locale" content="{{ app()->getLocale() === 'ar' ? 'ar_AR' : 'en_US' }}">
-<meta property="og:site_name" content="{{ \App\Models\Setting::site('name') }}">
+<meta property="og:site_name" content="{{ __(\App\Models\Setting::site('name')) }}">
 <meta property="og:title" content="{{ $seoTitle }}">
 <meta property="og:description" content="{{ $seoDesc }}">
 <meta property="og:url" content="{{ url()->current() }}">

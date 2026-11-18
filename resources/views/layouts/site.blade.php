@@ -2,6 +2,7 @@
 <html lang="{{ app()->getLocale() }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}" data-bs-theme="dark">
 <head>
     <meta charset="utf-8">
+    @include('partials.theme-init')
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('title', 'لقاء')</title>
     <meta name="description" content="@yield('description', __('لقاء: منصة لقاءات للفريلانسر والعاملين لحسابهم الخاص في السعودية والوطن العربي.'))">
@@ -23,7 +24,7 @@
             <div class="container">
                 <a href="{{ route('landing') }}" class="navbar-brand d-flex align-items-center gap-2 text-decoration-none m-0">
                     <x-logo :size="40" />
-                    <span class="fs-4 fw-bold text-white">{{ \App\Models\Setting::site('name') }}</span>
+                    <span class="fs-4 fw-bold text-white">{{ __(\App\Models\Setting::site('name')) }}</span>
                 </a>
 
                 <div class="d-flex align-items-center gap-2 d-md-none ms-auto me-2">
@@ -40,6 +41,7 @@
                         <li class="nav-item"><a href="{{ route('events.index') }}" class="nav-link app-link {{ request()->routeIs('events.*') ? 'is-active' : '' }}">{{ __('الأحداث') }}</a></li>
                         <li class="nav-item"><a href="{{ route('contact') }}" class="nav-link app-link {{ request()->routeIs('contact') ? 'is-active' : '' }}">{{ __('تواصل معنا') }}</a></li>
                         <li class="nav-item mt-2 mt-md-0 ms-md-2">@include('partials.lang-switch')</li>
+                        <li class="nav-item mt-2 mt-md-0 ms-md-1">@include('partials.theme-switch')</li>
                         <li class="nav-item mt-2 mt-md-0 ms-md-2"><a href="{{ route('login') }}" class="btn btn-liqa-outline px-3 d-flex align-items-center justify-content-center">{{ __('تسجيل الدخول') }}</a></li>
                         <li class="nav-item d-none d-md-block"><a href="{{ route('register') }}" class="btn btn-liqa px-3 d-flex align-items-center" style="min-height:2.75rem">{{ __('إنشاء حساب') }}</a></li>
                     </ul>
@@ -55,7 +57,7 @@
 
     <footer class="site-footer">
         <div class="container py-4 d-flex flex-column flex-md-row gap-2 justify-content-between align-items-center">
-            <span class="fw-bold">{{ \App\Models\Setting::site('name') }}</span>
+            <span class="fw-bold">{{ __(\App\Models\Setting::site('name')) }}</span>
             <span class="small">
                 <a href="{{ route('contact') }}" class="text-secondary text-decoration-none">{{ __('تواصل معنا') }}</a> ·
                 @if (\App\Models\Setting::enabled('privacy_enabled')) <a href="{{ route('privacy') }}" class="text-secondary text-decoration-none">{{ __('سياسة الخصوصية') }}</a> @endif

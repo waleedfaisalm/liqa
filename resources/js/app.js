@@ -36,3 +36,15 @@ window.addEventListener('pageshow', (e) => {
         f.querySelectorAll('button').forEach((b) => { b.disabled = false; b.classList.remove('is-loading'); });
     });
 });
+
+// تبديل المظهر (داكن / فاتح) وحفظه في المتصفح
+document.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-theme-toggle]');
+    if (!btn) return;
+    const root = document.documentElement;
+    const next = root.getAttribute('data-bs-theme') === 'light' ? 'dark' : 'light';
+    root.setAttribute('data-bs-theme', next);
+    try { localStorage.setItem('liqa_theme', next); } catch (err) { /* التخزين غير متاح */ }
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute('content', next === 'light' ? '#f6f4fd' : '#0a0814');
+});
