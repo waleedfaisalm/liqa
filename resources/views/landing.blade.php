@@ -42,7 +42,7 @@
                                 $floats = $upcoming->map(fn ($e) => [
                                     'title' => $e->title,
                                     'sub' => $e->starts_at->translatedFormat('l j F').' · '.($e->mode === 'online' ? __('عن بُعد') : $e->city),
-                                    'count' => $e->seatsTaken().' / '.$e->capacity.__(' مشارك'),
+                                    'count' => ($stats['members'] ?? 0) > 0 ? __(':n مشارك في المنصة', ['n' => $stats['members']]) : __(':a / :b مشارك', ['a' => $e->seatsTaken(), 'b' => $e->capacity]),
                                     'badge' => $e->isFull() ? [__('مكتمل العدد'), ''] : [$e->seatsLeft().__(' مقاعد متاحة'), 'liqa-badge--green'],
                                 ])->values()->all();
                             } else {

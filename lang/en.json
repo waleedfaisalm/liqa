@@ -963,5 +963,11 @@
  "غرفة لقاء المباشرة": "Liqa live room",
  "لقاء تعارف للمستقلين": "Freelancers' intro meetup",
  "جلسة تفاعلية بين مستقلين": "An interactive session for freelancers",
- "انضم مجاناً": "Join for free"
+ "انضم مجاناً": "Join for free",
+ ":a / :b مشارك": ":a / :b attendees",
+ "جلسة مباشرة · عن بُعد": "Live session · Online",
+ "جلسة مباشرة · عن بعد": "Live session · Online",
+ "جلسة مباشرة عن بعد": "Live session · Online",
+ "السبت 21 نوفمبر عن بعد": "Saturday, Nov 21 · Online",
+ ":n مشارك في المنصة": ":n members on the platform"
 }
