@@ -16,15 +16,22 @@ class LandingController extends Controller
 
     public function index(): View
     {
-        $stats = Cache::store('file')->remember('landing.stats', 600, function () {
+        // الأرقام الثقيلة نسبيًا تُخزَّن مؤقتًا لدقائق
+        $stats = Cache::store('file')->remember('landing.stats', 300, function () {
             return [
-                // نفس شروط ظهور العضو في دليل الأعضاء، فيتطابق الرقم مع ما يراه الزائر
-                'members' => User::where('is_admin', false)->whereNotNull('onboarded_at')->whereNull('suspended_at')->where('profile_public', true)->count(),
                 'events' => Event::where('status', Event::PUBLISHED)->count(),
                 'cities' => Event::where('status', Event::PUBLISHED)->whereNotNull('city')->distinct()->count('city'),
                 'joined' => EventRequest::where('status', EventRequest::ACCEPTED)->count(),
             ];
         });
+
+        // عدد الأعضاء يُحسب لحظيًا (استعلام COUNT خفيف) فيزيد فور اكتمال تسجيل أي عضو،
+        // وبنفس شروط ظهور العضو في دليل الأعضاء ليتطابق الرقم مع ما يراه الزائر.
+        $stats['members'] = User::where('is_admin', false)
+            ->whereNotNull('onboarded_at')
+            ->whereNull('suspended_at')
+            ->where('profile_public', true)
+            ->count();
 
         $showStats = $stats['members'] >= self::MIN_MEMBERS && $stats['events'] >= self::MIN_EVENTS;
 
