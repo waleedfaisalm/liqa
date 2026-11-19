@@ -169,6 +169,8 @@ Route::middleware(['auth', 'verified', 'onboarded'])->group(function () {
     // الإشعارات
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications');
     Route::post('/notifications/read-all', [NotificationController::class, 'readAll'])->name('notifications.read-all');
+    Route::delete('/notifications', [NotificationController::class, 'clear'])->name('notifications.clear');
+    Route::delete('/notifications/{notification}', [NotificationController::class, 'destroy'])->whereNumber('notification')->name('notifications.destroy');
     Route::get('/notifications/{notification}/open', [NotificationController::class, 'open'])->whereNumber('notification')->name('notifications.open');
 });
 

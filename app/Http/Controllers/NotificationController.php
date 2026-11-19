@@ -44,6 +44,33 @@ class NotificationController extends Controller
         return redirect()->route('notifications');
     }
 
+    /** حذف نهائي لإشعار واحد (للمالك فقط) */
+    public function destroy(Request $request, UserNotification $notification): RedirectResponse
+    {
+        abort_unless($notification->user_id === $request->user()->id, 403);
+
+        $notification->delete();
+
+        return redirect()->route('notifications')->with('success', __('تم حذف الإشعار.'));
+    }
+
+    /** حذف نهائي لإشعارات المستخدم: المقروءة فقط (scope=read) أو جميعها */
+    public function clear(Request $request): RedirectResponse
+    {
+        $query = $request->user()->userNotifications();
+
+        if ($request->input('scope') === 'read') {
+            $query->whereNotNull('read_at');
+            $message = __('تم حذف الإشعارات المقروءة.');
+        } else {
+            $message = __('تم حذف جميع الإشعارات.');
+        }
+
+        $query->delete();
+
+        return redirect()->route('notifications')->with('success', $message);
+    }
+
     public function readAll(Request $request): RedirectResponse
     {
         $request->user()->userNotifications()->whereNull('read_at')->update(['read_at' => now()]);

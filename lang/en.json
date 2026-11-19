@@ -969,5 +969,12 @@
  "جلسة مباشرة · عن بعد": "Live session · Online",
  "جلسة مباشرة عن بعد": "Live session · Online",
  "السبت 21 نوفمبر عن بعد": "Saturday, Nov 21 · Online",
- ":n مشارك في المنصة": ":n members on the platform"
+ ":n مشارك في المنصة": ":n members on the platform",
+ "تم حذف الإشعار.": "Notification deleted.",
+ "تم حذف الإشعارات المقروءة.": "Read notifications deleted.",
+ "تم حذف جميع الإشعارات.": "All notifications deleted.",
+ "سيتم حذف جميع إشعاراتك نهائيًا ولا يمكن التراجع. هل أنت متأكد؟": "All your notifications will be permanently deleted. This can't be undone. Are you sure?",
+ "حذف الكل": "Delete all",
+ "حذف هذا الإشعار نهائيًا؟": "Delete this notification permanently?",
+ "حذف الإشعار": "Delete notification"
 }
