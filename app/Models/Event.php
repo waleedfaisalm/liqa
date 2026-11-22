@@ -39,11 +39,12 @@ class Event extends Model
     protected $fillable = [
         'title', 'type', 'mode', 'country', 'city', 'location', 'starts_at',
         'duration_minutes', 'capacity', 'description',
+        'speaker_name', 'speaker_bio', 'agenda',
     ];
 
     protected function casts(): array
     {
-        return ['starts_at' => 'datetime', 'room_lobby' => 'boolean', 'room_link' => 'boolean', 'room_mute_join' => 'boolean'];
+        return ['starts_at' => 'datetime', 'agenda' => 'array', 'room_lobby' => 'boolean', 'room_link' => 'boolean', 'room_mute_join' => 'boolean'];
     }
 
     // ---------- علاقات ----------
@@ -274,6 +275,47 @@ class Event extends Model
             'marketing' => 'liqa-badge--green',
             default => '',
         };
+    }
+
+    /** غلاف تلقائي: ألوان وأيقونة حسب التصنيف */
+    public function coverTheme(): array
+    {
+        $themes = [
+            'programming' => ['#2563eb', '#7c3aed', 'bolt'],
+            'design' => ['#db2777', '#9333ea', 'edit'],
+            'content' => ['#0d9488', '#2563eb', 'chat'],
+            'marketing' => ['#ea580c', '#db2777', 'trend'],
+            'business' => ['#4f46e5', '#0ea5e9', 'users'],
+            'other' => ['#7c3aed', '#db2777', 'rocket'],
+        ];
+
+        if (isset($themes[$this->type])) {
+            return $themes[$this->type];
+        }
+
+        // تصنيف مخصص من الإدارة: لون ثابت مشتق من المفتاح
+        $h = abs(crc32((string) $this->type)) % 360;
+
+        return ["hsl($h,70%,45%)", 'hsl('.(($h + 50) % 360).',70%,40%)', 'calendar'];
+    }
+
+    /** الجدول الزمني مع وقت بداية كل فقرة */
+    public function agendaTimeline(): array
+    {
+        $cursor = $this->starts_at->copy();
+        $out = [];
+
+        foreach ((array) $this->agenda as $row) {
+            $title = trim((string) ($row['title'] ?? ''));
+            $minutes = (int) ($row['minutes'] ?? 0);
+            if ($title === '' || $minutes < 1) {
+                continue;
+            }
+            $out[] = ['time' => $cursor->translatedFormat('g:i A'), 'title' => $title, 'minutes' => $minutes];
+            $cursor->addMinutes($minutes);
+        }
+
+        return $out;
     }
 
     public function whenLabel(): string

@@ -304,6 +304,11 @@ class EventController extends Controller
             'duration_minutes' => ['required', 'integer', Rule::in(array_keys(Event::DURATIONS))],
             'capacity' => ['required', 'integer', 'min:'.max(2, $minCapacity), 'max:100'],
             'description' => ['required', 'string', 'min:10', 'max:600'],
+            'speaker_name' => ['nullable', 'string', 'max:120'],
+            'speaker_bio' => ['nullable', 'string', 'max:300'],
+            'agenda' => ['nullable', 'array', 'max:8'],
+            'agenda.*.title' => ['nullable', 'string', 'max:80'],
+            'agenda.*.minutes' => ['nullable', 'integer', 'min:5', 'max:240'],
         ];
     }
 
@@ -320,6 +325,20 @@ class EventController extends Controller
         }
 
         unset($data['city_other']);
+
+        // الجدول الزمني: تجاهل الصفوف الفارغة، ولا يتجاوز مجموعه مدة الحدث
+        $agenda = collect($data['agenda'] ?? [])
+            ->filter(fn ($r) => trim((string) ($r['title'] ?? '')) !== '' && (int) ($r['minutes'] ?? 0) >= 5)
+            ->map(fn ($r) => ['title' => trim($r['title']), 'minutes' => (int) $r['minutes']])
+            ->values();
+
+        if ($agenda->sum('minutes') > (int) ($data['duration_minutes'] ?? 0)) {
+            throw ValidationException::withMessages(['agenda' => __('مجموع مدد الجدول الزمني أكبر من مدة الحدث.')]);
+        }
+
+        $data['agenda'] = $agenda->isEmpty() ? null : $agenda->all();
+        $data['speaker_name'] = trim((string) ($data['speaker_name'] ?? '')) ?: null;
+        $data['speaker_bio'] = trim((string) ($data['speaker_bio'] ?? '')) ?: null;
 
         return $data;
     }

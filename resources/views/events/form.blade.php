@@ -120,6 +120,32 @@
                         @error('capacity') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
                 </div>
+                <div class="row g-3">
+                    <div class="col-md-5">
+                        <label class="liqa-label d-block" for="speaker_name">{{ __('المتحدث أو المقدّم (اختياري)') }}</label>
+                        <input id="speaker_name" type="text" name="speaker_name" value="{{ $val('speaker_name') }}" maxlength="120"
+                               class="form-control @error('speaker_name') is-invalid @enderror" placeholder="{{ __('مثال: سارة المطيري') }}">
+                        @error('speaker_name') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                    </div>
+                    <div class="col-md-7">
+                        <label class="liqa-label d-block" for="speaker_bio">{{ __('نبذة عن المتحدث') }}</label>
+                        <input id="speaker_bio" type="text" name="speaker_bio" value="{{ $val('speaker_bio') }}" maxlength="300"
+                               class="form-control @error('speaker_bio') is-invalid @enderror" placeholder="{{ __('مثال: مصممة منتجات بخبرة ٨ سنوات في الشركات الناشئة') }}">
+                        @error('speaker_bio') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                    </div>
+                </div>
+
+                @php $agendaRows = old('agenda', $editing ? ($event->agenda ?? []) : []); @endphp
+                <div>
+                    <label class="liqa-label d-block">{{ __('الجدول الزمني (اختياري)') }}</label>
+                    <div class="hint mb-2">{{ __('قسّم اللقاء إلى فقرات بمدة لكل فقرة، وتُحسب الأوقات تلقائيًا من موعد البداية.') }}</div>
+                    <div id="agenda-rows" class="d-grid gap-2"></div>
+                    <button type="button" id="agenda-add" class="btn btn-liqa-outline btn-sm mt-2 px-3">+ {{ __('إضافة فقرة') }}</button>
+                    @error('agenda') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
+                    @error('agenda.*.title') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
+                    @error('agenda.*.minutes') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
+                </div>
+
                 @unless ($editing)
                     <div class="row g-3">
                         <div class="col-md-6">
@@ -208,6 +234,26 @@
     countrySel.addEventListener('change', function () { fillCities(countrySel.value, null); });
     citySel.addEventListener('change', syncCityOther);
     fillCities(countrySel.value, initialCity);
+
+
+    // ---- الجدول الزمني ----
+    var agendaBox = document.getElementById('agenda-rows');
+    var agendaN = 0;
+    function addAgendaRow(title, minutes) {
+        if (agendaBox.children.length >= 8) { return; }
+        var i = agendaN++;
+        var row = document.createElement('div');
+        row.className = 'd-flex gap-2 align-items-center';
+        row.innerHTML = '<input type="text" name="agenda[' + i + '][title]" maxlength="80" class="form-control" placeholder="' + {{ Js::from(__('عنوان الفقرة')) }}.replace(/"/g, '&quot;') + '">'
+            + '<input type="number" name="agenda[' + i + '][minutes]" min="5" max="240" step="5" class="form-control" style="max-width:6.5rem" placeholder="' + {{ Js::from(__('دقيقة')) }}.replace(/"/g, '&quot;') + '">'
+            + '<button type="button" class="btn btn-sm text-danger p-1" aria-label="' + {{ Js::from(__('حذف')) }}.replace(/"/g, '&quot;') + '">✕</button>';
+        row.querySelector('input[type=text]').value = title || '';
+        row.querySelector('input[type=number]').value = minutes || '';
+        row.querySelector('button').addEventListener('click', function () { row.remove(); });
+        agendaBox.appendChild(row);
+    }
+    document.getElementById('agenda-add').addEventListener('click', function () { addAgendaRow('', ''); });
+    @json(array_values((array) $agendaRows)).forEach(function (r) { addAgendaRow(r.title, r.minutes); });
 
     mode.addEventListener('change', syncMode);
     desc.addEventListener('input', syncCount);

@@ -1906,3 +1906,47 @@ html[dir="ltr"] body { font-family: 'Cairo', system-ui, sans-serif; }
 .profile-links { display: flex; flex-wrap: wrap; justify-content: center; gap: .5rem; margin-bottom: 1rem; }
 .profile-link { display: inline-flex; align-items: center; gap: .35rem; padding: .3rem .8rem; border: 1px solid var(--liqa-border); border-radius: 999px; color: var(--liqa-soft); font-size: .82rem; font-weight: 600; text-decoration: none; }
 .profile-link:hover { border-color: #7c3aed; color: var(--liqa-ink); background: rgba(147, 51, 234, .12); }
+
+/* ---------- صفحة الحدث: الغلاف والجدول والمتحدث ---------- */
+.event-cover {
+    position: relative;
+    overflow: hidden;
+    min-height: 150px;
+    border-radius: 1.25rem;
+    background: linear-gradient(135deg, var(--c1), var(--c2));
+    color: #fff;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    padding: 1.25rem 1.5rem;
+}
+.event-cover::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(circle at 85% 15%, rgba(255, 255, 255, .22), transparent 45%),
+        radial-gradient(circle at 10% 110%, rgba(0, 0, 0, .25), transparent 55%);
+}
+.event-cover__icon { position: absolute; inset-inline-end: 1.5rem; top: 50%; transform: translateY(-50%); opacity: .22; line-height: 0; }
+.event-cover__type, .event-cover__date { position: relative; }
+.event-cover__type { font-weight: 700; font-size: 1.05rem; padding: .35rem .85rem; border-radius: 999px; background: rgba(255, 255, 255, .2); backdrop-filter: blur(4px); }
+.event-cover__date { text-align: center; line-height: 1; padding: .55rem .9rem; border-radius: .9rem; background: rgba(255, 255, 255, .95); color: #1a1033; }
+.event-cover__day { display: block; font-size: 1.6rem; font-weight: 800; }
+.event-cover__month { display: block; font-size: .8rem; font-weight: 600; text-transform: uppercase; margin-top: .15rem; }
+
+.speaker-card { display: flex; align-items: center; gap: .85rem; padding: .9rem 1rem; border-radius: 1rem; background: var(--liqa-soft); border: 1px solid var(--liqa-line); }
+.speaker-card__avatar { flex: none; width: 46px; height: 46px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.15rem; color: #fff; background: linear-gradient(135deg, #9333ea, #db2777); }
+
+.agenda { list-style: none; margin: 0; padding: 0; position: relative; }
+.agenda__item { position: relative; display: flex; gap: 1rem; padding-bottom: 1.1rem; }
+.agenda__item:last-child { padding-bottom: 0; }
+.agenda__time { flex: none; width: 5.2rem; font-weight: 600; font-size: .9rem; color: var(--liqa-pink-text); padding-top: .1rem; }
+.agenda__body { position: relative; padding-inline-start: 1.25rem; border-inline-start: 2px solid var(--liqa-line); }
+.agenda__body::before { content: ''; position: absolute; inset-inline-start: -7px; top: .35rem; width: 12px; height: 12px; border-radius: 50%; background: #9333ea; box-shadow: 0 0 0 3px var(--liqa-card); }
+.agenda__item:last-child .agenda__body { border-inline-start-color: transparent; }
+@media (max-width: 575.98px) {
+    .event-cover { min-height: 120px; padding: 1rem; }
+    .event-cover__icon svg { width: 100px; height: 100px; }
+    .agenda__time { width: 4.4rem; }
+}

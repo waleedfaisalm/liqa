@@ -42,6 +42,15 @@
     <div class="row g-4 mt-1">
         {{-- ============ الجزء الرئيسي ============ --}}
         <div class="col-lg-8">
+            @php [$c1, $c2, $coverIcon] = $event->coverTheme(); @endphp
+            <div class="event-cover mb-3" style="--c1: {{ $c1 }}; --c2: {{ $c2 }}" aria-hidden="true">
+                <span class="event-cover__icon"><x-icon :name="$coverIcon" :size="150" /></span>
+                <span class="event-cover__type">{{ $event->typeLabel() }}</span>
+                <span class="event-cover__date">
+                    <span class="event-cover__day">{{ $event->starts_at->translatedFormat('j') }}</span>
+                    <span class="event-cover__month">{{ $event->starts_at->translatedFormat('M') }}</span>
+                </span>
+            </div>
             <div class="form-card">
                 <div class="d-flex flex-wrap gap-2 mb-3">
                     <span class="liqa-badge {{ $event->typeBadgeClass() }}">{{ $event->typeLabel() }}</span>
@@ -69,6 +78,33 @@
 
                 <div class="fw-bold text-white mb-2">{{ __('عن اللقاء') }}</div>
                 <p class="text-secondary mb-4" style="white-space: pre-line">{{ $event->description }}</p>
+
+                @if ($event->speaker_name)
+                    <div class="speaker-card mb-4">
+                        <span class="speaker-card__avatar">{{ \Illuminate\Support\Str::substr($event->speaker_name, 0, 1) }}</span>
+                        <span class="min-w-0">
+                            <span class="d-block small text-secondary">{{ __('المتحدث') }}</span>
+                            <span class="d-block fw-bold text-white">{{ $event->speaker_name }}</span>
+                            @if ($event->speaker_bio) <span class="d-block small text-secondary">{{ $event->speaker_bio }}</span> @endif
+                        </span>
+                    </div>
+                @endif
+
+                @php $timeline = $event->agendaTimeline(); @endphp
+                @if ($timeline)
+                    <div class="fw-bold text-white mb-3">{{ __('جدول اللقاء') }}</div>
+                    <ol class="agenda mb-4">
+                        @foreach ($timeline as $row)
+                            <li class="agenda__item">
+                                <span class="agenda__time">{{ $row['time'] }}</span>
+                                <span class="agenda__body">
+                                    <span class="d-block fw-bold text-white">{{ $row['title'] }}</span>
+                                    <span class="d-block small hint">{{ __(':n دقيقة', ['n' => $row['minutes']]) }}</span>
+                                </span>
+                            </li>
+                        @endforeach
+                    </ol>
+                @endif
 
                 <div class="row g-3">
                     <div class="col-md-6">
@@ -262,6 +298,23 @@
                 @include('events._action', ['event' => $event, 'isHost' => $isHost, 'open' => $open, 'myRequest' => $myRequest, 'started' => $started, 'waitlistPosition' => $waitlistPosition ?? null, 'percent' => $percent, 'statusLabels' => $statusLabels, 'statusClasses' => $statusClasses])
             </div>
 
+            @php
+                $shareUrl = route('events.show', $event);
+                $shareText = $event->title.' — '.$event->starts_at->translatedFormat('j F Y');
+            @endphp
+            <div class="liqa-card p-3 mb-3" data-share data-url="{{ $shareUrl }}" data-title="{{ $event->title }}" data-text="{{ $shareText }}">
+                <div class="fw-bold text-white mb-2 d-flex align-items-center gap-2"><x-icon name="send" :size="18" /> {{ __('شارك هذا الحدث') }}</div>
+                <div class="d-grid gap-2">
+                    <button type="button" class="btn btn-liqa-outline" data-share-native hidden>{{ __('مشاركة…') }}</button>
+                    <div class="d-flex gap-2">
+                        <a class="btn btn-liqa-outline flex-fill" target="_blank" rel="noopener" href="https://www.linkedin.com/sharing/share-offsite/?url={{ urlencode($shareUrl) }}">LinkedIn</a>
+                        <a class="btn btn-liqa-outline flex-fill" target="_blank" rel="noopener" href="https://wa.me/?text={{ urlencode($shareText.' '.$shareUrl) }}">WhatsApp</a>
+                        <a class="btn btn-liqa-outline flex-fill" target="_blank" rel="noopener" href="https://twitter.com/intent/tweet?text={{ urlencode($shareText) }}&url={{ urlencode($shareUrl) }}">X</a>
+                    </div>
+                    <button type="button" class="btn btn-liqa-outline" data-share-copy data-done="{{ __('تم نسخ الرابط ✓') }}">{{ __('نسخ الرابط') }}</button>
+                </div>
+            </div>
+
             @if (auth()->check() && ! $event->isCancelled() && ! $ended && ($isHost || ($myRequest && $myRequest->status === 'accepted')))
                 @php
                     $gcal = 'https://calendar.google.com/calendar/render?'.http_build_query([
@@ -341,4 +394,27 @@
         </div>
     </div>
 </div>
+
+<script>
+(function () {
+    var box = document.querySelector('[data-share]');
+    if (!box) { return; }
+    var url = box.dataset.url;
+    var native = box.querySelector('[data-share-native]');
+    var copy = box.querySelector('[data-share-copy]');
+    if (navigator.share) {
+        native.hidden = false;
+        native.addEventListener('click', function () {
+            navigator.share({ title: box.dataset.title, text: box.dataset.text, url: url }).catch(function () {});
+        });
+    }
+    copy.addEventListener('click', function () {
+        var label = copy.textContent;
+        function done() { copy.textContent = copy.dataset.done; setTimeout(function () { copy.textContent = label; }, 2000); }
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(url).then(done, function () { window.prompt('', url); });
+        } else { window.prompt('', url); }
+    });
+})();
+</script>
 @endsection
