@@ -1,0 +1,20 @@
+{
+  "name": "لقاء — Liqa",
+  "short_name": "لقاء",
+  "description": "منصة لقاءات الفريلانسر المهنية — تعارف، لقاء، ونموّ مشترك.",
+  "lang": "ar",
+  "dir": "rtl",
+  "id": "/",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0a0814",
+  "theme_color": "#0a0814",
+  "icons": [
+    { "src": "/brand/liqa-icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/brand/liqa-mark-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ],
+  "shortcuts": [
+    { "name": "الأحداث", "url": "/events" }
+  ]
+}

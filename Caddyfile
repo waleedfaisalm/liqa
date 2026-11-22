@@ -13,5 +13,10 @@
 	@brand path /brand/* /favicon.svg /favicon.ico
 	header @brand Cache-Control "public, max-age=86400"
 
+	@manifest path /manifest.webmanifest
+	header @manifest Content-Type application/manifest+json
+	@sw path /sw.js
+	header @sw Cache-Control "no-cache"
+
 	php_server
 }
