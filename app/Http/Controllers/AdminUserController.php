@@ -101,6 +101,23 @@ class AdminUserController extends Controller
     }
 
     /** إيقاف الحساب (مع سبب ومدة اختيارية) أو إعادة تفعيله */
+    /** منح شارة التوثيق أو سحبها */
+    public function verify(Request $request, User $user): RedirectResponse
+    {
+        if ($user->isVerified()) {
+            $user->forceFill(['verified_at' => null])->save();
+            AdminLog::record($request->user(), 'user.unverified', 'user', $user->id, $user->name);
+
+            return back()->with('success', 'تم سحب التوثيق من '.$user->name.'.');
+        }
+
+        $user->forceFill(['verified_at' => now()])->save();
+        AdminLog::record($request->user(), 'user.verified', 'user', $user->id, $user->name);
+        \App\Models\UserNotification::send($user, 'verified', 'تم توثيق حسابك في لقاء. تظهر الآن شارة «موثّق» بجانب اسمك.', route('profile'));
+
+        return back()->with('success', 'تم توثيق '.$user->name.'.');
+    }
+
     public function suspend(Request $request, User $user): RedirectResponse
     {
         if ($user->is($request->user())) {

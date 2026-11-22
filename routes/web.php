@@ -197,6 +197,7 @@ Route::prefix('admin')->group(function () {
             Route::get('/users/create', [AdminUserController::class, 'create'])->name('admin.users.create');
             Route::post('/users', [AdminUserController::class, 'store'])->middleware('throttle:20,1')->name('admin.users.store');
             Route::get('/users/{user}', [AdminUserController::class, 'show'])->whereNumber('user')->name('admin.users.show');
+            Route::patch('/users/{user}/verify', [AdminUserController::class, 'verify'])->whereNumber('user')->name('admin.users.verify');
             Route::patch('/users/{user}/suspend', [AdminUserController::class, 'suspend'])->whereNumber('user')->name('admin.users.suspend');
             Route::patch('/users/{user}/password', [AdminUserController::class, 'resetPassword'])->middleware('throttle:10,1')->whereNumber('user')->name('admin.users.password');
             Route::delete('/users/{user}', [AdminUserController::class, 'destroy'])->middleware('throttle:10,1')->whereNumber('user')->name('admin.users.destroy');

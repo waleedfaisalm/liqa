@@ -976,5 +976,13 @@
  "سيتم حذف جميع إشعاراتك نهائيًا ولا يمكن التراجع. هل أنت متأكد؟": "All your notifications will be permanently deleted. This can't be undone. Are you sure?",
  "حذف الكل": "Delete all",
  "حذف هذا الإشعار نهائيًا؟": "Delete this notification permanently?",
- "حذف الإشعار": "Delete notification"
+ "حذف الإشعار": "Delete notification",
+ "روابط أعمالك": "Your work links",
+ "الموقع الشخصي": "Personal website",
+ "اختيارية، وتظهر في ملفك الشخصي لمن يتصفح ملفك.": "Optional. Shown on your profile to anyone who views it.",
+ "الرابط غير صالح، تأكد من كتابته بشكل صحيح.": "This link isn't valid. Please check it.",
+ "حساب موثّق": "Verified account",
+ "LinkedIn": "LinkedIn",
+ "GitHub": "GitHub",
+ "Behance": "Behance"
 }

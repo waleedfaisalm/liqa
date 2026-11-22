@@ -42,6 +42,7 @@ class User extends Authenticatable implements MustVerifyEmail
             'is_admin' => 'boolean',
             'is_super_admin' => 'boolean',
             'suspended_at' => 'datetime',
+            'verified_at' => 'datetime',
             'last_seen_at' => 'datetime',
             'suspended_until' => 'datetime',
             'password' => 'hashed',
@@ -175,6 +176,26 @@ class User extends Authenticatable implements MustVerifyEmail
     public function initial(): string
     {
         return mb_substr($this->name, 0, 1);
+    }
+
+    /** هل الحساب موثّق من الإدارة؟ */
+    public function isVerified(): bool
+    {
+        return $this->verified_at !== null;
+    }
+
+    /** روابط الأعمال المضافة: [مفتاح => [اسم العرض, الرابط]] */
+    public function workLinks(): array
+    {
+        $out = [];
+        foreach (['linkedin' => 'LinkedIn', 'github' => 'GitHub', 'behance' => 'Behance', 'website' => 'الموقع الشخصي'] as $key => $label) {
+            $url = $this->{'link_'.$key};
+            if ($url) {
+                $out[$key] = [$label, $url];
+            }
+        }
+
+        return $out;
     }
 
     public function avatarUrl(): ?string

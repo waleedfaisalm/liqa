@@ -1900,3 +1900,9 @@ html[dir="ltr"] body { font-family: 'Cairo', system-ui, sans-serif; }
 .notif-row .notif-item { flex: 1 1 auto; min-width: 0; }
 .notif-del { height: 100%; min-width: 2.75rem; padding: 0 .6rem; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--liqa-border); border-radius: .875rem; background: var(--liqa-surface); color: var(--liqa-muted); cursor: pointer; transition: color .15s, border-color .15s, background-color .15s; }
 .notif-del:hover, .notif-del:focus-visible { color: var(--liqa-red-text); border-color: #7f2d3b; background: rgba(248, 113, 113, .08); }
+
+/* ---------- التوثيق وروابط الأعمال ---------- */
+.verified-badge { display: inline-flex; align-items: center; vertical-align: middle; flex: none; }
+.profile-links { display: flex; flex-wrap: wrap; justify-content: center; gap: .5rem; margin-bottom: 1rem; }
+.profile-link { display: inline-flex; align-items: center; gap: .35rem; padding: .3rem .8rem; border: 1px solid var(--liqa-border); border-radius: 999px; color: var(--liqa-soft); font-size: .82rem; font-weight: 600; text-decoration: none; }
+.profile-link:hover { border-color: #7c3aed; color: var(--liqa-ink); background: rgba(147, 51, 234, .12); }

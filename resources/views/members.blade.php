@@ -48,7 +48,7 @@
                         <div class="d-flex align-items-center gap-3 mb-2">
                             <x-avatar :user="$m" :size="56" />
                             <div class="min-w-0">
-                                <div class="fw-bold text-white text-truncate">{{ $m->name }} @if ($m->is(auth()->user()))<span class="small text-secondary">{{ __('(أنت)') }}</span>@endif</div>
+                                <div class="fw-bold text-white text-truncate">{{ $m->name }} @if ($m->isVerified())<x-verified :size="16" />@endif @if ($m->is(auth()->user()))<span class="small text-secondary">{{ __('(أنت)') }}</span>@endif</div>
                                 @if ($m->specialty)<span class="liqa-badge">{{ __($m->specialty) }}</span>@endif
                             </div>
                         </div>

@@ -13,6 +13,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class SettingsController extends Controller
@@ -29,9 +30,17 @@ class SettingsController extends Controller
             'specialty' => ['required', 'string', Rule::in(\App\Support\Catalog::specialties(false))],
             'bio' => ['nullable', 'string', 'max:300'],
             'avatar' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'link_linkedin' => ['nullable', 'string', 'max:200'],
+            'link_github' => ['nullable', 'string', 'max:200'],
+            'link_behance' => ['nullable', 'string', 'max:200'],
+            'link_website' => ['nullable', 'string', 'max:200'],
         ]);
 
         $user = $request->user();
+        $user->link_linkedin = $this->cleanLink($data['link_linkedin'] ?? null, 'link_linkedin', ['linkedin.com']);
+        $user->link_github = $this->cleanLink($data['link_github'] ?? null, 'link_github', ['github.com']);
+        $user->link_behance = $this->cleanLink($data['link_behance'] ?? null, 'link_behance', ['behance.net']);
+        $user->link_website = $this->cleanLink($data['link_website'] ?? null, 'link_website', []);
         $user->name = $data['name'];
         $user->specialty = $data['specialty'];
         $user->bio = $data['bio'] ?? null;
@@ -47,6 +56,37 @@ class SettingsController extends Controller
         $user->save();
 
         return redirect()->route('settings')->with('success', __('تم حفظ التغييرات.'));
+    }
+
+    /**
+     * ينظّف رابطًا مدخلًا: يضيف https إن غاب، ويقبل http/https فقط،
+     * ويتحقق من النطاق المطلوب (إن وُجدت قائمة) كي لا تُستخدم الحقول لروابط عشوائية.
+     */
+    private function cleanLink(?string $value, string $field, array $hosts): ?string
+    {
+        $value = trim((string) $value);
+        if ($value === '') {
+            return null;
+        }
+
+        if (! preg_match('#^[a-z][a-z0-9+.-]*://#i', $value)) {
+            $value = 'https://'.$value;
+        }
+
+        $parts = parse_url($value);
+        $host = strtolower($parts['host'] ?? '');
+        $scheme = strtolower($parts['scheme'] ?? '');
+
+        $valid = in_array($scheme, ['http', 'https'], true) && str_contains($host, '.') && ! isset($parts['user']);
+        if ($valid && $hosts) {
+            $valid = collect($hosts)->contains(fn ($h) => $host === $h || str_ends_with($host, '.'.$h));
+        }
+
+        if (! $valid) {
+            throw ValidationException::withMessages([$field => __('الرابط غير صالح، تأكد من كتابته بشكل صحيح.')]);
+        }
+
+        return $value;
     }
 
     public function password(Request $request): RedirectResponse

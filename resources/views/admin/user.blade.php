@@ -88,6 +88,15 @@
             </div>
             @endif
 
+            <div class="liqa-card p-3 p-md-4 mb-3">
+                <h2 class="h5 liqa-title mb-2">التوثيق</h2>
+                <p class="small text-secondary mb-3">{{ $u->isVerified() ? 'هذا الحساب موثّق منذ '.$u->verified_at->translatedFormat('j F Y').'. تظهر شارة «موثّق» بجانب اسمه.' : 'راجع ملف العضو وروابط أعماله ثم وثّقه لتظهر شارة «موثّق» بجانب اسمه.' }}</p>
+                <form method="POST" action="{{ route('admin.users.verify', $u) }}" onsubmit="return confirm('{{ $u->isVerified() ? 'سحب التوثيق من هذا الحساب؟' : 'توثيق هذا الحساب؟' }}')">
+                    @csrf @method('PATCH')
+                    <button class="btn {{ $u->isVerified() ? 'btn-outline-danger' : 'btn-primary' }} w-100">{{ $u->isVerified() ? 'سحب التوثيق' : 'توثيق الحساب' }}</button>
+                </form>
+            </div>
+
             @if ($canSuspend || $canChangeRole || $u->isSuspended())
             <div class="liqa-card p-3 p-md-4 mb-3" id="suspend">
                 <h2 class="h5 liqa-title mb-3">إدارة الحساب</h2>

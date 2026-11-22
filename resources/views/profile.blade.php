@@ -11,7 +11,7 @@
         <div class="col-lg-4">
             <div class="form-card text-center">
                 <div class="mb-3"><x-avatar :user="$profile" :size="96" /></div>
-                <h1 class="h3 liqa-title mb-2">{{ $profile->name }}</h1>
+                <h1 class="h3 liqa-title mb-2 d-inline-flex align-items-center justify-content-center gap-2">{{ $profile->name }} @if ($profile->isVerified())<x-verified :size="24" />@endif</h1>
                 @if ($profile->specialty)
                     <span class="liqa-badge mb-3">{{ __($profile->specialty) }}</span>
                 @endif
@@ -20,6 +20,14 @@
                     <p class="text-secondary" style="white-space: pre-line">{{ $profile->bio }}</p>
                 @else
                     <p class="text-secondary">{{ $isMe ? __('لم تضف نبذة بعد. يمكنك إضافتها من صفحة التعديل.') : __('لا توجد نبذة.') }}</p>
+                @endif
+
+                @if (count($profile->workLinks()))
+                    <div class="profile-links">
+                        @foreach ($profile->workLinks() as [$label, $url])
+                            <a href="{{ $url }}" target="_blank" rel="noopener nofollow ugc" class="profile-link"><x-icon name="link" :size="14" /> {{ __($label) }}</a>
+                        @endforeach
+                    </div>
                 @endif
 
                 <div class="profile-score">

@@ -57,6 +57,21 @@
                     @error('bio') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>
 
+                <div class="mb-3">
+                    <div class="liqa-label d-block mb-2">{{ __('روابط أعمالك') }}</div>
+                    <div class="row g-2">
+                        @foreach (['link_linkedin' => ['LinkedIn', 'linkedin.com/in/username'], 'link_github' => ['GitHub', 'github.com/username'], 'link_behance' => ['Behance', 'behance.net/username'], 'link_website' => [__('الموقع الشخصي'), 'example.com']] as $field => [$label, $ph])
+                            <div class="col-md-6">
+                                <label class="small text-secondary d-block mb-1" for="{{ $field }}">{{ $label }}</label>
+                                <input type="text" dir="ltr" id="{{ $field }}" name="{{ $field }}" maxlength="200" placeholder="{{ $ph }}"
+                                       value="{{ old($field, $user->{$field}) }}" class="form-control @error($field) is-invalid @enderror">
+                                @error($field) <div class="invalid-feedback">{{ $message }}</div> @enderror
+                            </div>
+                        @endforeach
+                    </div>
+                    <div class="form-text small hint">{{ __('اختيارية، وتظهر في ملفك الشخصي لمن يتصفح ملفك.') }}</div>
+                </div>
+
                 <div class="form-check form-switch">
                     <input type="hidden" name="notifications_enabled" value="0">
                     <input class="form-check-input" type="checkbox" role="switch" name="notifications_enabled" id="notifications_enabled"
