@@ -32,6 +32,11 @@ if [ "${LIQA_SHOWCASE:-0}" = "1" ]; then
     php artisan liqa:showcase-events || true
 fi
 
+# اختبار مؤقت: LIQA_TEST_ATTENDANCE=رقم_الحدث ثم احذف المتغير بعد التجربة
+if [ -n "${LIQA_TEST_ATTENDANCE:-}" ]; then
+    php artisan liqa:test-attendance "$LIQA_TEST_ATTENDANCE" || true
+fi
+
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
