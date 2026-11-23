@@ -230,6 +230,30 @@
                 </div>
             @endif
 
+            {{-- ============ الحضور الفعلي ============ --}}
+            @if ($ended && ! $event->isCancelled() && ($isHost || $myRequest))
+                <div class="liqa-card p-3 p-md-4 mt-3" id="attendance">
+                    <h2 class="h5 liqa-title mb-1 d-flex align-items-center gap-2"><x-icon name="check" :size="20" /> {{ __('الحاضرون فعليًا (:v1)', ['v1' => $attendees->count()]) }}</h2>
+                    <p class="small hint mb-3">{{ __('يُحتسب الحضور من مدة البقاء في الغرفة المباشرة (10 دقائق على الأقل).') }}
+                        @if ($isHost && $noShows > 0) · {{ __(':n مقبولين لم يحضروا', ['n' => $noShows]) }} @endif</p>
+                    @if ($attendees->isEmpty())
+                        <p class="text-secondary mb-0">{{ __('لم يُسجَّل حضور عبر الغرفة المباشرة لهذا الحدث.') }}</p>
+                    @else
+                        <div class="d-grid gap-2">
+                            @foreach ($attendees as $a)
+                                <a href="{{ route('users.show', $a->user) }}" class="request-row text-decoration-none">
+                                    <span class="d-flex align-items-center gap-2 me-auto">
+                                        <x-avatar :user="$a->user" :size="38" />
+                                        <span class="fw-bold text-white">{{ $a->user->name }}</span>
+                                    </span>
+                                    @if ($isHost) <span class="small hint">{{ __(':n دقيقة', ['n' => $a->minutes()]) }}</span> @endif
+                                </a>
+                            @endforeach
+                        </div>
+                    @endif
+                </div>
+            @endif
+
             {{-- ============ قيّم المشاركين (بعد انتهاء الحدث) ============ --}}
             @if ($ratable->isNotEmpty())
                 <div class="liqa-card p-3 p-md-4 mt-3" id="ratings">
@@ -314,6 +338,14 @@
                     <button type="button" class="btn btn-liqa-outline" data-share-copy data-done="{{ __('تم نسخ الرابط ✓') }}">{{ __('نسخ الرابط') }}</button>
                 </div>
             </div>
+
+            @if ($myAttendance)
+                <div class="liqa-card p-3 mb-3 text-center">
+                    <div class="fw-bold text-white mb-1">{{ __('شهادة حضورك جاهزة') }}</div>
+                    <p class="small text-secondary mb-2">{{ __('احتفظ بها أو أضفها إلى ملفك على لينكدإن.') }}</p>
+                    <a href="{{ route('events.certificate', $event) }}" class="btn btn-liqa w-100">{{ __('عرض الشهادة وطباعتها') }}</a>
+                </div>
+            @endif
 
             @if (auth()->check() && ! $event->isCancelled() && ! $ended && ($isHost || ($myRequest && $myRequest->status === 'accepted')))
                 @php

@@ -921,6 +921,12 @@ if (root) {
         if (window.ResizeObserver) new ResizeObserver(scheduleLayout).observe(grid);
         window.addEventListener('resize', scheduleLayout);
         scheduleLayout();
+        // نبضة حضور كل 30 ثانية لاحتساب مدة البقاء الفعلية
+        if (root.dataset.pingUrl) {
+            const ping = () => { api(root.dataset.pingUrl, 'POST').catch(() => {}); };
+            ping();
+            setInterval(ping, 30000);
+        }
         if (isOwner) document.getElementById('roomLobbyBar').classList.remove('d-none');
         if (canManage && !hostPanelStarted) { hostPanelStarted = true; startHostPanel(); }
         startTimer();

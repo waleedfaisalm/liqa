@@ -44,6 +44,7 @@ use Illuminate\Support\Facades\Route;
 // ---------- الصفحة الرئيسية (للزائر والعضو) ----------
 Route::get('/lang/{locale}', [\App\Http\Controllers\LocaleController::class, 'set'])->name('lang');
 Route::get('/', [\App\Http\Controllers\LandingController::class, 'index'])->name('landing');
+Route::get('/verify/{code}', [\App\Http\Controllers\EventAttendanceController::class, 'verify'])->where('code', '[A-Za-z0-9-]{6,20}')->middleware('throttle:30,1')->name('certificate.verify');
 Route::get('/sitemap.xml', [\App\Http\Controllers\SeoController::class, 'sitemap']);
 // تشغيل التذكيرات من خدمة خارجية (cron-job.org مثلًا): /cron/reminders?key=CRON_SECRET
 Route::get('/cron/reminders', [\App\Http\Controllers\SeoController::class, 'reminders'])->middleware('throttle:30,1');
@@ -134,6 +135,8 @@ Route::middleware(['auth', 'verified', 'onboarded'])->group(function () {
         Route::post('/events/{event}/room/cohost', [\App\Http\Controllers\EventRoomController::class, 'cohost'])->whereNumber('event')->name('events.room.cohost');
         Route::post('/events/{event}/room/mute', [\App\Http\Controllers\EventRoomController::class, 'mute'])->whereNumber('event')->name('events.room.mute');
     });
+    Route::post('/events/{event}/room/ping', [\App\Http\Controllers\EventAttendanceController::class, 'ping'])->whereNumber('event')->middleware('throttle:6,1')->name('events.room.ping');
+    Route::get('/events/{event}/certificate', [\App\Http\Controllers\EventAttendanceController::class, 'certificate'])->whereNumber('event')->name('events.certificate');
     Route::post('/events/{event}/room/remove', [\App\Http\Controllers\EventRoomController::class, 'remove'])->whereNumber('event')->middleware('throttle:30,1')->name('events.room.remove');
 
     // طلبات الانضمام

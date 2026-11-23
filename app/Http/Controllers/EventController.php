@@ -200,7 +200,24 @@ class EventController extends Controller
                 ->where('status', Event::PUBLISHED)->orderBy('starts_at')->limit(12)->get()
             : collect();
 
+        // الحضور الفعلي بعد انتهاء الحدث (يراه المنظّم والمشاركون)
+        $attendees = collect();
+        $myAttendance = null;
+        $noShows = 0;
+        if (! $event->isCancelled() && $event->hasEnded() && ($isHost || ($user && $event->isParticipant($user)))) {
+            $attendees = $event->attendances()->with('user')->where('seconds', '>=', \App\Models\EventAttendance::THRESHOLD)->orderByDesc('seconds')->get()
+                ->filter(fn ($a) => $a->user && $a->user_id !== $event->user_id)->values();
+            $noShows = max(0, $accepted->count() - $attendees->whereIn('user_id', $accepted->pluck('user_id'))->count());
+            if ($user && ! $isHost) {
+                $mine = $attendees->firstWhere('user_id', $user->id);
+                $myAttendance = $mine;
+            }
+        }
+
         return view('events.show', [
+            'attendees' => $attendees,
+            'myAttendance' => $myAttendance,
+            'noShows' => $noShows,
             'series' => $series,
             'waitlistPosition' => $waitlistPosition,
             'comments' => $event->comments()->with('user')->oldest()->get(),

@@ -21,6 +21,7 @@
          data-mute-url="{{ route('events.room.mute', $event) }}"
          data-remove-url="{{ route('events.room.remove', $event) }}"
          data-room-link="{{ route('events.room', $event) }}"
+         data-ping-url="{{ route('events.room.ping', $event) }}"
          data-csrf="{{ csrf_token() }}"
          data-exit="{{ route('events.show', $event) }}">
 
