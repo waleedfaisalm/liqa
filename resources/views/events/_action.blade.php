@@ -5,6 +5,11 @@
             <div class="small hint mb-3">{{ __('إدارة الطلبات والتعديل من هنا') }}</div>
 
             @include('events._room_btn', ['event' => $event])
+            @if ($event->mode === 'in_person' && ! $event->isCancelled() && now()->lte($event->endsAt()->copy()->addMinutes(\App\Models\Event::CHECKIN_CLOSES_AFTER_MINUTES)))
+                <a href="{{ route('events.checkin', $event) }}" class="btn btn-liqa w-100 mb-2 d-flex align-items-center justify-content-center gap-2">
+                    {{ __('تسجيل الحضور (QR)') }} <x-icon name="check" :size="17" />
+                </a>
+            @endif
             @if ($open)
                 <a href="{{ route('events.edit', $event) }}" class="btn btn-liqa w-100 mb-2 d-flex align-items-center justify-content-center gap-2">
                     {{ __('تعديل الحدث') }} <x-icon name="edit" :size="17" />
@@ -40,6 +45,9 @@
                     <span class="small text-secondary">{{ __('حالة طلبك:') }}</span>
                     <span class="liqa-badge {{ $statusClasses[$myRequest->status] }}">{{ $statusLabels[$myRequest->status] }}</span>
                 </div>
+                @if ($myRequest->status === 'accepted' && $event->checkinOpen())
+                    <div class="small text-secondary mb-3">{{ __('عند وصولك امسح رمز QR الذي يعرضه المنظّم بكاميرا جوالك لتسجيل حضورك.') }}</div>
+                @endif
                 @if ($myRequest->status === 'waitlisted')
                     <p class="small text-secondary mb-3">{{ __('ترتيبك في قائمة الانتظار:') }} <strong class="text-white">{{ $waitlistPosition }}</strong>{{ __('. سننقل طلبك إلى المنظّم فور توفّر مقعد.') }}</p>
                 @endif

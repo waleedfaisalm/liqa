@@ -282,6 +282,38 @@ class Event extends Model
         };
     }
 
+    /** تسجيل الحضور بالرمز يُفتح قبل الموعد بساعة ويُغلق بعد النهاية بساعة */
+    public const CHECKIN_OPENS_BEFORE_MINUTES = 60;
+
+    public const CHECKIN_CLOSES_AFTER_MINUTES = 60;
+
+    public function checkinOpen(): bool
+    {
+        return $this->mode === 'in_person'
+            && ! $this->isCancelled()
+            && now()->gte($this->starts_at->copy()->subMinutes(self::CHECKIN_OPENS_BEFORE_MINUTES))
+            && now()->lte($this->endsAt()->copy()->addMinutes(self::CHECKIN_CLOSES_AFTER_MINUTES));
+    }
+
+    /** رمز يتغير كل دقيقة؛ يُقبل الحالي وما قبله بدقيقتين (مهلة المسح) */
+    public function checkinToken(int $offset = 0): string
+    {
+        $window = intdiv(time(), 60) - $offset;
+
+        return substr(hash_hmac('sha256', $this->id.'|'.$window, (string) config('app.key')), 0, 16);
+    }
+
+    public function checkinTokenValid(string $token): bool
+    {
+        foreach ([0, 1, 2] as $offset) {
+            if (hash_equals($this->checkinToken($offset), $token)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     /** غلاف تلقائي: ألوان وأيقونة حسب التصنيف */
     public function coverTheme(): array
     {

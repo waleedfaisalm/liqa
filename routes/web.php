@@ -137,6 +137,11 @@ Route::middleware(['auth', 'verified', 'onboarded'])->group(function () {
         Route::post('/events/{event}/room/mute', [\App\Http\Controllers\EventRoomController::class, 'mute'])->whereNumber('event')->name('events.room.mute');
     });
     Route::post('/events/{event}/room/ping', [\App\Http\Controllers\EventAttendanceController::class, 'ping'])->whereNumber('event')->middleware('throttle:6,1')->name('events.room.ping');
+    Route::get('/events/{event}/checkin', [\App\Http\Controllers\EventCheckinController::class, 'show'])->whereNumber('event')->name('events.checkin');
+    Route::get('/events/{event}/checkin/qr', [\App\Http\Controllers\EventCheckinController::class, 'qr'])->whereNumber('event')->middleware('throttle:30,1')->name('events.checkin.qr');
+    Route::get('/events/{event}/checkin/status', [\App\Http\Controllers\EventCheckinController::class, 'status'])->whereNumber('event')->middleware('throttle:30,1')->name('events.checkin.status');
+    Route::post('/events/{event}/checkin/manual/{user}', [\App\Http\Controllers\EventCheckinController::class, 'manual'])->whereNumber(['event', 'user'])->middleware('throttle:60,1')->name('events.checkin.manual');
+    Route::get('/checkin/{event}/{token}', [\App\Http\Controllers\EventCheckinController::class, 'scan'])->whereNumber('event')->where('token', '[a-f0-9]{16}')->middleware('throttle:20,1')->name('events.checkin.scan');
     Route::get('/events/{event}/certificate', [\App\Http\Controllers\EventAttendanceController::class, 'certificate'])->whereNumber('event')->name('events.certificate');
     Route::post('/events/{event}/room/remove', [\App\Http\Controllers\EventRoomController::class, 'remove'])->whereNumber('event')->middleware('throttle:30,1')->name('events.room.remove');
 
