@@ -169,6 +169,11 @@ Route::middleware(['auth', 'verified', 'onboarded'])->group(function () {
     Route::post('/events/{event}/ratings/{user}', [RatingController::class, 'store'])
         ->whereNumber(['event', 'user'])->middleware('throttle:30,1')->name('events.rate');
 
+    Route::get('/contacts', [\App\Http\Controllers\ContactRequestController::class, 'index'])->name('contacts.index');
+    Route::post('/contacts/{user}', [\App\Http\Controllers\ContactRequestController::class, 'store'])->whereNumber('user')->middleware('throttle:20,1')->name('contacts.store');
+    Route::patch('/contacts/requests/{contactRequest}', [\App\Http\Controllers\ContactRequestController::class, 'decide'])->whereNumber('contactRequest')->name('contacts.decide');
+    Route::delete('/contacts/requests/{contactRequest}', [\App\Http\Controllers\ContactRequestController::class, 'cancel'])->whereNumber('contactRequest')->name('contacts.cancel');
+
     // الإشعارات
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications');
     Route::post('/notifications/read-all', [NotificationController::class, 'readAll'])->name('notifications.read-all');

@@ -57,6 +57,9 @@
                     <a href="{{ route('settings') }}" class="btn btn-liqa-outline w-100 d-flex align-items-center justify-content-center gap-2">
                         <x-icon name="edit" :size="17" /> {{ __('عدّل ملفي الشخصي') }}
                     </a>
+                    <a href="{{ route('contacts.index') }}" class="btn btn-liqa-outline w-100 d-flex align-items-center justify-content-center gap-2 mt-2">
+                        <x-icon name="users" :size="17" /> {{ __('شبكة التواصل') }}@if ($pendingContacts > 0) <span class="nav-badge">{{ $pendingContacts }}</span> @endif
+                    </a>
                 @else
                     <a href="{{ route('reports.create', ['type' => 'user', 'id' => $profile->id]) }}" class="small text-secondary text-decoration-none">{{ __('⚑ إبلاغ عن هذا المستخدم') }}</a>
                 @endif
@@ -66,9 +69,10 @@
         {{-- ============ المحتوى ============ --}}
         <div class="col-lg-8">
             <div class="row g-3 mb-3">
-                <div class="col-4"><div class="stat-tile"><div class="stat-tile__num">{{ $ratingsCount }}</div><div class="stat-tile__label">{{ __('تقييم') }}</div></div></div>
-                <div class="col-4"><div class="stat-tile"><div class="stat-tile__num">{{ $past->count() }}</div><div class="stat-tile__label">{{ __('حدث منتهٍ') }}</div></div></div>
-                <div class="col-4"><div class="stat-tile"><div class="stat-tile__num">{{ $hostedCount }}</div><div class="stat-tile__label">{{ __('حدث نشره') }}</div></div></div>
+                <div class="col-6 col-md-3"><div class="stat-tile"><div class="stat-tile__num">{{ $ratingsCount }}</div><div class="stat-tile__label">{{ __('تقييم') }}</div></div></div>
+                <div class="col-6 col-md-3"><div class="stat-tile"><div class="stat-tile__num">{{ $hostedCount }}</div><div class="stat-tile__label">{{ __('حدث نشره') }}</div></div></div>
+                <div class="col-6 col-md-3"><div class="stat-tile"><div class="stat-tile__num">{{ $hostedReach }}</div><div class="stat-tile__label">{{ __('حضور في لقاءاته') }}</div></div></div>
+                <div class="col-6 col-md-3"><div class="stat-tile"><div class="stat-tile__num">{{ $attendedReal }}</div><div class="stat-tile__label">{{ __('لقاء حضره فعليًا') }}</div></div></div>
             </div>
 
             @if ($topTags->isNotEmpty())
