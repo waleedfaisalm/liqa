@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\AdminLog;
 use App\Models\Event;
+use App\Models\EventAttendance;
 use App\Models\Report;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -13,7 +14,7 @@ class AdminExportController extends Controller
 {
     public function __invoke(Request $request, string $type): StreamedResponse
     {
-        abort_unless(in_array($type, ['users', 'events', 'reports'], true), 404);
+        abort_unless(in_array($type, ['users', 'events', 'reports', 'attendance'], true), 404);
 
         $sets = [
             'users' => [
@@ -30,6 +31,11 @@ class AdminExportController extends Controller
                 ['السبب', 'نوع الهدف', 'رقم الهدف', 'المُبلِّغ', 'التفاصيل', 'الحالة', 'التاريخ'],
                 fn () => Report::with('reporter')->orderBy('id')->cursor(),
                 fn (Report $r) => [Report::REASONS[$r->reason] ?? $r->reason, $r->target_type === 'user' ? 'مستخدم' : 'حدث', $r->target_id, $r->reporter?->name, $r->details, $r->status, $r->created_at],
+            ],
+            'attendance' => [
+                ['الحدث', 'موعد الحدث', 'العضو', 'دقائق البقاء', 'حضر فعليًا', 'رمز الشهادة'],
+                fn () => EventAttendance::with(['user', 'event'])->orderBy('event_id')->cursor(),
+                fn (EventAttendance $a) => [$a->event?->title, $a->event?->starts_at, $a->user?->name, $a->minutes(), $a->attended() ? 'نعم' : 'لا', $a->certificate_code],
             ],
         ];
 

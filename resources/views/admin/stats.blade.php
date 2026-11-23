@@ -8,6 +8,12 @@
             <h1 class="h2 liqa-title mb-1">الإحصاءات</h1>
             <p class="text-secondary mb-0">نمو المنصة ونشاط الأحداث والحضور، مع مقارنة بالفترة السابقة.</p>
         </div>
+        <div class="d-flex flex-wrap gap-2 align-items-center">
+            <a href="{{ route('admin.report', ['range' => $range]) }}" target="_blank" class="btn btn-sm btn-liqa-outline px-3">تقرير للطباعة / PDF</a>
+            @if (auth()->user()->hasPermission('export'))
+                <a href="{{ route('admin.export', 'attendance') }}" class="btn btn-sm btn-liqa-outline px-3">تصدير الحضور CSV</a>
+            @endif
+        </div>
         <div class="tab-pills" role="tablist">
             <a href="{{ route('admin.stats', ['range' => 30]) }}" class="tab-pill {{ $range === 30 ? 'is-active' : '' }}">٣٠ يومًا</a>
             <a href="{{ route('admin.stats', ['range' => 90]) }}" class="tab-pill {{ $range === 90 ? 'is-active' : '' }}">٩٠ يومًا</a>
@@ -36,6 +42,11 @@
             </div>
         @endforeach
     </div>
+
+    {{-- الحضور الفعلي والاحتفاظ --}}
+    <h2 class="h5 liqa-title mb-3">الحضور الفعلي والاحتفاظ <span class="small text-secondary fw-normal">(آخر {{ $range }} يومًا)</span></h2>
+    @include('admin.partials.report-body', ['r' => $report])
+    <div class="mb-4"></div>
 
     {{-- الرسوم اليومية --}}
     <div class="row g-3 mb-4">

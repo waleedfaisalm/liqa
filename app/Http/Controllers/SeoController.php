@@ -61,4 +61,15 @@ class SeoController extends Controller
 
         return response(trim(Artisan::output()), 200, ['Content-Type' => 'text/plain; charset=UTF-8']);
     }
+
+    /** التقرير الأسبوعي بالبريد للمالك من خدمة جدولة خارجية: /cron/weekly-report?key=CRON_SECRET */
+    public function weeklyReport(Request $request): Response
+    {
+        $secret = (string) env('CRON_SECRET', '');
+        abort_if($secret === '' || ! hash_equals($secret, (string) ($request->query('key') ?: $request->bearerToken())), 404);
+
+        Artisan::call('liqa:weekly-report');
+
+        return response(trim(Artisan::output()), 200, ['Content-Type' => 'text/plain; charset=UTF-8']);
+    }
 }

@@ -136,6 +136,7 @@ class AdminStatsController extends Controller
         ];
 
         return view('admin.stats', [
+            'report' => \App\Support\AnalyticsReport::build($range),
             'range' => $range,
             'kpis' => $kpis,
             'daily' => $daily,
@@ -159,6 +160,14 @@ class AdminStatsController extends Controller
                 'openReports' => Report::where('status', 'open')->count(),
             ],
         ]);
+    }
+
+    /** تقرير قابل للطباعة / الحفظ PDF */
+    public function report(Request $request): View
+    {
+        $range = in_array((int) $request->query('range'), [7, 30, 90], true) ? (int) $request->query('range') : 30;
+
+        return view('admin.report', ['r' => \App\Support\AnalyticsReport::build($range), 'range' => $range]);
     }
 
     /** @return list<int> عدد السجلات في كل يوم من الأيام المطلوبة */

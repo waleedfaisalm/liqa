@@ -47,6 +47,7 @@ Route::get('/', [\App\Http\Controllers\LandingController::class, 'index'])->name
 Route::get('/verify/{code}', [\App\Http\Controllers\EventAttendanceController::class, 'verify'])->where('code', '[A-Za-z0-9-]{6,20}')->middleware('throttle:30,1')->name('certificate.verify');
 Route::get('/sitemap.xml', [\App\Http\Controllers\SeoController::class, 'sitemap']);
 // تشغيل التذكيرات من خدمة خارجية (cron-job.org مثلًا): /cron/reminders?key=CRON_SECRET
+Route::get('/cron/weekly-report', [\App\Http\Controllers\SeoController::class, 'weeklyReport'])->middleware('throttle:6,1');
 Route::get('/cron/reminders', [\App\Http\Controllers\SeoController::class, 'reminders'])->middleware('throttle:30,1');
 Route::get('/avatar/{user}', [\App\Http\Controllers\AvatarController::class, 'show'])->whereNumber('user')->name('avatar');
 Route::get('/privacy', [LegalPageController::class, 'show'])->defaults('type', 'privacy')->name('privacy');
@@ -193,6 +194,7 @@ Route::prefix('admin')->group(function () {
         Route::post('/logout', [AdminAuthController::class, 'destroy'])->name('admin.logout');
         Route::get('/', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
         Route::get('/stats', [\App\Http\Controllers\AdminStatsController::class, 'index'])->middleware('admin.can:stats')->name('admin.stats');
+        Route::get('/report', [\App\Http\Controllers\AdminStatsController::class, 'report'])->middleware('admin.can:stats')->name('admin.report');
 
         // أمان الحساب (لكل مدير)
         Route::get('/security', [AdminSecurityController::class, 'show'])->name('admin.security');
