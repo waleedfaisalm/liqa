@@ -56,6 +56,17 @@
                 @error('auto_reactivation_days') <div class="invalid-feedback">{{ $message }}</div> @enderror
             </div>
 
+            <div class="form-check form-switch mb-2">
+                <input class="form-check-input" type="checkbox" role="switch" id="auto_fake_detection" name="auto_fake_detection" value="1" @checked(old('auto_fake_detection', $auto['auto_fake_detection'] === '1'))>
+                <label class="form-check-label" for="auto_fake_detection">كشف الحسابات الوهمية عند التسجيل</label>
+                <div class="small hint">يقيّم كل حساب جديد بدرجة خطورة من 100 (بريد مؤقت، أنماط غريبة، تسجيلات متكررة من شبكة واحدة). لا يمنع التسجيل ولا يوقف أحدًا تلقائيًا.</div>
+            </div>
+            <div class="mb-4 ps-4">
+                <label class="form-label small" for="auto_risk_threshold">درجة الخطورة التي تُرسل تنبيهًا للمشرفين</label>
+                <input type="number" id="auto_risk_threshold" name="auto_risk_threshold" min="30" max="95" class="form-control @error('auto_risk_threshold') is-invalid @enderror" style="max-width: 8rem" value="{{ old('auto_risk_threshold', $auto['auto_risk_threshold']) }}">
+                @error('auto_risk_threshold') <div class="invalid-feedback">{{ $message }}</div> @enderror
+            </div>
+
             <div class="mb-4">
                 <label class="form-label" for="auto_rating_delay">إرسال طلب التقييم بعد انتهاء اللقاء بـ (دقيقة)</label>
                 <input type="number" id="auto_rating_delay" name="auto_rating_delay" min="0" max="1440" class="form-control @error('auto_rating_delay') is-invalid @enderror" style="max-width: 8rem" value="{{ old('auto_rating_delay', $auto['auto_rating_delay']) }}">

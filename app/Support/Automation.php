@@ -13,6 +13,8 @@ class Automation
         'auto_report_alert' => '1',
         'auto_report_threshold' => '2',
         'auto_rating_delay' => '60',
+        'auto_fake_detection' => '1',
+        'auto_risk_threshold' => '60',
     ];
 
     public static function value(string $key): string

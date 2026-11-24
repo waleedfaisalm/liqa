@@ -99,6 +99,7 @@ class GoogleController extends Controller
             $name = Str::limit(trim((string) $info->json('name')) ?: Str::before($email, '@'), 80, '');
             $user = new User(['name' => $name, 'email' => $email, 'password' => Str::random(40)]);
             $user->forceFill(['google_id' => $sub, 'email_verified_at' => now()])->save();
+            \App\Support\RiskScorer::assess($user, $request->ip(), true);
         }
 
         if ($user->isSuspended()) {

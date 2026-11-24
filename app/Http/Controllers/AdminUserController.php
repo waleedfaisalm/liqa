@@ -17,7 +17,7 @@ class AdminUserController extends Controller
 {
     public function index(Request $request): View
     {
-        $tab = in_array($request->query('tab'), ['all', 'online', 'suspended', 'admins', 'unverified'], true) ? $request->query('tab') : 'all';
+        $tab = in_array($request->query('tab'), ['all', 'online', 'suspended', 'admins', 'unverified', 'risky'], true) ? $request->query('tab') : 'all';
         $search = trim((string) $request->query('q', ''));
 
         $users = User::query()
@@ -29,6 +29,7 @@ class AdminUserController extends Controller
             ->when($tab === 'suspended', fn ($q) => $q->suspended())
             ->when($tab === 'admins', fn ($q) => $q->where('is_admin', true))
             ->when($tab === 'unverified', fn ($q) => $q->whereNull('email_verified_at'))
+            ->when($tab === 'risky', fn ($q) => $q->risky()->reorder()->orderByDesc('risk_score'))
             ->latest()
             ->paginate(20)
             ->withQueryString();
@@ -39,6 +40,7 @@ class AdminUserController extends Controller
             'suspended' => User::suspended()->count(),
             'admins' => User::where('is_admin', true)->count(),
             'unverified' => User::whereNull('email_verified_at')->count(),
+            'risky' => User::risky()->count(),
         ];
 
         return view('admin.users', compact('users', 'tab', 'search', 'counts'));
@@ -96,11 +98,44 @@ class AdminUserController extends Controller
             'reportsAgainst' => Report::where('target_type', 'user')->where('target_id', $user->id)->with('reporter')->latest()->get(),
             'reportsFiled' => Report::where('reporter_id', $user->id)->count(),
             'commentsCount' => EventComment::where('user_id', $user->id)->count(),
+            'sameIp' => $user->signup_ip_hash ? User::where('signup_ip_hash', $user->signup_ip_hash)->where('id', '!=', $user->id)->latest()->limit(6)->get() : collect(),
             'logs' => AdminLog::where('target_type', 'user')->where('target_id', $user->id)->orderByDesc('id')->limit(10)->get(),
         ]);
     }
 
-    /** إيقاف الحساب (مع سبب ومدة اختيارية) أو إعادة تفعيله */
+    /** اعتماد الحساب كسليم (يُخفي التحذير) أو إلغاء الاعتماد */
+    public function riskClear(Request $request, User $user): RedirectResponse
+    {
+        $cleared = $user->risk_cleared_at === null;
+        $user->forceFill(['risk_cleared_at' => $cleared ? now() : null])->save();
+        AdminLog::record($request->user(), $cleared ? 'user.risk_cleared' : 'user.risk_reopened', 'user', $user->id, $user->name);
+
+        return back()->with('success', $cleared ? 'تم اعتماد الحساب كسليم.' : 'أُلغي الاعتماد وعاد الحساب إلى المراجعة.');
+    }
+
+    /** إعادة تقييم حساب واحد */
+    public function rescore(Request $request, User $user): RedirectResponse
+    {
+        \App\Support\RiskScorer::rescore($user);
+
+        return back()->with('success', 'أُعيد تقييم الحساب.');
+    }
+
+    /** فحص كل الأعضاء الذين لم يُقيَّموا بعد (الحسابات القديمة) */
+    public function rescoreAll(Request $request): RedirectResponse
+    {
+        $n = 0;
+        User::where('is_admin', false)->whereNull('risk_score')->chunkById(200, function ($users) use (&$n) {
+            foreach ($users as $u) {
+                \App\Support\RiskScorer::rescore($u);
+                $n++;
+            }
+        });
+        AdminLog::record($request->user(), 'user.rescored_all', null, null, null, 'فحص '.$n.' حسابًا');
+
+        return back()->with('success', 'تم فحص '.$n.' حسابًا.');
+    }
+
     /** منح شارة التوثيق أو سحبها */
     public function verify(Request $request, User $user): RedirectResponse
     {

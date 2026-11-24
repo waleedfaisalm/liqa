@@ -88,6 +88,40 @@
             </div>
             @endif
 
+            @if (! $u->is_admin)
+            <div class="liqa-card p-3 p-md-4 mb-3">
+                <h2 class="h5 liqa-title mb-2">تقييم خطورة الحساب</h2>
+                @if ($u->risk_score === null)
+                    <p class="small text-secondary mb-3">لم يُقيَّم هذا الحساب بعد.</p>
+                @else
+                    @php [$rl, $rc] = \App\Support\RiskScorer::level($u->risk_score); @endphp
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <span class="fs-3 fw-bold text-white">{{ $u->risk_score }}<span class="fs-6 text-secondary">/100</span></span>
+                        <span class="liqa-badge {{ $rc }}">خطورة {{ $rl }}</span>
+                        @if ($u->risk_cleared_at) <span class="liqa-badge liqa-badge--green">معتمد كسليم</span> @endif
+                    </div>
+                    @forelse ($u->risk_flags ?? [] as $f)
+                        <div class="d-flex justify-content-between small mb-1"><span>{{ $f['label'] }}</span><span class="{{ $f['points'] < 0 ? 'text-success' : 'text-warning' }}">{{ $f['points'] > 0 ? '+' : '' }}{{ $f['points'] }}</span></div>
+                    @empty
+                        <p class="small text-secondary mb-2">لا توجد مؤشرات مريبة.</p>
+                    @endforelse
+                    @if ($sameIp->isNotEmpty())
+                        <div class="small text-secondary mt-2 mb-1">حسابات أخرى سُجّلت من الشبكة نفسها:</div>
+                        @foreach ($sameIp as $o)
+                            <a href="{{ route('admin.users.show', $o) }}" class="d-block small text-decoration-none">{{ $o->name }} <span class="text-secondary" dir="ltr">({{ $o->email }})</span></a>
+                        @endforeach
+                    @endif
+                @endif
+                <p class="small hint mt-3 mb-2">التقييم للمراجعة فقط ولا يوقف الحساب تلقائيًا.</p>
+                <div class="d-flex gap-2">
+                    <form method="POST" action="{{ route('admin.users.rescore', $u) }}" class="flex-fill">@csrf<button class="btn btn-outline-secondary btn-sm w-100">إعادة التقييم</button></form>
+                    @if ($u->risk_score !== null)
+                        <form method="POST" action="{{ route('admin.users.risk-clear', $u) }}" class="flex-fill">@csrf @method('PATCH')<button class="btn {{ $u->risk_cleared_at ? 'btn-outline-danger' : 'btn-primary' }} btn-sm w-100">{{ $u->risk_cleared_at ? 'إلغاء الاعتماد' : 'اعتماد كسليم' }}</button></form>
+                    @endif
+                </div>
+            </div>
+            @endif
+
             <div class="liqa-card p-3 p-md-4 mb-3">
                 <h2 class="h5 liqa-title mb-2">التوثيق</h2>
                 <p class="small text-secondary mb-3">{{ $u->isVerified() ? 'هذا الحساب موثّق منذ '.$u->verified_at->translatedFormat('j F Y').'. تظهر شارة «موثّق» بجانب اسمه.' : 'راجع ملف العضو وروابط أعماله ثم وثّقه لتظهر شارة «موثّق» بجانب اسمه.' }}</p>

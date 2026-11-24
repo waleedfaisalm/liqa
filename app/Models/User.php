@@ -43,6 +43,8 @@ class User extends Authenticatable implements MustVerifyEmail
             'is_super_admin' => 'boolean',
             'suspended_at' => 'datetime',
             'verified_at' => 'datetime',
+            'risk_flags' => 'array',
+            'risk_cleared_at' => 'datetime',
             'last_seen_at' => 'datetime',
             'suspended_until' => 'datetime',
             'password' => 'hashed',
@@ -94,6 +96,12 @@ class User extends Authenticatable implements MustVerifyEmail
 
     /** من ظهر خلال آخر 5 دقائق يُعدّ متصلًا */
     public const ONLINE_MINUTES = 5;
+
+    /** حسابات مشبوهة: درجة خطورة متوسطة فأعلى ولم يعتمدها المشرف */
+    public function scopeRisky($query)
+    {
+        return $query->where('is_admin', false)->whereNull('risk_cleared_at')->where('risk_score', '>=', 30);
+    }
 
     public function scopeOnline($query)
     {

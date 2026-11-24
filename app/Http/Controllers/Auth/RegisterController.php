@@ -38,6 +38,7 @@ class RegisterController extends Controller
         ]);
 
         $user = User::create($data);
+        \App\Support\RiskScorer::assess($user, $request->ip());
 
         // وضع التجربة: تفعيل الحساب مباشرة دون بريد (للاستضافة التجريبية التي لا ترسل بريدًا)
         if (config('liqa.auto_verify')) {

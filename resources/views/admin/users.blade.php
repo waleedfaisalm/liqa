@@ -16,6 +16,10 @@
         </a>
     </div>
 
+    <form method="POST" action="{{ route('admin.users.rescore-all') }}" class="mb-3" onsubmit="return confirm('فحص كل الأعضاء غير المقيَّمين؟')">
+        @csrf
+        <button class="btn btn-sm btn-liqa-outline px-3">فحص الحسابات القديمة (تقييم الخطورة)</button>
+    </form>
     <form method="GET" class="d-flex flex-wrap gap-2 mb-3">
         <input type="hidden" name="tab" value="{{ $tab }}">
         <input type="search" name="q" value="{{ $search }}" class="form-control" style="max-width: 360px; flex: 1 1 14rem" placeholder="ابحث بالاسم أو البريد الإلكتروني">
@@ -23,7 +27,7 @@
     </form>
 
     <div class="tab-pills mb-3">
-        @foreach (['all' => 'الكل', 'online' => 'متصلون الآن', 'suspended' => 'موقوفون', 'admins' => 'المديرون', 'unverified' => 'غير موثّقين'] as $key => $label)
+        @foreach (['all' => 'الكل', 'online' => 'متصلون الآن', 'suspended' => 'موقوفون', 'admins' => 'المديرون', 'unverified' => 'غير موثّقين', 'risky' => 'مشبوهة'] as $key => $label)
             <a href="{{ route('admin.users', ['tab' => $key, 'q' => $search ?: null]) }}" class="tab-pill {{ $tab === $key ? 'is-active' : '' }}">{{ $label }} <span class="count">{{ $counts[$key] }}</span></a>
         @endforeach
     </div>
@@ -73,6 +77,10 @@
                                 <div class="d-flex flex-wrap gap-1">
                                     @if ($u->isOwner()) <span class="liqa-badge liqa-badge--sky">المالك</span> @elseif ($u->is_admin) <span class="liqa-badge">مدير</span> @endif
                                     @if ($u->isSuspended()) <span class="liqa-badge liqa-badge--red">موقوف</span> @endif
+                                    @if ($u->risk_score !== null && $u->risk_score >= 30 && ! $u->risk_cleared_at && ! $u->is_admin)
+                                        @php [$rl, $rc] = \App\Support\RiskScorer::level($u->risk_score); @endphp
+                                        <span class="liqa-badge {{ $rc }}" title="درجة الخطورة {{ $u->risk_score }}">خطورة {{ $rl }} · {{ $u->risk_score }}</span>
+                                    @endif
                                     @unless ($u->hasVerifiedEmail()) <span class="liqa-badge liqa-badge--pink">غير موثّق</span> @endunless
                                     @if (! $u->is_admin && ! $u->isSuspended() && $u->hasVerifiedEmail()) <span class="liqa-badge liqa-badge--green">نشط</span> @endif
                                 </div>
