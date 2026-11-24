@@ -115,7 +115,7 @@
                 <p class="small hint mt-3 mb-2">التقييم للمراجعة فقط ولا يوقف الحساب تلقائيًا.</p>
                 <div class="d-flex gap-2">
                     <form method="POST" action="{{ route('admin.users.rescore', $u) }}" class="flex-fill">@csrf<button class="btn btn-outline-secondary btn-sm w-100">إعادة التقييم</button></form>
-                    @if ($u->risk_score !== null)
+                    @if ($u->risk_score !== null && ($u->risk_score >= 30 || $u->risk_cleared_at))
                         <form method="POST" action="{{ route('admin.users.risk-clear', $u) }}" class="flex-fill">@csrf @method('PATCH')<button class="btn {{ $u->risk_cleared_at ? 'btn-outline-danger' : 'btn-primary' }} btn-sm w-100">{{ $u->risk_cleared_at ? 'إلغاء الاعتماد' : 'اعتماد كسليم' }}</button></form>
                     @endif
                 </div>

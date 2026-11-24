@@ -8,6 +8,19 @@
         <p class="text-secondary mb-0">ملخّص سريع لما يجري في المنصة.</p>
     </div>
 
+    @php $newAlerts = auth()->user()->userNotifications()->whereNull('read_at')->whereIn('type', \App\Models\UserNotification::ADMIN_TYPES)->latest()->limit(3)->get(); @endphp
+    @if ($newAlerts->isNotEmpty())
+        <div class="liqa-card p-3 p-md-4 mb-4" style="border-color: rgba(248,113,113,.45)">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h2 class="h5 text-danger mb-0">تنبيهات تحتاج مراجعتك</h2>
+                <a href="{{ route('admin.alerts') }}" class="small text-decoration-none">عرض الكل ←</a>
+            </div>
+            @foreach ($newAlerts as $a)
+                <a href="{{ route('admin.alerts.open', $a) }}" class="d-block text-decoration-none py-1 text-white">{{ $a->message }}</a>
+            @endforeach
+        </div>
+    @endif
+
     <div class="liqa-card p-3 p-md-4 mb-4">
         <h2 class="h5 liqa-title mb-3 d-flex align-items-center gap-2">
             <span class="presence-dot presence-dot--inline"></span>

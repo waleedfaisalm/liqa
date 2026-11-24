@@ -198,6 +198,9 @@ Route::prefix('admin')->group(function () {
     Route::middleware('admin')->group(function () {
         Route::post('/logout', [AdminAuthController::class, 'destroy'])->name('admin.logout');
         Route::get('/', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
+        Route::get('/alerts', [\App\Http\Controllers\AdminAlertsController::class, 'index'])->name('admin.alerts');
+        Route::get('/alerts/{notification}/open', [\App\Http\Controllers\AdminAlertsController::class, 'open'])->whereNumber('notification')->name('admin.alerts.open');
+        Route::post('/alerts/read-all', [\App\Http\Controllers\AdminAlertsController::class, 'readAll'])->name('admin.alerts.read-all');
         Route::get('/stats', [\App\Http\Controllers\AdminStatsController::class, 'index'])->middleware('admin.can:stats')->name('admin.stats');
         Route::get('/report', [\App\Http\Controllers\AdminStatsController::class, 'report'])->middleware('admin.can:stats')->name('admin.report');
 

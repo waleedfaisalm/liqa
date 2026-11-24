@@ -7,6 +7,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class UserNotification extends Model
 {
+    /** أنواع تنبيهات الإدارة (تظهر في لوحة الإدارة) */
+    public const ADMIN_TYPES = ['report_urgent', 'risk_alert'];
+
     protected $fillable = ['user_id', 'type', 'message', 'url', 'read_at'];
 
     protected function casts(): array
