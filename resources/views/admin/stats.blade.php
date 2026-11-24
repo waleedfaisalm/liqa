@@ -48,6 +48,8 @@
     @include('admin.partials.report-body', ['r' => $report])
     <div class="mb-4"></div>
 
+    @include('admin.partials.community')
+
     {{-- الرسوم اليومية --}}
     <div class="row g-3 mb-4">
         <div class="col-12">

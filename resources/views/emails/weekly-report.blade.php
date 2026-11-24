@@ -28,6 +28,13 @@
             • نشطون آخر 30 يومًا: <b>{{ $r['retention']['active30Rate'] !== null ? $r['retention']['active30Rate'].'٪' : '—' }}</b> ({{ $r['retention']['active30'] }} من {{ $r['retention']['members'] }})
         </div>
 
+        <div style="font-weight:bold;margin:20px 0 8px">صحة المجتمع</div>
+        <div style="font-size:14px;line-height:1.9">
+            • المؤشر: <b>{{ $r['health']['score'] ?? '—' }}</b> / 100 ({{ $r['health']['label'] }})<br>
+            • جدد: <b>{{ $r['lifecycle']['new'] }}</b> · نشطون: <b>{{ $r['lifecycle']['active'] }}</b> · عائدون: <b>{{ $r['lifecycle']['returning'] }}</b><br>
+            • مهدّدون بالمغادرة: <b>{{ $r['lifecycle']['at_risk'] }}</b> · غير نشطين: <b>{{ $r['lifecycle']['inactive'] }}</b>
+        </div>
+
         @if ($r['topEvents'])
             <div style="font-weight:bold;margin:20px 0 8px">أفضل الأحداث حضورًا</div>
             <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-size:13px">

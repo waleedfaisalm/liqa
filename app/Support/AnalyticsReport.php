@@ -100,6 +100,8 @@ class AnalyticsReport
             'attendanceRate' => $attendanceRate,
             'avgMinutes' => $avgSeconds ? (int) round($avgSeconds / 60) : null,
             'retention' => $retention,
+            'health' => CommunityMetrics::health(),
+            'lifecycle' => CommunityMetrics::lifecycle(),
             'types' => $types,
             'cities' => $cities,
             'topEvents' => $topEvents,

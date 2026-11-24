@@ -69,7 +69,9 @@ class AdminStatsController extends Controller
             ['label' => 'سجّلوا في المنصة', 'value' => $registered],
             ['label' => 'أكملوا الإعداد الأولي', 'value' => $onboarded],
             ['label' => 'نشروا حدثًا', 'value' => $hosts],
+            ['label' => 'طلبوا الانضمام لحدث', 'value' => EventRequest::distinct('user_id')->count('user_id')],
             ['label' => 'قُبلوا في حدث', 'value' => $attendees],
+            ['label' => 'حضروا فعليًا', 'value' => \App\Models\EventAttendance::where('seconds', '>=', \App\Models\EventAttendance::THRESHOLD)->distinct('user_id')->count('user_id')],
             ['label' => 'حضروا أكثر من لقاء', 'value' => $returning],
             ['label' => 'قيّموا أعضاء', 'value' => $rated],
         ];
@@ -135,7 +137,14 @@ class AdminStatsController extends Controller
             ['label' => 'آخر ٣٠ يومًا', 'value' => User::where('last_seen_at', '>=', now()->subDays(30))->count()],
         ];
 
+        $health = \App\Support\CommunityMetrics::health();
+        $healthDelta = \App\Support\CommunityMetrics::snapshot($health['score'], $health['parts']);
+
         return view('admin.stats', [
+            'health' => $health,
+            'healthDelta' => $healthDelta,
+            'lifecycle' => \App\Support\CommunityMetrics::lifecycle(),
+            'cohorts' => \App\Support\CommunityMetrics::cohorts(),
             'report' => \App\Support\AnalyticsReport::build($range),
             'range' => $range,
             'kpis' => $kpis,

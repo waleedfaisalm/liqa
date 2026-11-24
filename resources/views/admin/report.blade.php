@@ -67,6 +67,15 @@
             <div class="tile"><b>{{ $r['retention']['active30Rate'] !== null ? $r['retention']['active30Rate'].'٪' : '—' }}</b><span>نشطون آخر 30 يومًا ({{ $r['retention']['active30'] }}/{{ $r['retention']['members'] }})</span></div>
         </div>
 
+        <h2>صحة المجتمع ومراحل الأعضاء</h2>
+        <div class="grid">
+            <div class="tile"><b>{{ $r['health']['score'] ?? '—' }}<small style="font-size:.7rem">/100</small></b><span>مؤشر الصحة — {{ $r['health']['label'] }}</span></div>
+            @foreach (\App\Support\CommunityMetrics::STAGES as $k => $label)
+                @if ($loop->index < 3)<div class="tile"><b>{{ $r['lifecycle'][$k] }}</b><span>{{ $label }}</span></div>@endif
+            @endforeach
+        </div>
+        <p class="mut" style="font-size:.85rem;margin:.5rem 0 0">مهدّدون بالمغادرة: {{ $r['lifecycle']['at_risk'] }} · غير نشطين: {{ $r['lifecycle']['inactive'] }}</p>
+
         <h2>أفضل الأحداث حضورًا</h2>
         @if ($r['topEvents'])
             <table>
