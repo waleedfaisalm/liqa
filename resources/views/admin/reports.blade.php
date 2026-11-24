@@ -33,6 +33,8 @@
                 <div class="liqa-card p-3 p-md-4">
                     <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
                         <div class="d-flex flex-wrap align-items-center gap-2">
+                            @php $urg = $report->status === 'open' ? ($urgent[$report->target_type.':'.$report->target_id] ?? 0) : 0; @endphp
+                            @if ($urg) <span class="liqa-badge liqa-badge--red">عاجل · {{ $urg }} بلاغات على الطرف نفسه</span> @endif
                             <span class="liqa-badge">{{ $isUser ? 'مستخدم' : 'حدث' }}</span>
                             <span class="liqa-badge liqa-badge--pink">{{ \App\Models\Report::REASONS[$report->reason] ?? $report->reason }}</span>
                             <span class="liqa-badge {{ $report->status === 'open' ? 'liqa-badge--sky' : 'liqa-badge--green' }}">{{ $report->status === 'open' ? 'مفتوح' : 'تمت المراجعة' }}</span>

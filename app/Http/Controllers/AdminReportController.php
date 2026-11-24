@@ -26,7 +26,12 @@ class AdminReportController extends Controller
             'all' => Report::count(),
         ];
 
-        return view('admin.reports', compact('reports', 'tab', 'counts'));
+        $threshold = max(2, \App\Support\Automation::int('auto_report_threshold'));
+        $urgent = Report::where('status', 'open')->selectRaw('target_type, target_id, count(distinct reporter_id) as c')
+            ->groupBy('target_type', 'target_id')->havingRaw('count(distinct reporter_id) >= ?', [$threshold])->get()
+            ->mapWithKeys(fn ($r) => [$r->target_type.':'.$r->target_id => (int) $r->c])->all();
+
+        return view('admin.reports', compact('reports', 'tab', 'counts', 'urgent'));
     }
 
     public function update(Request $request, Report $report): RedirectResponse

@@ -68,8 +68,48 @@ class ReportController extends Controller
         ]);
 
         $this->alertOwner($report, $input['type'], $target);
+        $this->urgentAlert($input['type'], $target);
 
         return redirect()->to($back)->with('success', __('تم استلام بلاغك وسيُراجَع من إدارة المنصة. شكرًا لمساهمتك في الحفاظ على المجتمع.'));
+    }
+
+    /** تنبيه عاجل للمشرفين حين يبلغ عدد البلاغات المفتوحة (من مبلِّغين مختلفين) على الطرف نفسه الحد المحدد */
+    private function urgentAlert(string $type, $target): void
+    {
+        if (! \App\Support\Automation::on('auto_report_alert')) {
+            return;
+        }
+
+        try {
+            $n = Report::where('target_type', $type)->where('target_id', $target->id)->where('status', 'open')->distinct('reporter_id')->count('reporter_id');
+
+            if ($n < max(2, \App\Support\Automation::int('auto_report_threshold'))) {
+                return;
+            }
+
+            $name = $type === 'user' ? $target->name : $target->title;
+            $message = 'عاجل: '.$n.' بلاغات مفتوحة على '.($type === 'user' ? 'المستخدم ' : 'الحدث ').'«'.$name.'».';
+
+            $admins = User::where('is_admin', true)->orWhere('is_super_admin', true)->get()
+                ->filter(fn (User $u) => $u->isOwner() || $u->hasPermission('reports'));
+
+            foreach ($admins as $admin) {
+                \App\Models\UserNotification::send($admin, 'report_urgent', $message, route('admin.reports'));
+            }
+
+            $owner = $admins->first(fn (User $u) => $u->isOwner());
+            if ($owner) {
+                \Illuminate\Support\Facades\Mail::send('emails.action', [
+                    'heading' => __('تنبيه عاجل: بلاغات متكررة'),
+                    'lines' => [$message, __('يُنصح بمراجعتها قبل غيرها.')],
+                    'button' => __('مراجعة البلاغات'),
+                    'url' => route('admin.reports'),
+                    'footnote' => __('وصلك هذا التنبيه لأنك مالك المنصة.'),
+                ], fn ($m) => $m->to($owner->email)->subject(__('عاجل: بلاغات متكررة — لقاء')));
+            }
+        } catch (\Throwable $e) {
+            report($e);
+        }
     }
 
     /** تنبيه بريدي للمالك عند ورود بلاغ؛ لا يوقف العملية إن فشل الإرسال */

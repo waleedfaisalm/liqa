@@ -19,6 +19,12 @@ class SendEventReminders extends Command
         $reminded = $this->sendUpcomingReminders();
         $prompted = $this->sendRatePrompts();
 
+        try {
+            $this->call('liqa:reactivate');
+        } catch (\Throwable $e) {
+            Log::warning('reactivate failed: '.$e->getMessage());
+        }
+
         $this->info("تذكيرات الأحداث: {$reminded} — إشعارات التقييم: {$prompted}");
 
         return self::SUCCESS;
@@ -71,17 +77,22 @@ class SendEventReminders extends Command
             ->where('starts_at', '>=', now()->subDays(8))
             ->with('host')
             ->get()
-            ->filter(fn (Event $event) => $event->hasEnded() && $event->endsAt()->greaterThan(now()->subDays(7)))
+            ->filter(fn (Event $event) => $event->hasEnded()
+                && $event->endsAt()->lessThanOrEqualTo(now()->subMinutes(max(0, \App\Support\Automation::int('auto_rating_delay'))))
+                && $event->endsAt()->greaterThan(now()->subDays(7)))
             ->each(function (Event $event) use (&$count) {
                 $participants = $event->participants();
 
                 if ($participants->count() >= 2) {
-                    $participants->each(fn ($user) => UserNotification::send(
-                        $user,
-                        'rate_now',
-                        'انتهى حدث «'.$event->title.'». قيّم المشاركين الآن وساهم في بناء مجتمع موثوق.',
-                        route('events.show', $event).'#ratings',
-                    ));
+                    $participants->each(function ($user) use ($event) {
+                        UserNotification::send(
+                            $user,
+                            'rate_now',
+                            'انتهى حدث «'.$event->title.'». قيّم المشاركين الآن وساهم في بناء مجتمع موثوق.',
+                            route('events.show', $event).'#ratings',
+                        );
+                        $this->mailRatePrompt($user, $event);
+                    });
                     $count++;
                 }
 
@@ -89,6 +100,26 @@ class SendEventReminders extends Command
             });
 
         return $count;
+    }
+
+    /** بريد طلب التقييم (إن كانت إشعارات العضو مفعّلة) */
+    private function mailRatePrompt($user, Event $event): void
+    {
+        if (! $user->notifications_enabled || ! $user->email) {
+            return;
+        }
+
+        try {
+            Mail::send('emails.action', [
+                'heading' => 'كيف كان لقاء «'.$event->title.'»؟',
+                'lines' => ['شكرًا لمشاركتك. تقييمك لزملائك في اللقاء يساعد على بناء مجتمع موثوق، ولا يستغرق دقيقة.'],
+                'button' => 'قيّم المشاركين',
+                'url' => route('events.show', $event).'#ratings',
+                'footnote' => 'يمكنك إيقاف هذه الرسائل من إعدادات الإشعارات في حسابك.',
+            ], fn ($m) => $m->to($user->email)->subject('قيّم لقاء «'.$event->title.'»'));
+        } catch (\Throwable $e) {
+            Log::warning('rate prompt mail failed: '.$e->getMessage());
+        }
     }
 
     /** عبارة الموعد في عنوان البريد بحسب القرب الفعلي (قريبًا / اليوم / غدًا / بالتاريخ) */
