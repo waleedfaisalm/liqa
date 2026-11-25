@@ -45,6 +45,7 @@ class User extends Authenticatable implements MustVerifyEmail
             'verified_at' => 'datetime',
             'risk_flags' => 'array',
             'risk_cleared_at' => 'datetime',
+            'join_restricted_until' => 'datetime',
             'last_seen_at' => 'datetime',
             'suspended_until' => 'datetime',
             'password' => 'hashed',
@@ -101,6 +102,12 @@ class User extends Authenticatable implements MustVerifyEmail
     public function scopeRisky($query)
     {
         return $query->where('is_admin', false)->whereNull('risk_cleared_at')->where('risk_score', '>=', 30);
+    }
+
+    /** مقيّد من الانضمام للأحداث بسبب الغياب */
+    public function isJoinRestricted(): bool
+    {
+        return $this->join_restricted_until !== null && $this->join_restricted_until->isFuture();
     }
 
     public function scopeOnline($query)

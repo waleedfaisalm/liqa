@@ -137,16 +137,11 @@ Route::middleware(['auth', 'verified', 'onboarded'])->group(function () {
         Route::post('/events/{event}/room/mute', [\App\Http\Controllers\EventRoomController::class, 'mute'])->whereNumber('event')->name('events.room.mute');
     });
     Route::post('/events/{event}/room/ping', [\App\Http\Controllers\EventAttendanceController::class, 'ping'])->whereNumber('event')->middleware('throttle:6,1')->name('events.room.ping');
-    Route::get('/events/{event}/checkin', [\App\Http\Controllers\EventCheckinController::class, 'show'])->whereNumber('event')->name('events.checkin');
-    Route::get('/events/{event}/checkin/qr', [\App\Http\Controllers\EventCheckinController::class, 'qr'])->whereNumber('event')->middleware('throttle:30,1')->name('events.checkin.qr');
-    Route::get('/events/{event}/checkin/status', [\App\Http\Controllers\EventCheckinController::class, 'status'])->whereNumber('event')->middleware('throttle:30,1')->name('events.checkin.status');
-    Route::post('/events/{event}/checkin/manual/{user}', [\App\Http\Controllers\EventCheckinController::class, 'manual'])->whereNumber(['event', 'user'])->middleware('throttle:60,1')->name('events.checkin.manual');
-    Route::get('/checkin/{event}/{token}', [\App\Http\Controllers\EventCheckinController::class, 'scan'])->whereNumber('event')->where('token', '[a-f0-9]{16}')->middleware('throttle:20,1')->name('events.checkin.scan');
     Route::get('/events/{event}/certificate', [\App\Http\Controllers\EventAttendanceController::class, 'certificate'])->whereNumber('event')->name('events.certificate');
     Route::post('/events/{event}/room/remove', [\App\Http\Controllers\EventRoomController::class, 'remove'])->whereNumber('event')->middleware('throttle:30,1')->name('events.room.remove');
 
     // طلبات الانضمام
-    Route::post('/events/{event}/join', [EventRequestController::class, 'store'])->whereNumber('event')->middleware('throttle:20,1')->name('events.join');
+    Route::post('/events/{event}/join', [EventRequestController::class, 'store'])->whereNumber('event')->middleware(['throttle:20,1', \App\Http\Middleware\BlockRestrictedJoin::class])->name('events.join');
     Route::delete('/events/{event}/join', [EventRequestController::class, 'destroy'])->whereNumber('event')->name('events.leave');
     Route::patch('/events/{event}/requests/{eventRequest}', [EventRequestController::class, 'decide'])
         ->whereNumber(['event', 'eventRequest'])->name('events.requests.decide');
@@ -198,11 +193,10 @@ Route::prefix('admin')->group(function () {
     Route::middleware('admin')->group(function () {
         Route::post('/logout', [AdminAuthController::class, 'destroy'])->name('admin.logout');
         Route::get('/', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
-        Route::get('/alerts', [\App\Http\Controllers\AdminAlertsController::class, 'index'])->name('admin.alerts');
-        Route::get('/alerts/{notification}/open', [\App\Http\Controllers\AdminAlertsController::class, 'open'])->whereNumber('notification')->name('admin.alerts.open');
-        Route::post('/alerts/read-all', [\App\Http\Controllers\AdminAlertsController::class, 'readAll'])->name('admin.alerts.read-all');
         Route::get('/stats', [\App\Http\Controllers\AdminStatsController::class, 'index'])->middleware('admin.can:stats')->name('admin.stats');
         Route::get('/report', [\App\Http\Controllers\AdminStatsController::class, 'report'])->middleware('admin.can:stats')->name('admin.report');
+        Route::get('/demand', [\App\Http\Controllers\AdminDemandController::class, 'index'])->middleware('admin.can:stats')->name('admin.demand');
+        Route::post('/demand/sweep', [\App\Http\Controllers\AdminDemandController::class, 'sweep'])->middleware(['admin.can:stats', 'throttle:6,1'])->name('admin.demand.sweep');
 
         // أمان الحساب (لكل مدير)
         Route::get('/security', [AdminSecurityController::class, 'show'])->name('admin.security');
@@ -215,9 +209,9 @@ Route::prefix('admin')->group(function () {
             Route::get('/users/create', [AdminUserController::class, 'create'])->name('admin.users.create');
             Route::post('/users', [AdminUserController::class, 'store'])->middleware('throttle:20,1')->name('admin.users.store');
             Route::get('/users/{user}', [AdminUserController::class, 'show'])->whereNumber('user')->name('admin.users.show');
-            Route::patch('/users/{user}/risk-clear', [AdminUserController::class, 'riskClear'])->whereNumber('user')->name('admin.users.risk-clear');
-            Route::post('/users/{user}/rescore', [AdminUserController::class, 'rescore'])->whereNumber('user')->name('admin.users.rescore');
-            Route::post('/users/rescore-all', [AdminUserController::class, 'rescoreAll'])->middleware('throttle:3,1')->name('admin.users.rescore-all');
+            Route::post('/users/{user}/nominate', [\App\Http\Controllers\AdminDemandController::class, 'nominate'])->whereNumber('user')->name('admin.users.nominate');
+            Route::patch('/users/{user}/restrict', [\App\Http\Controllers\AdminDemandController::class, 'restrict'])->whereNumber('user')->name('admin.users.restrict');
+            Route::patch('/users/{user}/unrestrict', [\App\Http\Controllers\AdminDemandController::class, 'unrestrict'])->whereNumber('user')->name('admin.users.unrestrict');
             Route::patch('/users/{user}/verify', [AdminUserController::class, 'verify'])->whereNumber('user')->name('admin.users.verify');
             Route::patch('/users/{user}/suspend', [AdminUserController::class, 'suspend'])->whereNumber('user')->name('admin.users.suspend');
             Route::patch('/users/{user}/password', [AdminUserController::class, 'resetPassword'])->middleware('throttle:10,1')->whereNumber('user')->name('admin.users.password');

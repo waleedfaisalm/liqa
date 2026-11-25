@@ -6,7 +6,7 @@
     <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
         <div>
             <h1 class="h2 liqa-title mb-1">التنبيهات</h1>
-            <p class="text-secondary mb-0">تنبيهات تحتاج مراجعتك: بلاغات متكررة وحسابات عالية الخطورة.</p>
+            <p class="text-secondary mb-0">تنبيهات تحتاج مراجعتك: بلاغات متكررة، حسابات عالية الخطورة، غياب متكرر، وأحداث بتسجيل منخفض.</p>
         </div>
         <form method="POST" action="{{ route('admin.alerts.read-all') }}">
             @csrf
@@ -19,9 +19,9 @@
     @else
         <div class="d-grid gap-2">
             @foreach ($alerts as $a)
-                @php $isReport = $a->type === 'report_urgent'; @endphp
+                @php [$tl, $tc] = match ($a->type) { 'report_urgent' => ['بلاغات متكررة', 'liqa-badge--red'], 'noshow_alert' => ['غياب متكرر', 'liqa-badge--red'], 'low_registration' => ['تسجيل منخفض', 'liqa-badge--sky'], default => ['خطورة حساب', 'liqa-badge--pink'] }; @endphp
                 <a href="{{ route('admin.alerts.open', $a) }}" class="liqa-card p-3 text-decoration-none d-flex align-items-start gap-3 {{ $a->isUnread() ? '' : 'opacity-75' }}">
-                    <span class="liqa-badge {{ $isReport ? 'liqa-badge--red' : 'liqa-badge--pink' }} flex-shrink-0">{{ $isReport ? 'بلاغات متكررة' : 'خطورة حساب' }}</span>
+                    <span class="liqa-badge {{ $tc }} flex-shrink-0">{{ $tl }}</span>
                     <span class="min-w-0 me-auto">
                         <span class="d-block text-white {{ $a->isUnread() ? 'fw-bold' : '' }}">{{ $a->message }}</span>
                         <span class="d-block small text-secondary">{{ $a->created_at->diffForHumans() }}</span>

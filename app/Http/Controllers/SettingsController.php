@@ -29,6 +29,7 @@ class SettingsController extends Controller
             'name' => ['required', 'string', 'max:80'],
             'specialty' => ['required', 'string', Rule::in(\App\Support\Catalog::specialties(false))],
             'bio' => ['nullable', 'string', 'max:300'],
+            'city' => ['nullable', 'string', 'max:60'],
             'avatar' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             'link_linkedin' => ['nullable', 'string', 'max:200'],
             'link_github' => ['nullable', 'string', 'max:200'],
@@ -44,6 +45,7 @@ class SettingsController extends Controller
         $user->name = $data['name'];
         $user->specialty = $data['specialty'];
         $user->bio = $data['bio'] ?? null;
+        $user->city = trim((string) ($data['city'] ?? '')) ?: null;
         $user->notifications_enabled = $request->boolean('notifications_enabled');
         $user->profile_public = $request->boolean('profile_public');
 

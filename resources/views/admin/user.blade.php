@@ -27,6 +27,8 @@
                     @if ($u->isSuspended()) <span class="liqa-badge liqa-badge--red">موقوف</span> @endif
                     @unless ($u->hasVerifiedEmail()) <span class="liqa-badge liqa-badge--pink">غير موثّق</span> @endunless
                     @if ($u->specialty) <span class="liqa-badge liqa-badge--sky">{{ $u->specialty }}</span> @endif
+                    @if ($u->city) <span class="liqa-badge">📍 {{ $u->city }}</span> @endif
+                    @if ($u->isJoinRestricted()) <span class="liqa-badge liqa-badge--red">انضمام مقيّد</span> @endif
                 </div>
             </div>
             <div class="small text-secondary">
@@ -119,6 +121,33 @@
                         <form method="POST" action="{{ route('admin.users.risk-clear', $u) }}" class="flex-fill">@csrf @method('PATCH')<button class="btn {{ $u->risk_cleared_at ? 'btn-outline-danger' : 'btn-primary' }} btn-sm w-100">{{ $u->risk_cleared_at ? 'إلغاء الاعتماد' : 'اعتماد كسليم' }}</button></form>
                     @endif
                 </div>
+            </div>
+            @endif
+
+            @if (! $u->is_admin)
+            @php $rel = \App\Support\Reliability::stats($u); @endphp
+            <div class="liqa-card p-3 p-md-4 mb-3">
+                <h2 class="h5 liqa-title mb-2">الحضور والالتزام</h2>
+                @if ($rel['eligible'] === 0)
+                    <p class="small text-secondary mb-0">لا توجد أحداث سُجّل فيها حضور لهذا العضو بعد.</p>
+                @else
+                    <div class="d-flex align-items-center gap-2 mb-1"><span class="fs-3 fw-bold text-white">{{ $rel['rate'] }}%</span><span class="small text-secondary">حضر {{ $rel['attended'] }} من {{ $rel['eligible'] }}</span></div>
+                    <div class="small mb-2">غيابات آخر 90 يومًا: <strong class="{{ $rel['recent_missed'] >= 3 ? 'text-danger' : 'text-white' }}">{{ $rel['recent_missed'] }}</strong></div>
+                @endif
+                @if ($u->isJoinRestricted())
+                    <div class="alert alert-danger py-2 small">الانضمام مقيّد حتى {{ $u->join_restricted_until->translatedFormat('j F Y') }} — {{ $u->join_restriction_reason }}</div>
+                    <form method="POST" action="{{ route('admin.users.unrestrict', $u) }}">@csrf @method('PATCH')<button class="btn btn-outline-secondary w-100">رفع التقييد الآن</button></form>
+                @else
+                    <form method="POST" action="{{ route('admin.users.restrict', $u) }}" onsubmit="return confirm('تقييد انضمام هذا العضو للأحداث الجديدة؟')">
+                        @csrf @method('PATCH')
+                        <div class="d-flex gap-2 mb-2">
+                            <select name="days" class="form-select form-select-sm" style="max-width: 9rem"><option value="3">٣ أيام</option><option value="7" selected>٧ أيام</option><option value="14">١٤ يومًا</option><option value="30">٣٠ يومًا</option></select>
+                            <input type="text" name="reason" maxlength="200" class="form-control form-control-sm" placeholder="السبب (اختياري)">
+                        </div>
+                        <button class="btn btn-liqa-outline btn-sm w-100">تقييد الانضمام للأحداث</button>
+                    </form>
+                    <p class="small hint mt-2 mb-0">القرار يدوي: لا يُقيَّد أحد تلقائيًا.</p>
+                @endif
             </div>
             @endif
 

@@ -21,6 +21,7 @@
             ['group' => __('الرئيسية'), 'route' => 'admin.dashboard', 'match' => 'admin.dashboard', 'label' => __('نظرة عامة'), 'icon' => 'chart'],
             ['group' => __('الرئيسية'), 'route' => 'admin.alerts', 'match' => 'admin.alerts*', 'label' => __('التنبيهات'), 'icon' => 'bolt', 'badge' => auth()->user()->userNotifications()->whereNull('read_at')->whereIn('type', \App\Models\UserNotification::ADMIN_TYPES)->count()],
             ['group' => __('الرئيسية'), 'route' => 'admin.stats', 'match' => 'admin.stats', 'perm' => 'stats', 'label' => __('الإحصاءات'), 'icon' => 'chart'],
+            ['group' => __('الرئيسية'), 'route' => 'admin.demand', 'match' => 'admin.demand*', 'perm' => 'stats', 'label' => __('الطلب والحضور'), 'icon' => 'users'],
             ['group' => __('الإدارة'), 'route' => 'admin.users', 'match' => 'admin.users*', 'perm' => 'users', 'label' => __('المستخدمون'), 'icon' => 'users'],
             ['group' => __('الإدارة'), 'route' => 'admin.events', 'match' => 'admin.events*', 'perm' => 'events', 'label' => __('الأحداث'), 'icon' => 'calendar'],
             ['group' => __('الإدارة'), 'route' => 'admin.comments', 'match' => ['admin.comments*', 'admin.ratings*'], 'perm' => 'comments', 'label' => __('التعليقات والتقييمات'), 'icon' => 'chat'],

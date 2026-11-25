@@ -16,6 +16,23 @@
                     <span class="liqa-badge mb-3">{{ __($profile->specialty) }}</span>
                 @endif
 
+                @if ($profile->city)
+                    <div class="small text-secondary mb-2">📍 {{ $profile->city }}</div>
+                @elseif ($isMe)
+                    <div class="small mb-2"><a href="{{ route('settings') }}" class="text-decoration-none">{{ __('أضف مدينتك لنقترح عليك لقاءات قريبة') }}</a></div>
+                @endif
+
+                @php $rel = \App\Support\Reliability::stats($profile); @endphp
+                @if ($isMe && $rel['eligible'] > 0)
+                    <div class="small mb-3 p-2 rounded" style="background: rgba(127,127,127,.12)">
+                        {{ __('التزامك بالحضور: :r% (:a من :e)', ['r' => $rel['rate'], 'a' => $rel['attended'], 'e' => $rel['eligible']]) }}
+                        @if ($rel['recent_missed'] > 0) <div class="text-warning-emphasis">{{ __('غيابات آخر 90 يومًا: :n', ['n' => $rel['recent_missed']]) }}</div> @endif
+                        @if ($profile->isJoinRestricted()) <div class="text-danger">{{ __('انضمامك مقيّد حتى :d', ['d' => $profile->join_restricted_until->translatedFormat('j F')]) }}</div> @endif
+                    </div>
+                @elseif (! $isMe && $rel['eligible'] >= 3 && $rel['rate'] >= 90)
+                    <span class="liqa-badge liqa-badge--green mb-3">{{ __('ملتزم بالحضور') }}</span>
+                @endif
+
                 @if ($profile->bio)
                     <p class="text-secondary" style="white-space: pre-line">{{ $profile->bio }}</p>
                 @else

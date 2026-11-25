@@ -58,8 +58,16 @@ class SeoController extends Controller
         abort_if($secret === '' || ! hash_equals($secret, (string) ($request->query('key') ?: $request->bearerToken())), 404);
 
         Artisan::call('liqa:send-reminders');
+        $out = trim(Artisan::output());
 
-        return response(trim(Artisan::output()), 200, ['Content-Type' => 'text/plain; charset=UTF-8']);
+        try {
+            Artisan::call('liqa:attendance-sweep');
+            $out .= "\n".trim(Artisan::output());
+        } catch (\Throwable $e) {
+            \Log::warning('attendance sweep failed: '.$e->getMessage());
+        }
+
+        return response($out, 200, ['Content-Type' => 'text/plain; charset=UTF-8']);
     }
 
     /** التقرير الأسبوعي بالبريد للمالك من خدمة جدولة خارجية: /cron/weekly-report?key=CRON_SECRET */

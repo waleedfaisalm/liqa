@@ -57,14 +57,31 @@
             </div>
 
             <div class="form-check form-switch mb-2">
-                <input class="form-check-input" type="checkbox" role="switch" id="auto_fake_detection" name="auto_fake_detection" value="1" @checked(old('auto_fake_detection', $auto['auto_fake_detection'] === '1'))>
-                <label class="form-check-label" for="auto_fake_detection">كشف الحسابات الوهمية عند التسجيل</label>
-                <div class="small hint">يقيّم كل حساب جديد بدرجة خطورة من 100 (بريد مؤقت، أنماط غريبة، تسجيلات متكررة من شبكة واحدة). لا يمنع التسجيل ولا يوقف أحدًا تلقائيًا.</div>
+                <input class="form-check-input" type="checkbox" role="switch" id="auto_absence" name="auto_absence" value="1" @checked(old('auto_absence', $auto['auto_absence'] === '1'))>
+                <label class="form-check-label" for="auto_absence">متابعة الغياب وإنذار الأعضاء</label>
+                <div class="small hint">بعد كل حدث يُسجَّل فيه حضور فعلي: إنذار لمن غاب رغم تسجيله، وتنبيه لك عند تكرار الغياب. التقييد قرار يدوي منك.</div>
             </div>
             <div class="mb-4 ps-4">
-                <label class="form-label small" for="auto_risk_threshold">درجة الخطورة التي تُرسل تنبيهًا للمشرفين</label>
-                <input type="number" id="auto_risk_threshold" name="auto_risk_threshold" min="30" max="95" class="form-control @error('auto_risk_threshold') is-invalid @enderror" style="max-width: 8rem" value="{{ old('auto_risk_threshold', $auto['auto_risk_threshold']) }}">
-                @error('auto_risk_threshold') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                <label class="form-label small" for="auto_absence_strikes">عدد الغيابات خلال 90 يومًا الذي يُنبّه الإدارة</label>
+                <input type="number" id="auto_absence_strikes" name="auto_absence_strikes" min="2" max="10" class="form-control @error('auto_absence_strikes') is-invalid @enderror" style="max-width: 8rem" value="{{ old('auto_absence_strikes', $auto['auto_absence_strikes']) }}">
+                @error('auto_absence_strikes') <div class="invalid-feedback">{{ $message }}</div> @enderror
+            </div>
+
+            <div class="form-check form-switch mb-2">
+                <input class="form-check-input" type="checkbox" role="switch" id="auto_low_reg" name="auto_low_reg" value="1" @checked(old('auto_low_reg', $auto['auto_low_reg'] === '1'))>
+                <label class="form-check-label" for="auto_low_reg">تنبيه ضعف التسجيل</label>
+                <div class="small hint">ينبّه المنظّم والإدارة عندما يقترب الحدث ويكون التسجيل أقل من النسبة المحددة.</div>
+            </div>
+            <div class="mb-4 ps-4">
+                <label class="form-label small" for="auto_low_reg_percent">النسبة الدنيا من السعة (%)</label>
+                <input type="number" id="auto_low_reg_percent" name="auto_low_reg_percent" min="5" max="90" class="form-control @error('auto_low_reg_percent') is-invalid @enderror" style="max-width: 8rem" value="{{ old('auto_low_reg_percent', $auto['auto_low_reg_percent']) }}">
+                @error('auto_low_reg_percent') <div class="invalid-feedback">{{ $message }}</div> @enderror
+            </div>
+
+            <div class="mb-4 ps-4">
+                <label class="form-label small" for="auto_low_reg_days">قبل موعد الحدث بكم يوم يُفحص التسجيل</label>
+                <input type="number" id="auto_low_reg_days" name="auto_low_reg_days" min="1" max="14" class="form-control @error('auto_low_reg_days') is-invalid @enderror" style="max-width: 8rem" value="{{ old('auto_low_reg_days', $auto['auto_low_reg_days']) }}">
+                @error('auto_low_reg_days') <div class="invalid-feedback">{{ $message }}</div> @enderror
             </div>
 
             <div class="mb-4">

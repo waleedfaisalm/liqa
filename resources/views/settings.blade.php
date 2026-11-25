@@ -51,6 +51,16 @@
                 </div>
 
                 <div>
+                    <label class="liqa-label d-block" for="city">{{ __('مدينتك (اختياري)') }}</label>
+                    <input type="text" id="city" name="city" maxlength="60" list="city-list" class="form-control @error('city') is-invalid @enderror" value="{{ old('city', $user->city) }}" placeholder="{{ __('مثال: عدن') }}">
+                    <datalist id="city-list">
+                        @foreach (\App\Models\Event::whereNotNull('city')->distinct()->pluck('city') as $c) <option value="{{ $c }}"></option> @endforeach
+                    </datalist>
+                    <div class="small hint mt-1">{{ __('تساعدنا في تنظيم لقاءات في مدينتك. لا تظهر إلا كمدينة عامة في ملفك.') }}</div>
+                    @error('city') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                </div>
+
+                <div>
                     <label class="liqa-label d-block" for="bio">{{ __('نبذة عنك') }}</label>
                     <textarea id="bio" name="bio" rows="4" maxlength="300"
                               class="form-control @error('bio') is-invalid @enderror">{{ old('bio', $user->bio) }}</textarea>
