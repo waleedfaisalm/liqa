@@ -18,6 +18,8 @@ class Automation
         'auto_low_reg' => '1',
         'auto_low_reg_percent' => '30',
         'auto_low_reg_days' => '3',
+        'auto_fake_detection' => '1',
+        'auto_risk_threshold' => '60',
     ];
 
     public static function value(string $key): string

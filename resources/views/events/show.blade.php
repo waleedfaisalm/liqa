@@ -245,13 +245,26 @@
                     @else
                         <div class="d-grid gap-2">
                             @foreach ($attendees as $a)
-                                <a href="{{ route('users.show', $a->user) }}" class="request-row text-decoration-none">
-                                    <span class="d-flex align-items-center gap-2 me-auto">
+                                <div class="request-row">
+                                    <a href="{{ route('users.show', $a->user) }}" class="d-flex align-items-center gap-2 me-auto text-decoration-none">
                                         <x-avatar :user="$a->user" :size="38" />
                                         <span class="fw-bold text-white">{{ $a->user->name }}</span>
-                                    </span>
+                                    </a>
                                     @if ($isHost) <span class="small hint">{{ __(':n دقيقة', ['n' => $a->minutes()]) }}</span> @endif
-                                </a>
+                                    @if ($user && $a->user_id !== $user->id && ! $a->user->suspended_at)
+                                        @php $cr = \App\Models\ContactRequest::between($user, $a->user); @endphp
+                                        @if (! $cr)
+                                            <form method="POST" action="{{ route('contacts.store', $a->user) }}">
+                                                @csrf
+                                                <button class="btn btn-liqa-outline btn-sm px-3" style="min-height:2.25rem">{{ __('تواصل') }}</button>
+                                            </form>
+                                        @elseif ($cr->status === 'accepted')
+                                            <a href="{{ route('contacts.index') }}" class="liqa-badge liqa-badge--green text-decoration-none">{{ __('في جهات اتصالك') }}</a>
+                                        @elseif ($cr->status === 'pending')
+                                            <span class="liqa-badge">{{ __('بانتظار الرد') }}</span>
+                                        @endif
+                                    @endif
+                                </div>
                             @endforeach
                         </div>
                     @endif

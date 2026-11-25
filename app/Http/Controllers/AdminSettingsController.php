@@ -30,6 +30,7 @@ class AdminSettingsController extends Controller
             'auto_absence_strikes' => ['required', 'integer', 'min:2', 'max:10'],
             'auto_low_reg_percent' => ['required', 'integer', 'min:5', 'max:90'],
             'auto_low_reg_days' => ['required', 'integer', 'min:1', 'max:14'],
+            'auto_risk_threshold' => ['required', 'integer', 'min:30', 'max:95'],
         ], [
             'announcement.max' => 'نص الإعلان طويل (الحد الأقصى 200 حرف).',
         ]);
@@ -48,6 +49,8 @@ class AdminSettingsController extends Controller
             'auto_low_reg' => $request->boolean('auto_low_reg') ? '1' : '0',
             'auto_low_reg_percent' => (string) $data['auto_low_reg_percent'],
             'auto_low_reg_days' => (string) $data['auto_low_reg_days'],
+            'auto_fake_detection' => $request->boolean('auto_fake_detection') ? '1' : '0',
+            'auto_risk_threshold' => (string) $data['auto_risk_threshold'],
         ];
 
         $changes = [];
@@ -58,6 +61,7 @@ class AdminSettingsController extends Controller
                     'event_creation_enabled' => 'إنشاء الأحداث: '.($value === '1' ? 'مفتوح' : 'مغلق'),
                     'announcement' => $value === '' ? 'إزالة الإعلان' : 'تحديث الإعلان',
                     'auto_reactivation' => 'رسالة إعادة التنشيط: '.($value === '1' ? 'مفعّلة' : 'معطّلة'),
+                    'auto_fake_detection' => 'كشف الحسابات الوهمية: '.($value === '1' ? 'مفعّل' : 'معطّل'),
                     'auto_report_alert' => 'تنبيه البلاغات المتكررة: '.($value === '1' ? 'مفعّل' : 'معطّل'),
                     default => 'تعديل إعداد الأتمتة: '.$key.' = '.$value,
                 };
