@@ -16,7 +16,7 @@ class Segment extends Model
     }
 
     /** الأعضاء المطابقون (بلا مدراء ولا موقوفين) */
-    public function query(): Builder
+    public function members(): Builder
     {
         $f = $this->filters ?? [];
         $q = User::query()->where('is_admin', false)->whereNull('suspended_at');

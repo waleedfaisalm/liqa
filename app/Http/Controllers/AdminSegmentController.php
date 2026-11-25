@@ -19,8 +19,8 @@ class AdminSegmentController extends Controller
     public function index(): View
     {
         $segments = Segment::latest()->get()->each(function (Segment $s) {
-            $s->total = $s->query()->count();
-            $s->reachable = $s->query()->where('notifications_enabled', true)->count();
+            $s->total = $s->members()->count();
+            $s->reachable = $s->members()->where('notifications_enabled', true)->count();
         });
 
         return view('admin.segments', [
@@ -78,7 +78,7 @@ class AdminSegmentController extends Controller
             $link = url('/'.ltrim($path, '/'));
         }
 
-        $users = $segment->query()->where('notifications_enabled', true)->limit(self::MAX_RECIPIENTS)->get(['id']);
+        $users = $segment->members()->where('notifications_enabled', true)->limit(self::MAX_RECIPIENTS)->get(['id']);
         if ($users->isEmpty()) {
             return back()->with('error', 'لا يوجد أعضاء يستقبلون الإشعارات في هذه الشريحة.');
         }
