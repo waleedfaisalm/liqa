@@ -27,6 +27,7 @@
             ['group' => __('الإدارة'), 'route' => 'admin.comments', 'match' => ['admin.comments*', 'admin.ratings*'], 'perm' => 'comments', 'label' => __('التعليقات والتقييمات'), 'icon' => 'chat'],
             ['group' => __('التواصل'), 'route' => 'admin.reports', 'match' => 'admin.reports*', 'perm' => 'reports', 'label' => __('البلاغات'), 'icon' => 'chat', 'badge' => \App\Models\Report::where('status', 'open')->count()],
             ['group' => __('التواصل'), 'route' => 'admin.messages', 'match' => 'admin.messages*', 'perm' => 'reports', 'label' => __('رسائل التواصل'), 'icon' => 'send', 'badge' => \App\Models\ContactMessage::whereNull('read_at')->count()],
+            ['group' => __('التواصل'), 'route' => 'admin.segments', 'match' => 'admin.segments*', 'perm' => 'broadcast', 'label' => __('الشرائح'), 'icon' => 'users'],
             ['group' => __('التواصل'), 'route' => 'admin.broadcast', 'match' => 'admin.broadcast*', 'perm' => 'broadcast', 'label' => __('إشعار عام'), 'icon' => 'send'],
             ['group' => __('النظام'), 'route' => 'admin.logs', 'match' => 'admin.logs*', 'perm' => 'logs', 'label' => __('سجل الإجراءات'), 'icon' => 'clock'],
             ['group' => __('النظام'), 'route' => 'admin.settings', 'match' => 'admin.settings*', 'perm' => 'settings', 'label' => __('إعدادات المنصة'), 'icon' => 'bolt'],

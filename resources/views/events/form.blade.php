@@ -39,6 +39,10 @@
                               class="form-control @error('description') is-invalid @enderror"
                               placeholder="{{ __('ما محاور اللقاء؟ وما طبيعة الأجواء المتوقعة؟') }}">{{ $bio }}</textarea>
                     <div class="hint mt-2">{{ __('الحد الأقصى 600 حرف') }} <span id="desc-count" class="text-secondary"></span></div>
+                    @if (\App\Support\Ai::enabled())
+                        <button type="button" id="ai-desc" class="btn btn-sm btn-liqa-outline mt-2">✨ {{ __('اكتب لي وصفًا') }}</button>
+                        <span id="ai-desc-msg" class="small hint ms-2"></span>
+                    @endif
                     @error('description') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
                 </div>
 
@@ -183,6 +187,25 @@
     var mode = document.getElementById('mode');
     var desc = document.getElementById('description');
     var count = document.getElementById('desc-count');
+
+    var aiBtn = document.getElementById('ai-desc');
+    if (aiBtn) {
+        aiBtn.addEventListener('click', function () {
+            var title = document.getElementById('title').value.trim();
+            var msg = document.getElementById('ai-desc-msg');
+            if (!title) { msg.textContent = {{ Js::from(__('اكتب عنوان الحدث أولًا.')) }}; return; }
+            aiBtn.disabled = true; msg.textContent = {{ Js::from(__('جارٍ الكتابة...')) }};
+            var sel = function (id) { var e = document.getElementById(id); return e && e.options && e.selectedIndex >= 0 ? e.options[e.selectedIndex].text : ''; };
+            fetch({{ Js::from(route('ai.description')) }}, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': {{ Js::from(csrf_token()) }} },
+                body: JSON.stringify({ title: title, type: sel('type'), mode: sel('mode'), city: sel('city'), notes: desc.value.slice(0, 600) })
+            }).then(function (r) { return r.json(); }).then(function (j) {
+                if (j.ok) { desc.value = j.text; syncCount(); msg.textContent = {{ Js::from(__('راجع النص وعدّله قبل النشر.')) }}; }
+                else { msg.textContent = j.message || {{ Js::from(__('تعذّر الكتابة الآن.')) }}; }
+            }).catch(function () { msg.textContent = {{ Js::from(__('تعذّر الاتصال.')) }}; }).finally(function () { aiBtn.disabled = false; });
+        });
+    }
 
     function syncMode() {
         var online = mode.value === 'online';

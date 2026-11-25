@@ -73,6 +73,13 @@
                         <p class="mb-0 text-break" style="white-space: pre-line">{{ $report->details ?: 'لم تُكتب تفاصيل.' }}</p>
                     </div>
 
+                    @if (\App\Support\Ai::enabled())
+                        <div class="mb-3">
+                            <button type="button" class="btn btn-sm btn-liqa-outline" onclick="aiReport(this, {{ $report->id }})">✨ تحليل بالذكاء الاصطناعي</button>
+                            <div class="small mt-2 text-secondary ai-out" style="white-space: pre-line" id="ai-r-{{ $report->id }}"></div>
+                        </div>
+                    @endif
+
                     <form method="POST" action="{{ route('admin.reports.update', $report) }}">
                         @csrf
                         @method('PATCH')
@@ -87,3 +94,17 @@
         <div class="mt-4">{{ $reports->links() }}</div>
     @endif
 @endsection
+
+@push('scripts')
+<script>
+    function aiReport(btn, id) {
+        var out = document.getElementById('ai-r-' + id);
+        btn.disabled = true; out.textContent = 'جارٍ التحليل...';
+        fetch('{{ url('/admin/reports') }}/' + id + '/ai', { method: 'POST', headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' } })
+            .then(function (r) { return r.json(); })
+            .then(function (j) { out.textContent = (j.text || j.message || 'تعذّر التحليل.') + (j.ok ? '\n(اقتراح آلي — القرار لك)' : ''); })
+            .catch(function () { out.textContent = 'تعذّر الاتصال.'; })
+            .finally(function () { btn.disabled = false; });
+    }
+</script>
+@endpush

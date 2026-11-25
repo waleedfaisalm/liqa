@@ -1080,5 +1080,16 @@
     "أعضاء سبق لهم الغياب:": "Members with past absences:",
     "غاب :m من :e": "missed :m of :e",
     "الحدث ممتلئ وله قائمة انتظار ونتوقع غياب بعض المسجلين، يمكنك رفع السعة بنحو :n مقعد.": "The event is full with a waitlist and some attendees are likely to be absent. You could raise capacity by about :n seats.",
-    "تعديل السعة": "Edit capacity"
+    "تعديل السعة": "Edit capacity",
+    "اكتب لي وصفًا": "Write a description for me",
+    "اكتب عنوان الحدث أولًا.": "Enter the event title first.",
+    "جارٍ الكتابة...": "Writing...",
+    "راجع النص وعدّله قبل النشر.": "Review and edit the text before publishing.",
+    "تعذّر الكتابة الآن.": "Couldn't write right now.",
+    "تعذّر الاتصال.": "Connection failed.",
+    "الخدمة غير متاحة حاليًا، حاول لاحقًا.": "Service unavailable right now, try again later.",
+    "ملخص التقييمات": "Ratings summary",
+    "لخّص التقييمات": "Summarise ratings",
+    "جارٍ التلخيص...": "Summarising...",
+    "ملخص آلي لتقييمات الأعضاء، وقد لا يعكس كل التفاصيل.": "An automated summary of member ratings; it may not capture every detail."
 }

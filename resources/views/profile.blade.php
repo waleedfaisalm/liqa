@@ -146,6 +146,27 @@
                     @endforeach
                 </div>
 
+                @if (\App\Support\Ai::enabled() && $ratingsCount >= 3)
+                    @php $aiSum = \App\Support\Ai::cachedRatingsSummary($profile, $ratingsCount); @endphp
+                    <div class="liqa-card p-3 p-md-4 mb-3">
+                        <h2 class="h6 liqa-title mb-2">✨ {{ __('ملخص التقييمات') }}</h2>
+                        <p class="small text-secondary mb-2" id="ai-sum" style="white-space: pre-line">{{ $aiSum }}</p>
+                        @unless ($aiSum)
+                            <button type="button" class="btn btn-sm btn-liqa-outline" id="ai-sum-btn">{{ __('لخّص التقييمات') }}</button>
+                            <script>
+                                document.getElementById('ai-sum-btn').addEventListener('click', function () {
+                                    var b = this, o = document.getElementById('ai-sum'); b.disabled = true; o.textContent = {{ Js::from(__('جارٍ التلخيص...')) }};
+                                    fetch({{ Js::from(route('ai.ratings', $profile)) }}, { method: 'POST', headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': {{ Js::from(csrf_token()) }} } })
+                                        .then(function (r) { return r.json(); })
+                                        .then(function (j) { o.textContent = j.text || j.message || ''; if (j.ok) b.remove(); else b.disabled = false; })
+                                        .catch(function () { o.textContent = {{ Js::from(__('تعذّر الاتصال.')) }}; b.disabled = false; });
+                                });
+                            </script>
+                        @endunless
+                        <div class="hint mt-2">{{ __('ملخص آلي لتقييمات الأعضاء، وقد لا يعكس كل التفاصيل.') }}</div>
+                    </div>
+                @endif
+
                 @forelse ($ratings as $rating)
                     <div class="request-row d-block mb-2">
                         <div class="d-flex flex-wrap align-items-center gap-2 mb-1">

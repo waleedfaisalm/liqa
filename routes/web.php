@@ -175,6 +175,8 @@ Route::middleware(['auth', 'verified', 'onboarded'])->group(function () {
     Route::post('/events/{event}/ratings/{user}', [RatingController::class, 'store'])
         ->whereNumber(['event', 'user'])->middleware('throttle:30,1')->name('events.rate');
 
+    Route::post('/ai/event-description', [\App\Http\Controllers\AiController::class, 'description'])->middleware('throttle:8,1')->name('ai.description');
+    Route::post('/users/{user}/ratings-summary', [\App\Http\Controllers\AiController::class, 'ratings'])->whereNumber('user')->middleware('throttle:6,1')->name('ai.ratings');
     Route::get('/contacts', [\App\Http\Controllers\ContactRequestController::class, 'index'])->name('contacts.index');
     Route::post('/contacts/{user}', [\App\Http\Controllers\ContactRequestController::class, 'store'])->whereNumber('user')->middleware('throttle:20,1')->name('contacts.store');
     Route::patch('/contacts/requests/{contactRequest}', [\App\Http\Controllers\ContactRequestController::class, 'decide'])->whereNumber('contactRequest')->name('contacts.decide');
@@ -245,6 +247,10 @@ Route::prefix('admin')->group(function () {
         });
 
         Route::middleware('admin.can:broadcast')->group(function () {
+            Route::get('/segments', [\App\Http\Controllers\AdminSegmentController::class, 'index'])->name('admin.segments');
+            Route::post('/segments', [\App\Http\Controllers\AdminSegmentController::class, 'store'])->name('admin.segments.store');
+            Route::delete('/segments/{segment}', [\App\Http\Controllers\AdminSegmentController::class, 'destroy'])->whereNumber('segment')->name('admin.segments.destroy');
+            Route::post('/segments/{segment}/send', [\App\Http\Controllers\AdminSegmentController::class, 'send'])->whereNumber('segment')->middleware('throttle:6,1')->name('admin.segments.send');
             Route::get('/broadcast', [AdminBroadcastController::class, 'create'])->name('admin.broadcast');
             Route::post('/broadcast', [AdminBroadcastController::class, 'store'])->middleware('throttle:5,1')->name('admin.broadcast.store');
         });
@@ -259,6 +265,7 @@ Route::prefix('admin')->group(function () {
             Route::patch('/messages/{message}/toggle', [AdminMessageController::class, 'toggle'])->whereNumber('message')->name('admin.messages.toggle');
             Route::delete('/messages/{message}', [AdminMessageController::class, 'destroy'])->whereNumber('message')->name('admin.messages.destroy');
             Route::patch('/reports/{report}', [AdminReportController::class, 'update'])->whereNumber('report')->name('admin.reports.update');
+            Route::post('/reports/{report}/ai', [\App\Http\Controllers\AiController::class, 'report'])->whereNumber('report')->middleware('throttle:15,1')->name('admin.reports.ai');
         });
 
         Route::middleware('admin.can:settings')->group(function () {
