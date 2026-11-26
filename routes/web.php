@@ -136,7 +136,7 @@ Route::middleware(['auth', 'verified', 'onboarded'])->group(function () {
         Route::post('/events/{event}/room/cohost', [\App\Http\Controllers\EventRoomController::class, 'cohost'])->whereNumber('event')->name('events.room.cohost');
         Route::post('/events/{event}/room/mute', [\App\Http\Controllers\EventRoomController::class, 'mute'])->whereNumber('event')->name('events.room.mute');
     });
-    Route::post('/events/{event}/room/ping', [\App\Http\Controllers\EventAttendanceController::class, 'ping'])->whereNumber('event')->middleware('throttle:6,1')->name('events.room.ping');
+    Route::post('/events/{event}/room/ping', [\App\Http\Controllers\EventAttendanceController::class, 'ping'])->whereNumber('event')->middleware('throttle:12,1,ping')->name('events.room.ping');
     Route::get('/events/{event}/checkin', [\App\Http\Controllers\EventCheckinController::class, 'show'])->whereNumber('event')->name('events.checkin');
     Route::get('/events/{event}/checkin/qr', [\App\Http\Controllers\EventCheckinController::class, 'qr'])->whereNumber('event')->middleware('throttle:30,1')->name('events.checkin.qr');
     Route::get('/events/{event}/checkin/status', [\App\Http\Controllers\EventCheckinController::class, 'status'])->whereNumber('event')->middleware('throttle:30,1')->name('events.checkin.status');

@@ -49,11 +49,13 @@ class AttendanceSweep extends Command
             ->filter(fn (Event $e) => $e->endsAt()->copy()->addHours(Event::ROOM_CLOSES_AFTER_HOURS)->isPast())
             ->each(function (Event $event) use (&$count, $threshold) {
                 $tracked = $event->attendances()->where('seconds', '>=', EventAttendance::THRESHOLD)->exists();
-                $event->forceFill(['absence_processed_at' => now()])->save();
 
+                // لا نُغلق الحدث قبل أن يُسجَّل فيه حضور فعلي، فقد يُسجَّل لاحقًا (QR أو تصحيح)
                 if (! $tracked) {
                     return;
                 }
+
+                $event->forceFill(['absence_processed_at' => now()])->save();
 
                 $present = $event->attendances()->where('seconds', '>=', EventAttendance::THRESHOLD)->pluck('user_id')->all();
 
