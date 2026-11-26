@@ -1951,11 +1951,8 @@ html[dir="ltr"] body { font-family: 'Cairo', system-ui, sans-serif; }
     .agenda__time { width: 4.4rem; }
 }
 
-/* ---------- الغرفة المباشرة: داكنة دائمًا حتى في الوضع الفاتح ---------- */
-.room { color: var(--liqa-text); }
-.room h1, .room h2, .room h3, .room h4, .room h5, .room h6, .room .liqa-title, .room label, .room .form-check-label { color: var(--liqa-text); }
-.room .text-secondary { color: var(--liqa-muted) !important; }
-.room .form-check-input:not(:checked) { background-color: rgba(255, 255, 255, .08); border-color: var(--liqa-muted); }
-.room .form-control, .room .form-select { color: var(--liqa-text); background-color: rgba(255, 255, 255, .06); border-color: var(--liqa-border); }
-.room .form-control::placeholder { color: var(--liqa-muted); }
+/* ---------- الغرفة: تتبع ثيم الموقع قبل الدخول، وداكنة داخل المكالمة ---------- */
 .room-tile__video.is-mirror { transform: scaleX(-1); }
+.room.in-call { color: var(--liqa-text); }
+.room.in-call .text-secondary { color: var(--liqa-muted) !important; }
+[data-bs-theme='light'] .room:not(.in-call) .pre-level { background: rgba(27, 22, 54, .12); }

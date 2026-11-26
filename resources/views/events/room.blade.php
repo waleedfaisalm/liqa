@@ -1,7 +1,7 @@
 @extends('layouts.app')
 @section('title', __('الغرفة المباشرة — ').$event->title)
 @section('content')
-    <div data-bs-theme="dark" class="room{{ $isHost ? ' is-owner is-manager' : ($isCohost ? ' is-manager' : '') }}" id="room"
+    <div class="room{{ $isHost ? ' is-owner is-manager' : ($isCohost ? ' is-manager' : '') }}" id="room"
          data-url="{{ $serverUrl }}"
          data-token="{{ $token }}"
          data-host="{{ $isHost ? '1' : '0' }}"
@@ -161,11 +161,9 @@
             <div class="room-controls" id="roomControls">
                 <div class="room-btn-group">
                     <button type="button" class="room-btn" id="btnMic" data-on="1"><span class="room-btn__icon" id="icoMic"></span><span class="room-btn__label">{{ __('الميكروفون') }}</span></button>
-                    <button type="button" class="room-caret" id="caretMic" aria-label="{{ __('اختيار الميكروفون') }}">▾</button>
                 </div>
                 <div class="room-btn-group">
                     <button type="button" class="room-btn" id="btnCam" data-on="1"><span class="room-btn__icon" id="icoCam"></span><span class="room-btn__label">{{ __('الكاميرا') }}</span></button>
-                    <button type="button" class="room-caret" id="caretCam" aria-label="{{ __('اختيار الكاميرا') }}">▾</button>
                 </div>
                 <button type="button" class="room-btn" id="btnShare" hidden><span class="room-btn__icon" id="icoShare"></span><span class="room-btn__label">{{ __('مشاركة الشاشة') }}</span></button>
                 <button type="button" class="room-btn" id="btnHand" title="{{ __('رفع اليد') }}"><span class="room-btn__icon" id="icoHand"></span><span class="room-btn__label">{{ __('رفع اليد') }}</span></button>

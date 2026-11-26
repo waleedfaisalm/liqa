@@ -188,7 +188,13 @@ if (root) {
         pinBtn.innerHTML = ICONS.pin;
         pinBtn.addEventListener('click', () => togglePin(p.identity));
         el.appendChild(pinBtn);
-        el.addEventListener('dblclick', (e) => { if (!e.target.closest('button')) togglePin(p.identity); });
+        // نقرتان متتاليتان: على كاميرتي تبدّل الأمامية/الخلفية (مثل زوم)، وعلى غيرها تثبّت المشارك
+        let lastTap = 0;
+        el.addEventListener('click', (e) => {
+            if (e.target.closest('button')) return;
+            const now = Date.now();
+            if (now - lastTap < 350) { lastTap = 0; if (p.isLocal) flipCamera(); else togglePin(p.identity); } else { lastTap = now; }
+        });
 
         if (!p.isLocal) {
             const kick = document.createElement('button');
@@ -205,6 +211,37 @@ if (root) {
         tiles.set(p.identity, t);
         updateLayout();
         return t;
+    }
+
+    let flipping = false;
+    async function flipCamera() {
+        if (flipping || !room) return;
+        const pub = room.localParticipant.getTrackPublication(Track.Source.Camera);
+        const track = pub && pub.track;
+        if (!track || pub.isMuted) { toast(tr('شغّل الكاميرا أولًا.')); return; }
+        flipping = true;
+        try {
+            const cur = track.mediaStreamTrack.getSettings().facingMode;
+            const wanted = cur === 'environment' ? 'user' : 'environment';
+            try {
+                if (!cur) throw new Error('no facingMode');
+                await track.restartTrack({ facingMode: wanted });
+            } catch (e) {
+                // بديل: التبديل بين الكاميرات المتاحة حسب أسمائها أو بالتتابع
+                const cams = await Room.getLocalDevices('videoinput');
+                if (cams.length < 2) { toast(tr('لا توجد كاميرا أخرى في جهازك.')); return; }
+                const active = room.getActiveDevice('videoinput');
+                const hint = wanted === 'environment' ? /back|rear|environment|خلف/i : /front|user|أمام/i;
+                const byLabel = cams.find((c) => c.deviceId !== active && hint.test(c.label || ''));
+                const next = byLabel || cams[(Math.max(0, cams.findIndex((c) => c.deviceId === active)) + 1) % cams.length];
+                await room.switchActiveDevice('videoinput', next.deviceId);
+            }
+            refresh(room.localParticipant);
+        } catch (e) {
+            toast(tr('تعذّر تبديل الكاميرا.'));
+        } finally {
+            flipping = false;
+        }
     }
 
     function refresh(p) {
@@ -232,7 +269,8 @@ if (root) {
 
         t.el.classList.toggle('is-screen', !!(pub === screen && videoTrack));
         // كاميرتي تُعرض كمرآة (مثل زوم)؛ يراها الآخرون بالاتجاه الطبيعي
-        t.video.classList.toggle('is-mirror', !!(p.isLocal && videoTrack && pub === cam));
+        const facing = videoTrack && videoTrack.mediaStreamTrack && videoTrack.mediaStreamTrack.getSettings ? videoTrack.mediaStreamTrack.getSettings().facingMode : undefined;
+        t.video.classList.toggle('is-mirror', !!(p.isLocal && videoTrack && pub === cam && facing !== 'environment'));
 
         const mic = p.getTrackPublication(Track.Source.Microphone);
         const micOn = !!(mic && mic.track && !mic.isMuted);
@@ -743,8 +781,6 @@ if (root) {
             placePop(devMenu, anchor);
         }
 
-        document.getElementById('caretMic').addEventListener('click', (e) => { e.stopPropagation(); openDevices('audioinput', e.currentTarget); });
-        document.getElementById('caretCam').addEventListener('click', (e) => { e.stopPropagation(); openDevices('videoinput', e.currentTarget); });
 
         // زر المغادرة: للمنظّم خياران (مغادرة فقط / إنهاء للجميع)
         if (isOwner) {
@@ -918,6 +954,7 @@ if (root) {
         prejoin.classList.add('d-none');
         document.getElementById('roomWait').classList.add('d-none');
         stage.classList.remove('d-none');
+        root.setAttribute('data-bs-theme', 'dark');
         root.classList.add('in-call');
         document.documentElement.classList.add('room-lock');
         if (window.ResizeObserver) new ResizeObserver(scheduleLayout).observe(grid);
