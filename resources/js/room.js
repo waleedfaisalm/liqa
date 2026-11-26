@@ -231,6 +231,8 @@ if (root) {
         }
 
         t.el.classList.toggle('is-screen', !!(pub === screen && videoTrack));
+        // كاميرتي تُعرض كمرآة (مثل زوم)؛ يراها الآخرون بالاتجاه الطبيعي
+        t.video.classList.toggle('is-mirror', !!(p.isLocal && videoTrack && pub === cam));
 
         const mic = p.getTrackPublication(Track.Source.Microphone);
         const micOn = !!(mic && mic.track && !mic.isMuted);
